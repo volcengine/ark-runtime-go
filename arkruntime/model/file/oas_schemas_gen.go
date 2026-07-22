@@ -317,7 +317,7 @@ type FileObject struct {
 	// Server-generated file id.
 	ID string `json:"id"`
 	// The intended purpose of the uploaded file.
-	Purpose Purpose `json:"purpose" form:"purpose" query:"purpose"`
+	Purpose Purpose `json:"purpose"`
 	// Original filename of the uploaded file.
 	Filename string `json:"filename"`
 	// Size of the file in bytes.
@@ -335,7 +335,7 @@ type FileObject struct {
 	// Failure details. Only set when `status` is `failed`.
 	Error OptFileError `json:"error"`
 	// Preprocessing configuration applied at upload time.
-	PreprocessConfigs OptPreprocessConfigs `json:"preprocess_configs" form:"preprocess_configs"`
+	PreprocessConfigs OptPreprocessConfigs `json:"preprocess_configs"`
 }
 
 // GetObject returns the value of Object.

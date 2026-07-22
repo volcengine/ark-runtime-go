@@ -273,24 +273,6 @@ func (s *OptimizePromptOptions) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if value, ok := s.Thinking.Get(); ok {
-			if err := func() error {
-				if err := value.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "thinking",
-			Error: err,
-		})
-	}
-	if err := func() error {
 		if value, ok := s.Mode.Get(); ok {
 			if err := func() error {
 				if err := value.Validate(); err != nil {
@@ -312,19 +294,6 @@ func (s *OptimizePromptOptions) Validate() error {
 		return &validate.Error{Fields: failures}
 	}
 	return nil
-}
-
-func (s OptimizePromptThinking) Validate() error {
-	switch s {
-	case "auto":
-		return nil
-	case "enabled":
-		return nil
-	case "disabled":
-		return nil
-	default:
-		return errors.Errorf("invalid value: %v", s)
-	}
 }
 
 func (s OutputFormat) Validate() error {

@@ -15,6 +15,112 @@ import (
 )
 
 // Encode implements json.Marshaler.
+func (s *BoundingBox) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *BoundingBox) encodeFields(e *jx.Encoder) {
+	{
+		if s.Absolute != nil {
+			e.FieldStart("absolute")
+			e.ArrStart()
+			for _, elem := range s.Absolute {
+				e.Int32(elem)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		if s.Normalized != nil {
+			e.FieldStart("normalized")
+			e.ArrStart()
+			for _, elem := range s.Normalized {
+				e.Int32(elem)
+			}
+			e.ArrEnd()
+		}
+	}
+}
+
+var jsonFieldsNameOfBoundingBox = [2]string{
+	0: "absolute",
+	1: "normalized",
+}
+
+// Decode decodes BoundingBox from json.
+func (s *BoundingBox) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode BoundingBox to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "absolute":
+			if err := func() error {
+				s.Absolute = make([]int32, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem int32
+					v, err := d.Int32()
+					elem = int32(v)
+					if err != nil {
+						return err
+					}
+					s.Absolute = append(s.Absolute, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"absolute\"")
+			}
+		case "normalized":
+			if err := func() error {
+				s.Normalized = make([]int32, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem int32
+					v, err := d.Int32()
+					elem = int32(v)
+					if err != nil {
+						return err
+					}
+					s.Normalized = append(s.Normalized, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"normalized\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode BoundingBox")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *BoundingBox) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *BoundingBox) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
 func (s *CreateImageGenerationRequest) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
@@ -96,12 +202,6 @@ func (s *CreateImageGenerationRequest) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
-		if s.OptimizePrompt.Set {
-			e.FieldStart("optimize_prompt")
-			s.OptimizePrompt.Encode(e)
-		}
-	}
-	{
 		if s.OptimizePromptOptions.Set {
 			e.FieldStart("optimize_prompt_options")
 			s.OptimizePromptOptions.Encode(e)
@@ -123,6 +223,12 @@ func (s *CreateImageGenerationRequest) encodeFields(e *jx.Encoder) {
 			s.OutputFormat.Encode(e)
 		}
 	}
+	{
+		if s.LayerDecomposition.Set {
+			e.FieldStart("layer_decomposition")
+			s.LayerDecomposition.Encode(e)
+		}
+	}
 }
 
 var jsonFieldsNameOfCreateImageGenerationRequest = [16]string{
@@ -138,10 +244,10 @@ var jsonFieldsNameOfCreateImageGenerationRequest = [16]string{
 	9:  "watermark",
 	10: "sequential_image_generation",
 	11: "sequential_image_generation_options",
-	12: "optimize_prompt",
-	13: "optimize_prompt_options",
-	14: "tools",
-	15: "output_format",
+	12: "optimize_prompt_options",
+	13: "tools",
+	14: "output_format",
+	15: "layer_decomposition",
 }
 
 // Decode decodes CreateImageGenerationRequest from json.
@@ -286,16 +392,6 @@ func (s *CreateImageGenerationRequest) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"sequential_image_generation_options\"")
 			}
-		case "optimize_prompt":
-			if err := func() error {
-				s.OptimizePrompt.Reset()
-				if err := s.OptimizePrompt.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"optimize_prompt\"")
-			}
 		case "optimize_prompt_options":
 			if err := func() error {
 				s.OptimizePromptOptions.Reset()
@@ -332,6 +428,16 @@ func (s *CreateImageGenerationRequest) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"output_format\"")
+			}
+		case "layer_decomposition":
+			if err := func() error {
+				s.LayerDecomposition.Reset()
+				if err := s.LayerDecomposition.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"layer_decomposition\"")
 			}
 		default:
 			return d.Skip()
@@ -423,13 +529,41 @@ func (s *ImageDataItem) encodeFields(e *jx.Encoder) {
 			s.Error.Encode(e)
 		}
 	}
+	{
+		if s.ZIndex.Set {
+			e.FieldStart("z_index")
+			s.ZIndex.Encode(e)
+		}
+	}
+	{
+		if s.BoundingBox.Set {
+			e.FieldStart("bounding_box")
+			s.BoundingBox.Encode(e)
+		}
+	}
+	{
+		if s.Name.Set {
+			e.FieldStart("name")
+			s.Name.Encode(e)
+		}
+	}
+	{
+		if s.Description.Set {
+			e.FieldStart("description")
+			s.Description.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfImageDataItem = [4]string{
+var jsonFieldsNameOfImageDataItem = [8]string{
 	0: "url",
 	1: "b64_json",
 	2: "size",
 	3: "error",
+	4: "z_index",
+	5: "bounding_box",
+	6: "name",
+	7: "description",
 }
 
 // Decode decodes ImageDataItem from json.
@@ -479,6 +613,46 @@ func (s *ImageDataItem) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"error\"")
+			}
+		case "z_index":
+			if err := func() error {
+				s.ZIndex.Reset()
+				if err := s.ZIndex.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"z_index\"")
+			}
+		case "bounding_box":
+			if err := func() error {
+				s.BoundingBox.Reset()
+				if err := s.BoundingBox.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"bounding_box\"")
+			}
+		case "name":
+			if err := func() error {
+				s.Name.Reset()
+				if err := s.Name.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "description":
+			if err := func() error {
+				s.Description.Reset()
+				if err := s.Description.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"description\"")
 			}
 		default:
 			return d.Skip()
@@ -1156,6 +1330,39 @@ func (s *OptBool) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes BoundingBox as json.
+func (o OptBoundingBox) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes BoundingBox from json.
+func (o *OptBoundingBox) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptBoundingBox to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptBoundingBox) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptBoundingBox) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes float64 as json.
 func (o OptFloat64) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -1356,39 +1563,6 @@ func (s OptOptimizePromptOptions) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptOptimizePromptOptions) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes OptimizePromptThinking as json.
-func (o OptOptimizePromptThinking) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	e.Str(string(o.Value))
-}
-
-// Decode decodes OptimizePromptThinking from json.
-func (o *OptOptimizePromptThinking) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptOptimizePromptThinking to nil")
-	}
-	o.Set = true
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptOptimizePromptThinking) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptOptimizePromptThinking) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -1676,12 +1850,6 @@ func (s *OptimizePromptOptions) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *OptimizePromptOptions) encodeFields(e *jx.Encoder) {
 	{
-		if s.Thinking.Set {
-			e.FieldStart("thinking")
-			s.Thinking.Encode(e)
-		}
-	}
-	{
 		if s.Mode.Set {
 			e.FieldStart("mode")
 			s.Mode.Encode(e)
@@ -1689,9 +1857,8 @@ func (s *OptimizePromptOptions) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfOptimizePromptOptions = [2]string{
-	0: "thinking",
-	1: "mode",
+var jsonFieldsNameOfOptimizePromptOptions = [1]string{
+	0: "mode",
 }
 
 // Decode decodes OptimizePromptOptions from json.
@@ -1702,16 +1869,6 @@ func (s *OptimizePromptOptions) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "thinking":
-			if err := func() error {
-				s.Thinking.Reset()
-				if err := s.Thinking.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"thinking\"")
-			}
 		case "mode":
 			if err := func() error {
 				s.Mode.Reset()
@@ -1742,48 +1899,6 @@ func (s *OptimizePromptOptions) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptimizePromptOptions) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes OptimizePromptThinking as json.
-func (s OptimizePromptThinking) Encode(e *jx.Encoder) {
-	e.Str(string(s))
-}
-
-// Decode decodes OptimizePromptThinking from json.
-func (s *OptimizePromptThinking) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode OptimizePromptThinking to nil")
-	}
-	v, err := d.StrBytes()
-	if err != nil {
-		return err
-	}
-	// Try to use constant string.
-	switch OptimizePromptThinking(v) {
-	case OptimizePromptThinkingAuto:
-		*s = OptimizePromptThinkingAuto
-	case OptimizePromptThinkingEnabled:
-		*s = OptimizePromptThinkingEnabled
-	case OptimizePromptThinkingDisabled:
-		*s = OptimizePromptThinkingDisabled
-	default:
-		*s = OptimizePromptThinking(v)
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptimizePromptThinking) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptimizePromptThinking) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

@@ -33,7 +33,7 @@ type ContentGenerationTask struct {
 	// Model used to produce the result.
 	Model string `json:"model"`
 	// Lifecycle state.
-	Status TaskStatus `json:"status" query:"filter.status"`
+	Status TaskStatus `json:"status"`
 	// Populated when the task ended in `failed`.
 	Error OptTaskError `json:"error"`
 	// Generated artifact URLs. Populated when the task succeeded.
