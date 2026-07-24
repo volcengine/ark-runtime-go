@@ -57,7 +57,8 @@ type CreateImageGenerationRequest struct {
 	GuidanceScale OptFloat64 `json:"guidance_scale"`
 	// Classifier-free guidance scale for reference images (edit / R2I).
 	ImageGuidanceScale OptFloat64 `json:"image_guidance_scale"`
-	// Output size hint (e.g. `1024x1024`, `2K`, `adaptive`).
+	// Output size hint (e.g. `1024x1024`, `1K`, `2K`, or `auto`). `auto` is supported for layer
+	// decomposition.
 	Size OptString `json:"size"`
 	// Embed a watermark in the generated image.
 	Watermark OptBool `json:"watermark"`
