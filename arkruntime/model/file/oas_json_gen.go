@@ -1333,6 +1333,8 @@ func (s *Purpose) Decode(d *jx.Decoder) error {
 	switch Purpose(v) {
 	case PurposeUserData:
 		*s = PurposeUserData
+	case PurposeAgent:
+		*s = PurposeAgent
 	default:
 		*s = Purpose(v)
 	}
