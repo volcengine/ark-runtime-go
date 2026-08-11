@@ -9,6 +9,36 @@ import (
 	"github.com/go-faster/errors"
 )
 
+// A layer's region in the base image, ordered as
+// `[left, top, right, bottom]`.
+// Ref: #/components/schemas/BoundingBox
+type BoundingBox struct {
+	// Coordinates in base-image pixels, with the origin at the top left.
+	Absolute []int32 `json:"absolute"`
+	// Coordinates scaled to the integer range `[0, 1000]`.
+	Normalized []int32 `json:"normalized"`
+}
+
+// GetAbsolute returns the value of Absolute.
+func (s *BoundingBox) GetAbsolute() []int32 {
+	return s.Absolute
+}
+
+// GetNormalized returns the value of Normalized.
+func (s *BoundingBox) GetNormalized() []int32 {
+	return s.Normalized
+}
+
+// SetAbsolute sets the value of Absolute.
+func (s *BoundingBox) SetAbsolute(val []int32) {
+	s.Absolute = val
+}
+
+// SetNormalized sets the value of Normalized.
+func (s *BoundingBox) SetNormalized(val []int32) {
+	s.Normalized = val
+}
+
 // Ref: #/components/schemas/CreateImageGenerationRequest
 type CreateImageGenerationRequest struct {
 	// The model identifier to use.
@@ -35,14 +65,15 @@ type CreateImageGenerationRequest struct {
 	SequentialImageGeneration OptSequentialImageGenerationMode `json:"sequential_image_generation"`
 	// Tuning for `sequential_image_generation`.
 	SequentialImageGenerationOptions OptSequentialImageGenerationOptions `json:"sequential_image_generation_options"`
-	// Run the prompt-optimization pass before generation.
-	OptimizePrompt OptBool `json:"optimize_prompt"`
-	// Tuning for `optimize_prompt`.
+	// Prompt-optimizer quality/latency options.
 	OptimizePromptOptions OptOptimizePromptOptions `json:"optimize_prompt_options"`
 	// Tools the model may invoke during generation.
 	Tools []Tool `json:"tools"`
 	// Container/codec for the generated image bytes.
 	OutputFormat OptOutputFormat `json:"output_format"`
+	// Decompose one reference image into a base image and independently
+	// composable layers. Supported models return layer metadata in `data`.
+	LayerDecomposition OptBool `json:"layer_decomposition"`
 }
 
 // GetModel returns the value of Model.
@@ -105,11 +136,6 @@ func (s *CreateImageGenerationRequest) GetSequentialImageGenerationOptions() Opt
 	return s.SequentialImageGenerationOptions
 }
 
-// GetOptimizePrompt returns the value of OptimizePrompt.
-func (s *CreateImageGenerationRequest) GetOptimizePrompt() OptBool {
-	return s.OptimizePrompt
-}
-
 // GetOptimizePromptOptions returns the value of OptimizePromptOptions.
 func (s *CreateImageGenerationRequest) GetOptimizePromptOptions() OptOptimizePromptOptions {
 	return s.OptimizePromptOptions
@@ -123,6 +149,11 @@ func (s *CreateImageGenerationRequest) GetTools() []Tool {
 // GetOutputFormat returns the value of OutputFormat.
 func (s *CreateImageGenerationRequest) GetOutputFormat() OptOutputFormat {
 	return s.OutputFormat
+}
+
+// GetLayerDecomposition returns the value of LayerDecomposition.
+func (s *CreateImageGenerationRequest) GetLayerDecomposition() OptBool {
+	return s.LayerDecomposition
 }
 
 // SetModel sets the value of Model.
@@ -185,11 +216,6 @@ func (s *CreateImageGenerationRequest) SetSequentialImageGenerationOptions(val O
 	s.SequentialImageGenerationOptions = val
 }
 
-// SetOptimizePrompt sets the value of OptimizePrompt.
-func (s *CreateImageGenerationRequest) SetOptimizePrompt(val OptBool) {
-	s.OptimizePrompt = val
-}
-
 // SetOptimizePromptOptions sets the value of OptimizePromptOptions.
 func (s *CreateImageGenerationRequest) SetOptimizePromptOptions(val OptOptimizePromptOptions) {
 	s.OptimizePromptOptions = val
@@ -205,6 +231,11 @@ func (s *CreateImageGenerationRequest) SetOutputFormat(val OptOutputFormat) {
 	s.OutputFormat = val
 }
 
+// SetLayerDecomposition sets the value of LayerDecomposition.
+func (s *CreateImageGenerationRequest) SetLayerDecomposition(val OptBool) {
+	s.LayerDecomposition = val
+}
+
 // One generated image. Exactly one of `url` / `b64_json` is set, depending on the request
 // `response_format`.
 // Ref: #/components/schemas/ImageDataItem
@@ -217,6 +248,14 @@ type ImageDataItem struct {
 	Size OptString `json:"size"`
 	// Per-image failure (set when this slot failed while others succeeded).
 	Error OptImageError `json:"error"`
+	// Layer stacking order. The base image is `0`; layers follow bottom-up.
+	ZIndex OptInt32 `json:"z_index"`
+	// Layer region in the base image. Omitted for the base image.
+	BoundingBox OptBoundingBox `json:"bounding_box"`
+	// Model-generated layer label. Omitted for the base image.
+	Name OptString `json:"name"`
+	// Model-generated semantic description. Omitted for the base image.
+	Description OptString `json:"description"`
 }
 
 // GetURL returns the value of URL.
@@ -239,6 +278,26 @@ func (s *ImageDataItem) GetError() OptImageError {
 	return s.Error
 }
 
+// GetZIndex returns the value of ZIndex.
+func (s *ImageDataItem) GetZIndex() OptInt32 {
+	return s.ZIndex
+}
+
+// GetBoundingBox returns the value of BoundingBox.
+func (s *ImageDataItem) GetBoundingBox() OptBoundingBox {
+	return s.BoundingBox
+}
+
+// GetName returns the value of Name.
+func (s *ImageDataItem) GetName() OptString {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *ImageDataItem) GetDescription() OptString {
+	return s.Description
+}
+
 // SetURL sets the value of URL.
 func (s *ImageDataItem) SetURL(val OptString) {
 	s.URL = val
@@ -257,6 +316,26 @@ func (s *ImageDataItem) SetSize(val OptString) {
 // SetError sets the value of Error.
 func (s *ImageDataItem) SetError(val OptImageError) {
 	s.Error = val
+}
+
+// SetZIndex sets the value of ZIndex.
+func (s *ImageDataItem) SetZIndex(val OptInt32) {
+	s.ZIndex = val
+}
+
+// SetBoundingBox sets the value of BoundingBox.
+func (s *ImageDataItem) SetBoundingBox(val OptBoundingBox) {
+	s.BoundingBox = val
+}
+
+// SetName sets the value of Name.
+func (s *ImageDataItem) SetName(val OptString) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *ImageDataItem) SetDescription(val OptString) {
+	s.Description = val
 }
 
 // Ref: #/components/schemas/ImageError
@@ -597,6 +676,52 @@ func (o OptBool) Or(d bool) bool {
 	return d
 }
 
+// NewOptBoundingBox returns new OptBoundingBox with value set to v.
+func NewOptBoundingBox(v BoundingBox) OptBoundingBox {
+	return OptBoundingBox{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptBoundingBox is optional BoundingBox.
+type OptBoundingBox struct {
+	Value BoundingBox
+	Set   bool
+}
+
+// IsSet returns true if OptBoundingBox was set.
+func (o OptBoundingBox) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptBoundingBox) Reset() {
+	var v BoundingBox
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptBoundingBox) SetTo(v BoundingBox) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptBoundingBox) Get() (v BoundingBox, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptBoundingBox) Or(d BoundingBox) BoundingBox {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptFloat64 returns new OptFloat64 with value set to v.
 func NewOptFloat64(v float64) OptFloat64 {
 	return OptFloat64{
@@ -867,52 +992,6 @@ func (o OptOptimizePromptOptions) Get() (v OptimizePromptOptions, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptOptimizePromptOptions) Or(d OptimizePromptOptions) OptimizePromptOptions {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptOptimizePromptThinking returns new OptOptimizePromptThinking with value set to v.
-func NewOptOptimizePromptThinking(v OptimizePromptThinking) OptOptimizePromptThinking {
-	return OptOptimizePromptThinking{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptOptimizePromptThinking is optional OptimizePromptThinking.
-type OptOptimizePromptThinking struct {
-	Value OptimizePromptThinking
-	Set   bool
-}
-
-// IsSet returns true if OptOptimizePromptThinking was set.
-func (o OptOptimizePromptThinking) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptOptimizePromptThinking) Reset() {
-	var v OptimizePromptThinking
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptOptimizePromptThinking) SetTo(v OptimizePromptThinking) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptOptimizePromptThinking) Get() (v OptimizePromptThinking, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptOptimizePromptThinking) Or(d OptimizePromptThinking) OptimizePromptThinking {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -1286,15 +1365,8 @@ func (s *OptimizePromptMode) UnmarshalText(data []byte) error {
 
 // Ref: #/components/schemas/OptimizePromptOptions
 type OptimizePromptOptions struct {
-	// Whether the optimizer should engage its thinking pass.
-	Thinking OptOptimizePromptThinking `json:"thinking"`
 	// Optimizer mode trade-off (quality vs latency).
 	Mode OptOptimizePromptMode `json:"mode"`
-}
-
-// GetThinking returns the value of Thinking.
-func (s *OptimizePromptOptions) GetThinking() OptOptimizePromptThinking {
-	return s.Thinking
 }
 
 // GetMode returns the value of Mode.
@@ -1302,64 +1374,9 @@ func (s *OptimizePromptOptions) GetMode() OptOptimizePromptMode {
 	return s.Mode
 }
 
-// SetThinking sets the value of Thinking.
-func (s *OptimizePromptOptions) SetThinking(val OptOptimizePromptThinking) {
-	s.Thinking = val
-}
-
 // SetMode sets the value of Mode.
 func (s *OptimizePromptOptions) SetMode(val OptOptimizePromptMode) {
 	s.Mode = val
-}
-
-// Whether the prompt optimizer should engage its thinking pass.
-// Ref: #/components/schemas/OptimizePromptThinking
-type OptimizePromptThinking string
-
-const (
-	OptimizePromptThinkingAuto     OptimizePromptThinking = "auto"
-	OptimizePromptThinkingEnabled  OptimizePromptThinking = "enabled"
-	OptimizePromptThinkingDisabled OptimizePromptThinking = "disabled"
-)
-
-// AllValues returns all OptimizePromptThinking values.
-func (OptimizePromptThinking) AllValues() []OptimizePromptThinking {
-	return []OptimizePromptThinking{
-		OptimizePromptThinkingAuto,
-		OptimizePromptThinkingEnabled,
-		OptimizePromptThinkingDisabled,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s OptimizePromptThinking) MarshalText() ([]byte, error) {
-	switch s {
-	case OptimizePromptThinkingAuto:
-		return []byte(s), nil
-	case OptimizePromptThinkingEnabled:
-		return []byte(s), nil
-	case OptimizePromptThinkingDisabled:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *OptimizePromptThinking) UnmarshalText(data []byte) error {
-	switch OptimizePromptThinking(data) {
-	case OptimizePromptThinkingAuto:
-		*s = OptimizePromptThinkingAuto
-		return nil
-	case OptimizePromptThinkingEnabled:
-		*s = OptimizePromptThinkingEnabled
-		return nil
-	case OptimizePromptThinkingDisabled:
-		*s = OptimizePromptThinkingDisabled
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
 }
 
 // Container/codec for the generated image bytes.
