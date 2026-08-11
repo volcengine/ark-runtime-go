@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "==> Running pre-commit checks..."
+
+# Only check staged .go files
+STAGED=$(git diff --cached --name-only --diff-filter=ACM -- '*.go' | grep -v '^examples/' || true)
+if [ -z "$STAGED" ]; then
+    echo "No staged Go files (excluding examples), skipping lint."
+    exit 0
+fi
+
+echo "==> go build ./..."
+go build ./...
+
+echo "==> go vet ./..."
+go vet ./...
+
+if command -v golangci-lint &> /dev/null; then
+    echo "==> golangci-lint run ./..."
+    golangci-lint run ./...
+else
+    echo "==> golangci-lint not found, skipping (install: make lint)"
+    echo "    Running gofmt check instead..."
+    UNFORMATTED=$(gofmt -l $STAGED)
+    if [ -n "$UNFORMATTED" ]; then
+        echo "Files need gofmt:"
+        echo "$UNFORMATTED"
+        exit 1
+    fi
+fi
+
+echo "==> Pre-commit checks passed."

@@ -1,0 +1,17 @@
+name: golang-lint
+template: go
+clone_depth: 32
+job_name: golang-lint
+go_version: "1.22"
+enable_golangci_lint: true
+commands: [ echo hello ]
+enable_codecov: false
+cache_key_prefix: golangci-lint
+golangci_lint_args: "--timeout=5m --concurrency=8 --issues-exit-code=1"
+trigger:
+  change:
+    paths:
+      - "arkruntime/**"
+      - "go.mod"
+      - "go.sum"
+      - ".golangci.yml"

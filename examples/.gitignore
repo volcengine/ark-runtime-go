@@ -1,0 +1,12 @@
+# Compiled binaries dropped at examples/ root by `go build ./...`. Each
+# leaf directory under examples/ that has a main.go produces an
+# executable here. Listed explicitly so we don't accidentally ignore
+# tracked source directories of the same name.
+/basic
+/function_call
+/listinputitems
+/mcp
+/multimodalembeddings
+/sparseembeddings
+/video
+/web_search
