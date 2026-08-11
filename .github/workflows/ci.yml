@@ -1,0 +1,55 @@
+name: Go CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  # A workflow added by a pull request is not loaded from the base branch for
+  # that pull_request event. Running the workflow from ark-hand's same-repo
+  # sync branch makes the first workflow-installation PR testable as well.
+  push:
+    branches:
+      - "sync/**"
+    paths:
+      - ".github/workflows/ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: go-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  go-ci:
+    name: Go CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.x"
+          cache: true
+
+      - name: Download modules
+        run: go mod download
+
+      - name: Build
+        run: go build ./...
+
+      - name: Test
+        run: go test ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.64.8
+          args: --timeout=5m --concurrency=8 --issues-exit-code=1
