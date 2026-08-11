@@ -262,6 +262,8 @@ func (s Purpose) Validate() error {
 	switch s {
 	case "user_data":
 		return nil
+	case "agent":
+		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}

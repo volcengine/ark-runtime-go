@@ -973,12 +973,14 @@ type Purpose string
 
 const (
 	PurposeUserData Purpose = "user_data"
+	PurposeAgent    Purpose = "agent"
 )
 
 // AllValues returns all Purpose values.
 func (Purpose) AllValues() []Purpose {
 	return []Purpose{
 		PurposeUserData,
+		PurposeAgent,
 	}
 }
 
@@ -986,6 +988,8 @@ func (Purpose) AllValues() []Purpose {
 func (s Purpose) MarshalText() ([]byte, error) {
 	switch s {
 	case PurposeUserData:
+		return []byte(s), nil
+	case PurposeAgent:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -997,6 +1001,9 @@ func (s *Purpose) UnmarshalText(data []byte) error {
 	switch Purpose(data) {
 	case PurposeUserData:
 		*s = PurposeUserData
+		return nil
+	case PurposeAgent:
+		*s = PurposeAgent
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
