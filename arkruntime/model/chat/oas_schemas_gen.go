@@ -2801,9 +2801,6 @@ func (s *ChatCompletionToolChoiceFunction) SetName(val string) {
 type CompletionTokensDetails struct {
 	// Reasoning tokens emitted by the model.
 	ReasoningTokens int32 `json:"reasoning_tokens"`
-	// Completion tokens billed against a provisioned-throughput
-	// allocation.
-	ProvisionedTokens OptInt32 `json:"provisioned_tokens"`
 }
 
 // GetReasoningTokens returns the value of ReasoningTokens.
@@ -2811,19 +2808,9 @@ func (s *CompletionTokensDetails) GetReasoningTokens() int32 {
 	return s.ReasoningTokens
 }
 
-// GetProvisionedTokens returns the value of ProvisionedTokens.
-func (s *CompletionTokensDetails) GetProvisionedTokens() OptInt32 {
-	return s.ProvisionedTokens
-}
-
 // SetReasoningTokens sets the value of ReasoningTokens.
 func (s *CompletionTokensDetails) SetReasoningTokens(val int32) {
 	s.ReasoningTokens = val
-}
-
-// SetProvisionedTokens sets the value of ProvisionedTokens.
-func (s *CompletionTokensDetails) SetProvisionedTokens(val OptInt32) {
-	s.ProvisionedTokens = val
 }
 
 // Ref: #/components/schemas/CompletionUsage
@@ -4647,8 +4634,6 @@ type PromptTokensDetails struct {
 	TextTokens OptInt32 `json:"text_tokens"`
 	// Prompt tokens consumed by image inputs.
 	ImageTokens OptInt32 `json:"image_tokens"`
-	// Prompt tokens billed against a provisioned-throughput allocation.
-	ProvisionedTokens OptInt32 `json:"provisioned_tokens"`
 	// Prompt tokens consumed by audio inputs.
 	AudioTokens OptInt32 `json:"audio_tokens"`
 	// Cached prompt tokens consumed by audio inputs.
@@ -4668,11 +4653,6 @@ func (s *PromptTokensDetails) GetTextTokens() OptInt32 {
 // GetImageTokens returns the value of ImageTokens.
 func (s *PromptTokensDetails) GetImageTokens() OptInt32 {
 	return s.ImageTokens
-}
-
-// GetProvisionedTokens returns the value of ProvisionedTokens.
-func (s *PromptTokensDetails) GetProvisionedTokens() OptInt32 {
-	return s.ProvisionedTokens
 }
 
 // GetAudioTokens returns the value of AudioTokens.
@@ -4698,11 +4678,6 @@ func (s *PromptTokensDetails) SetTextTokens(val OptInt32) {
 // SetImageTokens sets the value of ImageTokens.
 func (s *PromptTokensDetails) SetImageTokens(val OptInt32) {
 	s.ImageTokens = val
-}
-
-// SetProvisionedTokens sets the value of ProvisionedTokens.
-func (s *PromptTokensDetails) SetProvisionedTokens(val OptInt32) {
-	s.ProvisionedTokens = val
 }
 
 // SetAudioTokens sets the value of AudioTokens.
