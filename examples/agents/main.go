@@ -6,7 +6,7 @@
 // Runs against the outward /api/v3/agents endpoint. Requires:
 //
 //	export ARK_API_KEY=...
-//	export ARK_MODEL_ID=doubao-seed-2-1-pro   # or whatever you have access to
+//	export ARK_MODEL_ID=doubao-seed-2-1-pro-260628   # or whatever you have access to
 //	go run examples/agents/main.go
 package main
 

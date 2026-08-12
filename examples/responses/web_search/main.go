@@ -20,7 +20,7 @@ import (
 	"github.com/volcengine/ark-runtime-go/arkruntime/model/responses"
 )
 
-const modelName = "doubao-seed-2-1-pro"
+const modelName = "doubao-seed-2-1-pro-260628"
 
 func main() {
 	stream()
