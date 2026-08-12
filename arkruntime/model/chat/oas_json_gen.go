@@ -6128,17 +6128,10 @@ func (s *CompletionTokensDetails) encodeFields(e *jx.Encoder) {
 		e.FieldStart("reasoning_tokens")
 		e.Int32(s.ReasoningTokens)
 	}
-	{
-		if s.ProvisionedTokens.Set {
-			e.FieldStart("provisioned_tokens")
-			s.ProvisionedTokens.Encode(e)
-		}
-	}
 }
 
-var jsonFieldsNameOfCompletionTokensDetails = [2]string{
+var jsonFieldsNameOfCompletionTokensDetails = [1]string{
 	0: "reasoning_tokens",
-	1: "provisioned_tokens",
 }
 
 // Decode decodes CompletionTokensDetails from json.
@@ -6161,16 +6154,6 @@ func (s *CompletionTokensDetails) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"reasoning_tokens\"")
-			}
-		case "provisioned_tokens":
-			if err := func() error {
-				s.ProvisionedTokens.Reset()
-				if err := s.ProvisionedTokens.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"provisioned_tokens\"")
 			}
 		default:
 			return d.Skip()
@@ -8031,12 +8014,6 @@ func (s *PromptTokensDetails) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
-		if s.ProvisionedTokens.Set {
-			e.FieldStart("provisioned_tokens")
-			s.ProvisionedTokens.Encode(e)
-		}
-	}
-	{
 		if s.AudioTokens.Set {
 			e.FieldStart("audio_tokens")
 			s.AudioTokens.Encode(e)
@@ -8050,13 +8027,12 @@ func (s *PromptTokensDetails) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfPromptTokensDetails = [6]string{
+var jsonFieldsNameOfPromptTokensDetails = [5]string{
 	0: "cached_tokens",
 	1: "text_tokens",
 	2: "image_tokens",
-	3: "provisioned_tokens",
-	4: "audio_tokens",
-	5: "audio_cached_tokens",
+	3: "audio_tokens",
+	4: "audio_cached_tokens",
 }
 
 // Decode decodes PromptTokensDetails from json.
@@ -8099,16 +8075,6 @@ func (s *PromptTokensDetails) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"image_tokens\"")
-			}
-		case "provisioned_tokens":
-			if err := func() error {
-				s.ProvisionedTokens.Reset()
-				if err := s.ProvisionedTokens.Decode(d); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"provisioned_tokens\"")
 			}
 		case "audio_tokens":
 			if err := func() error {
