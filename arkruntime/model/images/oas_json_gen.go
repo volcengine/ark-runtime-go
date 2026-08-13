@@ -530,6 +530,12 @@ func (s *ImageDataItem) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.OutputFormat.Set {
+			e.FieldStart("output_format")
+			s.OutputFormat.Encode(e)
+		}
+	}
+	{
 		if s.ZIndex.Set {
 			e.FieldStart("z_index")
 			s.ZIndex.Encode(e)
@@ -555,15 +561,16 @@ func (s *ImageDataItem) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfImageDataItem = [8]string{
+var jsonFieldsNameOfImageDataItem = [9]string{
 	0: "url",
 	1: "b64_json",
 	2: "size",
 	3: "error",
-	4: "z_index",
-	5: "bounding_box",
-	6: "name",
-	7: "description",
+	4: "output_format",
+	5: "z_index",
+	6: "bounding_box",
+	7: "name",
+	8: "description",
 }
 
 // Decode decodes ImageDataItem from json.
@@ -613,6 +620,16 @@ func (s *ImageDataItem) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"error\"")
+			}
+		case "output_format":
+			if err := func() error {
+				s.OutputFormat.Reset()
+				if err := s.OutputFormat.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"output_format\"")
 			}
 		case "z_index":
 			if err := func() error {
@@ -2291,6 +2308,10 @@ func (s *Usage) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *Usage) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("input_images")
+		e.Int64(s.InputImages)
+	}
+	{
 		e.FieldStart("generated_images")
 		e.Int64(s.GeneratedImages)
 	}
@@ -2314,11 +2335,12 @@ func (s *Usage) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfUsage = [4]string{
-	0: "generated_images",
-	1: "output_tokens",
-	2: "total_tokens",
-	3: "tool_usage",
+var jsonFieldsNameOfUsage = [5]string{
+	0: "input_images",
+	1: "generated_images",
+	2: "output_tokens",
+	3: "total_tokens",
+	4: "tool_usage",
 }
 
 // Decode decodes Usage from json.
@@ -2330,8 +2352,20 @@ func (s *Usage) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "generated_images":
+		case "input_images":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Int64()
+				s.InputImages = int64(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"input_images\"")
+			}
+		case "generated_images":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Int64()
 				s.GeneratedImages = int64(v)
@@ -2382,7 +2416,7 @@ func (s *Usage) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000001,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

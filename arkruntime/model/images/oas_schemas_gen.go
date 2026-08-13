@@ -249,6 +249,8 @@ type ImageDataItem struct {
 	Size OptString `json:"size"`
 	// Per-image failure (set when this slot failed while others succeeded).
 	Error OptImageError `json:"error"`
+	// Actual container/codec used for this image.
+	OutputFormat OptOutputFormat `json:"output_format"`
 	// Layer stacking order. The base image is `0`; layers follow bottom-up.
 	ZIndex OptInt32 `json:"z_index"`
 	// Layer region in the base image. Omitted for the base image.
@@ -277,6 +279,11 @@ func (s *ImageDataItem) GetSize() OptString {
 // GetError returns the value of Error.
 func (s *ImageDataItem) GetError() OptImageError {
 	return s.Error
+}
+
+// GetOutputFormat returns the value of OutputFormat.
+func (s *ImageDataItem) GetOutputFormat() OptOutputFormat {
+	return s.OutputFormat
 }
 
 // GetZIndex returns the value of ZIndex.
@@ -317,6 +324,11 @@ func (s *ImageDataItem) SetSize(val OptString) {
 // SetError sets the value of Error.
 func (s *ImageDataItem) SetError(val OptImageError) {
 	s.Error = val
+}
+
+// SetOutputFormat sets the value of OutputFormat.
+func (s *ImageDataItem) SetOutputFormat(val OptOutputFormat) {
+	s.OutputFormat = val
 }
 
 // SetZIndex sets the value of ZIndex.
@@ -1594,6 +1606,8 @@ func (s *ToolUsage) SetWebSearch(val OptInt64) {
 
 // Ref: #/components/schemas/Usage
 type Usage struct {
+	// Number of reference images supplied by the client.
+	InputImages int64 `json:"input_images"`
 	// Number of images returned in `data`.
 	GeneratedImages int64 `json:"generated_images"`
 	// Output tokens consumed (for prompt rewriting / reasoning).
@@ -1602,6 +1616,11 @@ type Usage struct {
 	TotalTokens OptInt64 `json:"total_tokens"`
 	// Per-tool usage breakdown.
 	ToolUsage OptToolUsage `json:"tool_usage"`
+}
+
+// GetInputImages returns the value of InputImages.
+func (s *Usage) GetInputImages() int64 {
+	return s.InputImages
 }
 
 // GetGeneratedImages returns the value of GeneratedImages.
@@ -1622,6 +1641,11 @@ func (s *Usage) GetTotalTokens() OptInt64 {
 // GetToolUsage returns the value of ToolUsage.
 func (s *Usage) GetToolUsage() OptToolUsage {
 	return s.ToolUsage
+}
+
+// SetInputImages sets the value of InputImages.
+func (s *Usage) SetInputImages(val int64) {
+	s.InputImages = val
 }
 
 // SetGeneratedImages sets the value of GeneratedImages.
