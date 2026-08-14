@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	modelName     = "doubao-seed-2-1-pro"
+	modelName     = "doubao-seed-2-1-pro-260628"
 	mcpServerURL  = "https://mcp.deepwiki.com/mcp"
 	mcpLabel      = "deepwiki"
 	mcpBetaHeader = "ark-beta-mcp"

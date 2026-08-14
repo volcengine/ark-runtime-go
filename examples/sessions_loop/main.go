@@ -14,7 +14,7 @@
 //	GET    /api/v3/sessions/:id/events (stream) (StreamSessionEvents — SSE)
 //
 //	export ARK_API_KEY=...
-//	export ARK_MODEL_ID=doubao-seed-2-1-pro
+//	export ARK_MODEL_ID=doubao-seed-2-1-pro-260628
 //	go run examples/sessions_loop/main.go
 package main
 

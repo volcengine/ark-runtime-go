@@ -41,7 +41,7 @@ func main() {
 	}
 
 	req := &responses.ResponsesRequest{
-		Model: "doubao-seed-2-1-pro",
+		Model: "doubao-seed-2-1-pro-260628",
 		Input: responses.NewInputItemArrayResponsesInput([]responses.InputItem{inputItem}),
 	}
 

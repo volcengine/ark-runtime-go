@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	modelName    = "doubao-seed-2-1-pro"
+	modelName    = "doubao-seed-2-1-pro-260628"
 	doubaoHeader = "ark-beta-doubao-app"
 )
 

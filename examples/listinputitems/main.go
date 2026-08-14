@@ -25,7 +25,7 @@ func main() {
 	ctx := context.Background()
 
 	resp, err := client.CreateResponses(ctx, &responses.ResponsesRequest{
-		Model: "doubao-seed-2-1-pro",
+		Model: "doubao-seed-2-1-pro-260628",
 		Input: responses.NewStringResponsesInput("hello"),
 	})
 	if err != nil {
