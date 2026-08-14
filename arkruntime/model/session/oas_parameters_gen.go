@@ -34,6 +34,9 @@ type SessionEventsSendEventsParams struct {
 // SessionEventsStreamEventsParams is parameters of SessionEvents_streamEvents operation.
 type SessionEventsStreamEventsParams struct {
 	SessionId string
+	// 流式预览的 opt-in 白名单。当前支持 `agent.message` / `agent.thinking`；
+	// 可重复传参。未提供时不下发 `event_start` / `event_delta`，未识别值忽略。.
+	EventDeltas []string `json:",omitempty" query:"event_deltas,repeat"`
 }
 
 // SessionResourcesCreateParams is parameters of SessionResources_create operation.
@@ -87,6 +90,9 @@ type SessionThreadsRetrieveParams struct {
 type SessionThreadsStreamEventsParams struct {
 	SessionId string
 	ThreadId  string
+	// 流式预览的 opt-in 白名单。当前支持 `agent.message` / `agent.thinking`；
+	// 可重复传参。未提供时不下发 `event_start` / `event_delta`，未识别值忽略。.
+	EventDeltas []string `json:",omitempty" query:"event_deltas,repeat"`
 }
 
 // SessionsListParams is parameters of Sessions_list operation.
