@@ -3003,6 +3003,8 @@ func (s *Reasoning) Validate() error {
 
 func (s ReasoningEffort) Validate() error {
 	switch s {
+	case "none":
+		return nil
 	case "minimal":
 		return nil
 	case "low":
@@ -3010,6 +3012,8 @@ func (s ReasoningEffort) Validate() error {
 	case "medium":
 		return nil
 	case "high":
+		return nil
+	case "xhigh":
 		return nil
 	case "max":
 		return nil
