@@ -8921,20 +8921,24 @@ func (s *Reasoning) SetEffort(val OptReasoningEffort) {
 type ReasoningEffort string
 
 const (
+	ReasoningEffortNone    ReasoningEffort = "none"
 	ReasoningEffortMinimal ReasoningEffort = "minimal"
 	ReasoningEffortLow     ReasoningEffort = "low"
 	ReasoningEffortMedium  ReasoningEffort = "medium"
 	ReasoningEffortHigh    ReasoningEffort = "high"
+	ReasoningEffortXhigh   ReasoningEffort = "xhigh"
 	ReasoningEffortMax     ReasoningEffort = "max"
 )
 
 // AllValues returns all ReasoningEffort values.
 func (ReasoningEffort) AllValues() []ReasoningEffort {
 	return []ReasoningEffort{
+		ReasoningEffortNone,
 		ReasoningEffortMinimal,
 		ReasoningEffortLow,
 		ReasoningEffortMedium,
 		ReasoningEffortHigh,
+		ReasoningEffortXhigh,
 		ReasoningEffortMax,
 	}
 }
@@ -8942,6 +8946,8 @@ func (ReasoningEffort) AllValues() []ReasoningEffort {
 // MarshalText implements encoding.TextMarshaler.
 func (s ReasoningEffort) MarshalText() ([]byte, error) {
 	switch s {
+	case ReasoningEffortNone:
+		return []byte(s), nil
 	case ReasoningEffortMinimal:
 		return []byte(s), nil
 	case ReasoningEffortLow:
@@ -8949,6 +8955,8 @@ func (s ReasoningEffort) MarshalText() ([]byte, error) {
 	case ReasoningEffortMedium:
 		return []byte(s), nil
 	case ReasoningEffortHigh:
+		return []byte(s), nil
+	case ReasoningEffortXhigh:
 		return []byte(s), nil
 	case ReasoningEffortMax:
 		return []byte(s), nil
@@ -8960,6 +8968,9 @@ func (s ReasoningEffort) MarshalText() ([]byte, error) {
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (s *ReasoningEffort) UnmarshalText(data []byte) error {
 	switch ReasoningEffort(data) {
+	case ReasoningEffortNone:
+		*s = ReasoningEffortNone
+		return nil
 	case ReasoningEffortMinimal:
 		*s = ReasoningEffortMinimal
 		return nil
@@ -8971,6 +8982,9 @@ func (s *ReasoningEffort) UnmarshalText(data []byte) error {
 		return nil
 	case ReasoningEffortHigh:
 		*s = ReasoningEffortHigh
+		return nil
+	case ReasoningEffortXhigh:
+		*s = ReasoningEffortXhigh
 		return nil
 	case ReasoningEffortMax:
 		*s = ReasoningEffortMax

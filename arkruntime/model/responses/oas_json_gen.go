@@ -15328,6 +15328,8 @@ func (s *ReasoningEffort) Decode(d *jx.Decoder) error {
 	}
 	// Try to use constant string.
 	switch ReasoningEffort(v) {
+	case ReasoningEffortNone:
+		*s = ReasoningEffortNone
 	case ReasoningEffortMinimal:
 		*s = ReasoningEffortMinimal
 	case ReasoningEffortLow:
@@ -15336,6 +15338,8 @@ func (s *ReasoningEffort) Decode(d *jx.Decoder) error {
 		*s = ReasoningEffortMedium
 	case ReasoningEffortHigh:
 		*s = ReasoningEffortHigh
+	case ReasoningEffortXhigh:
+		*s = ReasoningEffortXhigh
 	case ReasoningEffortMax:
 		*s = ReasoningEffortMax
 	default:
