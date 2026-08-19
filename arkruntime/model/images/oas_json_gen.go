@@ -2308,8 +2308,10 @@ func (s *Usage) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *Usage) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("input_images")
-		e.Int64(s.InputImages)
+		if s.InputImages.Set {
+			e.FieldStart("input_images")
+			s.InputImages.Encode(e)
+		}
 	}
 	{
 		e.FieldStart("generated_images")
@@ -2353,11 +2355,9 @@ func (s *Usage) Decode(d *jx.Decoder) error {
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
 		case "input_images":
-			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				v, err := d.Int64()
-				s.InputImages = int64(v)
-				if err != nil {
+				s.InputImages.Reset()
+				if err := s.InputImages.Decode(d); err != nil {
 					return err
 				}
 				return nil
@@ -2416,7 +2416,7 @@ func (s *Usage) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000011,
+		0b00000010,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

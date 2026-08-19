@@ -1606,8 +1606,8 @@ func (s *ToolUsage) SetWebSearch(val OptInt64) {
 
 // Ref: #/components/schemas/Usage
 type Usage struct {
-	// Number of reference images supplied by the client.
-	InputImages int64 `json:"input_images"`
+	// Number of reference images supplied by the client. May be absent in responses from older services.
+	InputImages OptInt64 `json:"input_images"`
 	// Number of images returned in `data`.
 	GeneratedImages int64 `json:"generated_images"`
 	// Output tokens consumed (for prompt rewriting / reasoning).
@@ -1619,7 +1619,7 @@ type Usage struct {
 }
 
 // GetInputImages returns the value of InputImages.
-func (s *Usage) GetInputImages() int64 {
+func (s *Usage) GetInputImages() OptInt64 {
 	return s.InputImages
 }
 
@@ -1644,7 +1644,7 @@ func (s *Usage) GetToolUsage() OptToolUsage {
 }
 
 // SetInputImages sets the value of InputImages.
-func (s *Usage) SetInputImages(val int64) {
+func (s *Usage) SetInputImages(val OptInt64) {
 	s.InputImages = val
 }
 
