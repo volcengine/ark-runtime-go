@@ -642,20 +642,63 @@ func (c *Client) fullURL(suffix string) string {
 }
 
 func (c *Client) handleErrorResp(resp *http.Response) error {
-	requestID := resp.Header.Get(model.ClientRequestHeader)
-	var errRes model.ErrorResponse
-	err := json.NewDecoder(resp.Body).Decode(&errRes)
-	if err != nil || errRes.Error == nil {
-		reqErr := model.NewRequestError(resp.StatusCode, err, requestID)
-		if errRes.Error != nil {
-			reqErr.Err = errRes.Error
-		}
-		return reqErr
+	requestID := responseRequestID(resp)
+	body, readErr := io.ReadAll(resp.Body)
+	if readErr != nil {
+		return model.NewRequestError(
+			resp.StatusCode,
+			fmt.Errorf("read error response body: %w", readErr),
+			requestID,
+		)
 	}
 
-	errRes.Error.HTTPStatusCode = resp.StatusCode
-	errRes.Error.RequestId = requestID
-	return errRes.Error
+	var errRes model.ErrorResponse
+	if err := json.Unmarshal(body, &errRes); err == nil && errRes.Error != nil {
+		return setAPIErrorResponseMetadata(errRes.Error, resp.StatusCode, requestID)
+	}
+
+	// Some services return the error object directly instead of wrapping it in
+	// an {"error": ...} envelope. Preserve its structured fields when possible.
+	var apiErr model.APIError
+	if err := json.Unmarshal(body, &apiErr); err == nil &&
+		(apiErr.Message != "" || apiErr.Code != "" || apiErr.Type != "") {
+		return setAPIErrorResponseMetadata(&apiErr, resp.StatusCode, requestID)
+	}
+
+	bodyText := strings.TrimSpace(string(body))
+	if bodyText == "" {
+		return model.NewRequestError(
+			resp.StatusCode,
+			errors.New("unexpected error response: empty body"),
+			requestID,
+		)
+	}
+	return model.NewRequestError(
+		resp.StatusCode,
+		fmt.Errorf("unexpected error response body: %s", bodyText),
+		requestID,
+	)
+}
+
+func responseRequestID(resp *http.Response) string {
+	if requestID := resp.Header.Get(model.ServerRequestHeader); requestID != "" {
+		return requestID
+	}
+	if requestID := resp.Header.Get(model.ClientRequestHeader); requestID != "" {
+		return requestID
+	}
+	if resp.Request != nil {
+		return resp.Request.Header.Get(model.ClientRequestHeader)
+	}
+	return ""
+}
+
+func setAPIErrorResponseMetadata(apiErr *model.APIError, statusCode int, requestID string) error {
+	apiErr.HTTPStatusCode = statusCode
+	if requestID != "" {
+		apiErr.RequestId = requestID
+	}
+	return apiErr
 }
 
 func (c *Client) getRetryAfter(v model.Response) int64 {

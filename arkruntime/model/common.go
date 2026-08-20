@@ -11,6 +11,7 @@ import (
 
 const (
 	ClientRequestHeader = "X-Client-Request-Id"
+	ServerRequestHeader = "X-Request-Id"
 	RetryAfterHeader    = "Retry-After"
 
 	DefaultMandatoryRefreshTimeout = 10 * 60          // 10 min
