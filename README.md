@@ -1,6 +1,6 @@
 # Ark Runtime Go SDK
 
-The official Go library for the Ark runtime API. It provides convenient access to the Ark REST API from any Go application, with typed request/response models, streaming support, and built-in authentication.
+The official Go library for accessing ModelArk on Volcengine and BytePlus. It provides typed request and response models, streaming, authentication, retries, and timeout configuration.
 
 ## Installation
 
@@ -10,7 +10,37 @@ Requires **Go 1.20+**.
 go get github.com/volcengine/ark-runtime-go
 ```
 
-## Usage
+## Choose Volcengine or BytePlus
+
+Set `ARK_API_KEY`, then choose the client factory for the service you use. The factory configures the correct base URL and region; request construction and all subsequent SDK calls are the same.
+
+### Volcengine (China)
+
+```go
+client := arkruntime.NewVolcClient()
+```
+
+To pass the key directly:
+
+```go
+client := arkruntime.NewVolcClientWithApiKey("your-api-key")
+```
+
+### BytePlus (BP)
+
+```go
+client := arkruntime.NewByteplusClient()
+```
+
+To pass the key directly:
+
+```go
+client := arkruntime.NewByteplusClientWithApiKey("your-api-key")
+```
+
+Use a model ID available in the corresponding Volcengine or BytePlus account. Model IDs can differ between the two services; the examples use `doubao-seed-2-1-pro-260628` for Volcengine and `seed-2-0-lite-260428` for BytePlus. Override either default with `ARK_MODEL`.
+
+## Quick start
 
 ### Responses API
 
@@ -29,10 +59,10 @@ import (
 )
 
 func main() {
-    client := arkruntime.NewClientWithApiKey(os.Getenv("ARK_API_KEY"))
+    client := arkruntime.NewVolcClientWithApiKey(os.Getenv("ARK_API_KEY"))
 
     req := &responses.ResponsesRequest{
-        Model: "doubao-seed-1-6",
+        Model: os.Getenv("ARK_MODEL"),
         Input: responses.NewStringResponsesInput("What is the capital of France?"),
     }
 
@@ -43,6 +73,10 @@ func main() {
     fmt.Println(resp)
 }
 ```
+
+Set `ARK_MODEL` to a model ID from your account before running the example.
+
+## Usage
 
 ### Chat Completions
 
@@ -59,10 +93,10 @@ import (
 )
 
 func main() {
-    client := arkruntime.NewClientWithApiKey(os.Getenv("ARK_API_KEY"))
+    client := arkruntime.NewVolcClientWithApiKey(os.Getenv("ARK_API_KEY"))
 
     req := &chat.ChatCompletionRequest{
-        Model: "doubao-seed-1-6",
+        Model: os.Getenv("ARK_MODEL"),
         Messages: []chat.ChatCompletionRequestMessage{
             {
                 OneOf: chat.NewChatCompletionRequestUserMessageChatCompletionRequestMessageSum(
@@ -186,7 +220,7 @@ sumTool := responses.Tool{
 
 // 2. Send the request with tools
 req := &responses.ResponsesRequest{
-    Model: "doubao-seed-1-6",
+    Model: os.Getenv("ARK_MODEL"),
     Input: responses.NewStringResponsesInput("What is 1 + 2?"),
     Tools: []responses.Tool{sumTool},
 }
@@ -203,24 +237,27 @@ req.Input = responses.NewInputItemArrayResponsesInput([]responses.InputItem{
 })
 ```
 
-See [examples/responses/function_call](./examples/responses/function_call) for a complete runnable example.
+See [examples/volc/responses/function_call](./examples/volc/responses/function_call) or [examples/byteplus/responses/function_call](./examples/byteplus/responses/function_call) for a complete runnable example.
 
 ## Authentication
 
 ```go
-// API key (recommended) — reads from code or from ARK_API_KEY env var
-client := arkruntime.NewClientWithApiKey(os.Getenv("ARK_API_KEY"))
+// API key (recommended)
+client := arkruntime.NewVolcClientWithApiKey(os.Getenv("ARK_API_KEY"))
+client := arkruntime.NewByteplusClientWithApiKey(os.Getenv("ARK_API_KEY"))
 
 // AK/SK authentication
-client := arkruntime.NewClientWithAkSk(
+client := arkruntime.NewVolcClientWithAkSk(
     os.Getenv("VOLC_ACCESSKEY"),
     os.Getenv("VOLC_SECRETKEY"),
 )
-
-// Cloud-aware factories (auto-detect base URL and env vars)
-client := arkruntime.NewVolcClient()
-client := arkruntime.NewByteplusClient()
+client := arkruntime.NewByteplusClientWithAkSk(
+    os.Getenv("BYTEPLUS_ACCESSKEY"),
+    os.Getenv("BYTEPLUS_SECRETKEY"),
+)
 ```
+
+The no-argument cloud factories prefer `ARK_API_KEY` and otherwise use the cloud-specific AK/SK environment variables shown above.
 
 ## Error handling
 
@@ -234,56 +271,26 @@ if err != nil {
 }
 ```
 
-## API coverage
-
-| API | Methods |
-|-----|---------|
-| Responses | `client.CreateResponses()` / `client.CreateResponsesStream()` |
-| Chat Completions | `client.CreateChatCompletion()` / `client.CreateChatCompletionStream()` |
-| Embeddings | `client.CreateEmbeddings()` |
-| Multimodal Embeddings | `client.CreateMultiModalEmbeddings()` |
-| Content Generation | `client.CreateContentGenerationTask()` |
-| Images | `client.CreateImageGeneration()` |
-| Files | `client.CreateFile()` / `client.ListFiles()` / `client.DeleteFile()` |
-| Tokenization | `client.CreateTokenization()` |
-
-## Package layout
-
-```
-arkruntime/                           Client, auth, retries, streaming
-arkruntime/model/responses/           Responses API types
-arkruntime/model/chat/                Chat Completions API types
-arkruntime/model/embedding/           Text Embedding API types
-arkruntime/model/multimodalembedding/ Multimodal Embedding API types
-arkruntime/model/contentgeneration/   Content Generation API types
-arkruntime/model/images/              Image Generation API types
-arkruntime/model/tokenization/        Tokenization API types
-arkruntime/model/file/                Files API types
-```
-
 ## Examples
+
+For detailed usage guidance and legacy migration, see
+[`docs/README.md`](docs/README.md) and
+[`docs/migration.md`](docs/migration.md).
 
 Runnable examples are in the [examples/](./examples) directory:
 
-- [responses/basic](./examples/responses/basic) — streaming responses with multi-turn chaining
-- [responses/function_call](./examples/responses/function_call) — tool use with local execution
-- [responses/web_search](./examples/responses/web_search) — built-in web search tool
-- [responses/video](./examples/responses/video) — video upload and analysis
-- [responses/mcp](./examples/responses/mcp) — remote MCP server integration
-- [chat/basic](./examples/chat/basic) — standard and streaming chat completions
-- [embeddings](./examples/embeddings) — text embeddings
-- [multimodalembeddings](./examples/multimodalembeddings) — image embeddings
-- [contentgeneration](./examples/contentgeneration) — video generation tasks
-- [files](./examples/files) — file upload, list, and delete
-- [tokenization](./examples/tokenization) — tokenize text and inspect tokens
+- [volc](./examples/volc) — Volcengine China examples for Chat, Responses, images, video generation, embeddings, files, tokenization, batch APIs, and resource APIs
+- [byteplus](./examples/byteplus) — BytePlus counterparts using the BytePlus client and regional model IDs
+
+MCP examples are provided for both clouds and show the required `ark-beta-mcp: true` header. Other built-in-tool examples are CN-only and show their corresponding beta headers.
 
 Run any example with:
 
 ```bash
-ARK_API_KEY=your-key go run ./examples/responses/basic
+ARK_API_KEY=your-key go run examples/volc/responses/basic/main.go
 ```
 
 ## Requirements
 
 - Go 1.20 or later
-- An Ark API key (set via `ARK_API_KEY` environment variable or passed directly to the client)
+- A Volcengine or BytePlus ModelArk API key

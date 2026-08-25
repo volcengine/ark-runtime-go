@@ -1,0 +1,49 @@
+// Copyright (c) 2026 ByteDance Ltd. and/or its affiliates.
+// SPDX-License-Identifier: Apache-2.0
+
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"os"
+
+	"github.com/volcengine/ark-runtime-go/arkruntime"
+	"github.com/volcengine/ark-runtime-go/arkruntime/model/multimodalembedding"
+)
+
+/**
+ * Authentication
+ * If you authorize your endpoint using an API key, you can set your api key to environment variable "ARK_API_KEY"
+ * client := arkruntime.NewByteplusClientWithApiKey(os.Getenv("ARK_API_KEY"))
+ */
+
+func main() {
+	client := arkruntime.NewByteplusClientWithApiKey(
+		os.Getenv("ARK_API_KEY"),
+	)
+	ctx := context.Background()
+
+	fmt.Println("----- multimodal embeddings request -----")
+	req := &multimodalembedding.MultiModalEmbeddingRequest{
+		Model: "skylark-embedding-vision-251215",
+		Input: []multimodalembedding.EmbeddingInput{
+			{
+				Type: multimodalembedding.EmbeddingInputTypeImageURL,
+				ImageURL: multimodalembedding.NewOptImageURL(multimodalembedding.ImageURL{
+					URL: "https://ark-project.tos-cn-beijing.volces.com/images/view.jpeg",
+				}),
+			},
+		},
+	}
+
+	resp, err := client.CreateMultiModalEmbeddings(ctx, req)
+	if err != nil {
+		fmt.Printf("multimodal embeddings error: %v\n", err)
+		return
+	}
+
+	s, _ := json.Marshal(resp)
+	fmt.Println(string(s))
+}
