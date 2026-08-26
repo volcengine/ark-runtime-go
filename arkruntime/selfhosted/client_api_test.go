@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/volcengine/ark-runtime-go/arkruntime"
+	"github.com/volcengine/ark-runtime-go/arkruntime/model/environment"
 	"github.com/volcengine/ark-runtime-go/arkruntime/selfhosted"
 )
 
@@ -181,7 +182,7 @@ func TestClientAPIHeartbeatDefaultsExpectedLastHeartbeat(t *testing.T) {
 	resp, err := api.HeartbeatWork(context.Background(), selfhosted.HeartbeatWorkRequest{
 		EnvironmentID:     "env-1",
 		WorkID:            "work-1",
-		DesiredTTLSeconds: 30,
+		DesiredTTLSeconds: environment.NewOptInt64(30),
 	})
 	if err != nil {
 		t.Fatalf("HeartbeatWork() error = %v", err)

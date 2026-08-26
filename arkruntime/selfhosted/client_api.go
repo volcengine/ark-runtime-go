@@ -35,19 +35,11 @@ func (a *ClientAPI) PollWork(ctx context.Context, req PollWorkRequest) (*WorkIte
 	if a == nil || a.client == nil {
 		return nil, errors.New("selfhosted: arkruntime client is nil")
 	}
-	item, err := a.client.PollWork(ctx, &environment.PollWorkRequest{
-		EnvironmentID:       req.EnvironmentID,
-		WorkerID:            req.WorkerID,
-		MaxItems:            req.MaxItems,
-		BlockMS:             req.BlockMS,
-		ReclaimOlderThanMS:  req.ReclaimOlderThanMS,
-		WorkerClientType:    firstNonEmpty(req.WorkerClientType, DefaultWorkerClientType),
-		WorkerClientVersion: firstNonEmpty(req.WorkerClientVersion, DefaultWorkerClientVersion),
-	})
+	item, err := a.client.PollWork(ctx, &req)
 	if err != nil {
 		return nil, toWorkerAPIError(err)
 	}
-	return fromEnvironmentWorkItem(item), nil
+	return item, nil
 }
 
 // AckWork acknowledges one claimed work item.
@@ -55,11 +47,7 @@ func (a *ClientAPI) AckWork(ctx context.Context, req AckWorkRequest) error {
 	if a == nil || a.client == nil {
 		return errors.New("selfhosted: arkruntime client is nil")
 	}
-	err := a.client.AckWork(ctx, &environment.AckWorkRequest{
-		EnvironmentID: req.EnvironmentID,
-		WorkID:        req.WorkID,
-		WorkerID:      envOptString(req.WorkerID),
-	})
+	err := a.client.AckWork(ctx, &req)
 	return toWorkerAPIError(err)
 }
 
@@ -68,29 +56,15 @@ func (a *ClientAPI) HeartbeatWork(ctx context.Context, req HeartbeatWorkRequest)
 	if a == nil || a.client == nil {
 		return nil, errors.New("selfhosted: arkruntime client is nil")
 	}
-	expectedLastHeartbeat := req.ExpectedLastHeartbeat
-	if expectedLastHeartbeat == "" {
-		expectedLastHeartbeat = ExpectedLastHeartbeatNoHeartbeat
+	expectedLastHeartbeat, ok := req.ExpectedLastHeartbeat.Get()
+	if !ok || expectedLastHeartbeat == "" {
+		req.ExpectedLastHeartbeat = environment.NewOptString(ExpectedLastHeartbeatNoHeartbeat)
 	}
-	resp, err := a.client.HeartbeatWork(ctx, &environment.HeartbeatWorkRequest{
-		EnvironmentID:         req.EnvironmentID,
-		WorkID:                req.WorkID,
-		ExpectedLastHeartbeat: envOptString(expectedLastHeartbeat),
-		DesiredTTLSeconds:     envOptInt64(req.DesiredTTLSeconds),
-	})
+	resp, err := a.client.HeartbeatWork(ctx, &req)
 	if err != nil {
 		return nil, toWorkerAPIError(err)
 	}
-	if resp == nil {
-		return nil, nil
-	}
-	return &HeartbeatResponse{
-		LastHeartbeat: resp.LastHeartbeat,
-		LeaseExtended: optionalBoolPtr(resp.LeaseExtended, true),
-		State:         string(resp.State),
-		TTLSeconds:    int(resp.TTLSeconds),
-		Type:          string(resp.Type),
-	}, nil
+	return resp, nil
 }
 
 // StopWork releases or stops one claimed work item.
@@ -98,11 +72,7 @@ func (a *ClientAPI) StopWork(ctx context.Context, req StopWorkRequest) error {
 	if a == nil || a.client == nil {
 		return errors.New("selfhosted: arkruntime client is nil")
 	}
-	err := a.client.StopWork(ctx, &environment.StopWorkRequest{
-		EnvironmentID: req.EnvironmentID,
-		WorkID:        req.WorkID,
-		Force:         envOptBool(req.Force),
-	})
+	err := a.client.StopWork(ctx, &req)
 	return toWorkerAPIError(err)
 }
 
@@ -290,50 +260,6 @@ func (a *ClientAPI) OpenSkill(ctx context.Context, req OpenSkillRequest) (*Skill
 	}, nil
 }
 
-func fromEnvironmentWorkItem(item *environment.WorkItem) *WorkItem {
-	if item == nil {
-		return nil
-	}
-	latestHeartbeat := item.LatestHeartbeatValue()
-	acknowledgedAt, _ := item.AcknowledgedAt.Get()
-	secret, _ := item.Secret.Get()
-	startedAt, _ := item.StartedAt.Get()
-	stopRequestedAt, _ := item.StopRequestedAt.Get()
-	stoppedAt, _ := item.StoppedAt.Get()
-	data := WorkData{}
-	if item.Data.ID != "" || item.Data.Type != "" {
-		data = WorkData{
-			Type: item.Data.Type,
-			ID:   item.Data.ID,
-		}
-	}
-	tags := make([]WorkTag, 0, len(item.Tags))
-	for _, tag := range item.Tags {
-		value, _ := tag.Value.Get()
-		tags = append(tags, WorkTag{
-			Key:   tag.Key,
-			Value: value,
-		})
-	}
-	return &WorkItem{
-		ID:                item.ID,
-		AcknowledgedAt:    acknowledgedAt,
-		CreatedAt:         item.CreatedAt,
-		Data:              data,
-		EnvironmentID:     item.EnvironmentID,
-		LatestHeartbeatAt: latestHeartbeat,
-		Tags:              tags,
-		Secret:            secret,
-		StartedAt:         startedAt,
-		State:             string(item.State),
-		StopRequestedAt:   stopRequestedAt,
-		StoppedAt:         stoppedAt,
-		Type:              string(item.Type),
-		SessionID:         data.ID,
-		LastHeartbeat:     latestHeartbeat,
-	}
-}
-
 func fromRuntimeSession(in *session.Session) *Session {
 	if in == nil {
 		return nil
@@ -447,34 +373,6 @@ func firstNonEmpty(values ...string) string {
 		}
 	}
 	return ""
-}
-
-func envOptString(value string) environment.OptString {
-	if value == "" {
-		return environment.OptString{}
-	}
-	return environment.NewOptString(value)
-}
-
-func envOptInt64(value int) environment.OptInt64 {
-	if value <= 0 {
-		return environment.OptInt64{}
-	}
-	return environment.NewOptInt64(int64(value))
-}
-
-func envOptBool(value bool) environment.OptBool {
-	if !value {
-		return environment.OptBool{}
-	}
-	return environment.NewOptBool(value)
-}
-
-func optionalBoolPtr(value bool, ok bool) *bool {
-	if !ok {
-		return nil
-	}
-	return &value
 }
 
 var _ API = (*ClientAPI)(nil)
