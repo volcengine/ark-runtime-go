@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/volcengine/ark-runtime-go/arkruntime/model/environment"
 	selfhosted "github.com/volcengine/ark-runtime-go/arkruntime/selfhosted"
 )
 
@@ -22,6 +23,20 @@ type fakePollerAPI struct {
 	ackCount  int
 	stopCount int
 	stops     []selfhosted.StopWorkRequest
+}
+
+func newTestWorkItem(workID, environmentID, sessionID string) *selfhosted.WorkItem {
+	return &selfhosted.WorkItem{
+		ID:            workID,
+		CreatedAt:     "2026-08-24T10:00:00Z",
+		EnvironmentID: environmentID,
+		Data: selfhosted.WorkData{
+			ID:   sessionID,
+			Type: "session",
+		},
+		State: environment.WorkStateActive,
+		Type:  environment.WorkItemTypeWork,
+	}
 }
 
 func (f *fakePollerAPI) PollWork(context.Context, selfhosted.PollWorkRequest) (*selfhosted.WorkItem, error) {
@@ -63,11 +78,7 @@ func (f *fakePollerAPI) OpenSkill(context.Context, selfhosted.OpenSkillRequest) 
 
 func TestWorkPollerAcksAndStopsOnClose(t *testing.T) {
 	api := &fakePollerAPI{
-		pollItem: &selfhosted.WorkItem{
-			ID:            testWorkID,
-			EnvironmentID: "env_1",
-			SessionID:     testSessionID,
-		},
+		pollItem: newTestWorkItem(testWorkID, "env_1", testSessionID),
 	}
 	poller := NewWorkPoller(context.Background(), api, WorkPollerOptions{
 		EnvironmentID: "env_1",
@@ -92,18 +103,14 @@ func TestWorkPollerAcksAndStopsOnClose(t *testing.T) {
 	if api.stops[0].WorkID != testWorkID {
 		t.Fatalf("stop request = %+v", api.stops[0])
 	}
-	if api.stops[0].Force {
+	if _, ok := api.stops[0].Force.Get(); ok {
 		t.Fatalf("poller release should not force stop: %+v", api.stops[0])
 	}
 }
 
 func TestWorkPollerStopsPreviousBeforeNext(t *testing.T) {
 	api := &fakePollerAPI{
-		pollItem: &selfhosted.WorkItem{
-			ID:            testWorkID,
-			EnvironmentID: "env_1",
-			SessionID:     testSessionID,
-		},
+		pollItem: newTestWorkItem(testWorkID, "env_1", testSessionID),
 	}
 	poller := NewWorkPoller(context.Background(), api, WorkPollerOptions{
 		EnvironmentID: "env_1",
@@ -113,11 +120,7 @@ func TestWorkPollerStopsPreviousBeforeNext(t *testing.T) {
 	if !poller.Next() {
 		t.Fatalf("Next returned false: %v", poller.Err())
 	}
-	api.pollItem = &selfhosted.WorkItem{
-		ID:            "work_2",
-		EnvironmentID: "env_1",
-		SessionID:     "sess_2",
-	}
+	api.pollItem = newTestWorkItem("work_2", "env_1", "sess_2")
 	if !poller.Next() {
 		t.Fatalf("Next returned false: %v", poller.Err())
 	}
@@ -134,12 +137,8 @@ func TestWorkPollerStopsPreviousBeforeNext(t *testing.T) {
 
 func TestWorkPollerDoesNotStopWhenAckLosesClaimRace(t *testing.T) {
 	api := &fakePollerAPI{
-		pollItem: &selfhosted.WorkItem{
-			ID:            testWorkID,
-			EnvironmentID: "env_1",
-			SessionID:     testSessionID,
-		},
-		ackErr: &selfhosted.APIError{StatusCode: 409, Message: "already claimed"},
+		pollItem: newTestWorkItem(testWorkID, "env_1", testSessionID),
+		ackErr:   &selfhosted.APIError{StatusCode: 409, Message: "already claimed"},
 	}
 	poller := NewWorkPoller(context.Background(), api, WorkPollerOptions{
 		EnvironmentID: "env_1",
@@ -165,12 +164,8 @@ func TestPollerConflictIsRecoverable(t *testing.T) {
 
 func TestWorkPollerStopsPollingOnPermanentAckFailure(t *testing.T) {
 	api := &fakePollerAPI{
-		pollItem: &selfhosted.WorkItem{
-			ID:            testWorkID,
-			EnvironmentID: "env_1",
-			SessionID:     testSessionID,
-		},
-		ackErr: &selfhosted.APIError{StatusCode: 401, Message: "invalid credential"},
+		pollItem: newTestWorkItem(testWorkID, "env_1", testSessionID),
+		ackErr:   &selfhosted.APIError{StatusCode: 401, Message: "invalid credential"},
 	}
 	poller := NewWorkPoller(context.Background(), api, WorkPollerOptions{
 		EnvironmentID: "env_1",
@@ -190,10 +185,7 @@ func TestWorkPollerStopsPollingOnPermanentAckFailure(t *testing.T) {
 
 func TestWorkPollerTreatsEmptyWorkIDAsEmptyPoll(t *testing.T) {
 	api := &fakePollerAPI{
-		pollItem: &selfhosted.WorkItem{
-			EnvironmentID: "env_1",
-			SessionID:     testSessionID,
-		},
+		pollItem: newTestWorkItem("", "env_1", testSessionID),
 	}
 	poller := NewWorkPoller(context.Background(), api, WorkPollerOptions{
 		EnvironmentID: "env_1",

@@ -50,7 +50,7 @@ func (f *fakeEnvironmentWorkerAPI) HeartbeatWork(ctx context.Context, req selfho
 	}
 	return &selfhosted.HeartbeatResponse{
 		LastHeartbeat: time.Now().UTC().Format(time.RFC3339Nano),
-		LeaseExtended: selfhosted.BoolPtr(true),
+		LeaseExtended: true,
 		State:         selfhosted.WorkStateActive,
 	}, nil
 }
@@ -102,12 +102,7 @@ func TestEnvironmentWorkerRunHandlesPolledWorkInProcess(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	api := &fakeEnvironmentWorkerAPI{
-		pollItem: &selfhosted.WorkItem{
-			ID:            "work_local",
-			EnvironmentID: "env_local",
-			SessionID:     "sess_local",
-			LeaseID:       "lease_local",
-		},
+		pollItem: newTestWorkItem("work_local", "env_local", "sess_local"),
 		events: []selfhosted.Event{
 			{
 				ID:                  "toolu_local",
@@ -139,10 +134,10 @@ func TestEnvironmentWorkerRunHandlesPolledWorkInProcess(t *testing.T) {
 	if api.ackCount != 1 || api.stopCount != 2 {
 		t.Fatalf("ack_count=%d stop_count=%d", api.ackCount, api.stopCount)
 	}
-	if !api.stops[0].Force {
+	if force, ok := api.stops[0].Force.Get(); !ok || !force {
 		t.Fatalf("worker stop should be force=true: %+v", api.stops[0])
 	}
-	if api.stops[1].Force {
+	if _, ok := api.stops[1].Force.Get(); ok {
 		t.Fatalf("poller release stop should be force=false: %+v", api.stops[1])
 	}
 	if len(api.sent) != 1 {
@@ -166,12 +161,7 @@ func TestEnvironmentWorkerStopsWorkOnSessionIdleEvent(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	api := &fakeEnvironmentWorkerAPI{
-		pollItem: &selfhosted.WorkItem{
-			ID:            "work_idle",
-			EnvironmentID: "env_local",
-			SessionID:     "sess_idle",
-			LeaseID:       "lease_idle",
-		},
+		pollItem: newTestWorkItem("work_idle", "env_local", "sess_idle"),
 		events: []selfhosted.Event{{
 			ID:         "evt_idle",
 			Type:       selfhosted.EventTypeSessionStatusIdle,
@@ -193,8 +183,10 @@ func TestEnvironmentWorkerStopsWorkOnSessionIdleEvent(t *testing.T) {
 	if api.ackCount != 1 || api.stopCount == 0 {
 		t.Fatalf("ack_count=%d stop_count=%d", api.ackCount, api.stopCount)
 	}
-	if got := api.stops[0]; !got.Force || got.WorkID != "work_idle" {
+	if got := api.stops[0]; got.WorkID != "work_idle" {
 		t.Fatalf("worker stop = %+v", got)
+	} else if force, ok := got.Force.Get(); !ok || !force {
+		t.Fatalf("worker stop should be force=true: %+v", got)
 	}
 	if len(api.sent) != 0 {
 		t.Fatalf("sent events = %+v", api.sent)
@@ -244,22 +236,17 @@ func TestEnvironmentWorkerHeartbeatLeaseLostOnPreconditionFailed(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	var cause heartbeatStopCause
-	w.heartbeatLoop(ctx, selfhosted.WorkItem{
-		ID:            "work_local",
-		EnvironmentID: "env_local",
-		SessionID:     "sess_local",
-		TTLSeconds:    1,
-	}, api, cancel, func(c heartbeatStopCause) {
+	w.heartbeatLoop(ctx, claimedWork{ID: "work_local", EnvironmentID: "env_local", SessionID: "sess_local"}, api, cancel, func(c heartbeatStopCause) {
 		cause = c
 	})
 	if cause != heartbeatStopCauseLeaseLost {
 		t.Fatalf("heartbeat cause = %q", cause)
 	}
-	if got.ExpectedLastHeartbeat != selfhosted.ExpectedLastHeartbeatNoHeartbeat {
-		t.Fatalf("expected_last_heartbeat=%q", got.ExpectedLastHeartbeat)
+	if value, ok := got.ExpectedLastHeartbeat.Get(); !ok || value != selfhosted.ExpectedLastHeartbeatNoHeartbeat {
+		t.Fatalf("expected_last_heartbeat=%+v", got.ExpectedLastHeartbeat)
 	}
-	if got.DesiredTTLSeconds != int(heartbeatDefault/time.Second) {
-		t.Fatalf("desired_ttl_seconds=%d", got.DesiredTTLSeconds)
+	if value, ok := got.DesiredTTLSeconds.Get(); !ok || value != int64(heartbeatDefault/time.Second) {
+		t.Fatalf("desired_ttl_seconds=%+v", got.DesiredTTLSeconds)
 	}
 }
 
@@ -357,11 +344,7 @@ func TestEnvironmentWorkerHeartbeatStopsOnPermanent4xx(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	var cause heartbeatStopCause
-	w.heartbeatLoop(ctx, selfhosted.WorkItem{
-		ID:            "work_local",
-		EnvironmentID: "env_local",
-		SessionID:     "sess_local",
-	}, api, cancel, func(c heartbeatStopCause) {
+	w.heartbeatLoop(ctx, claimedWork{ID: "work_local", EnvironmentID: "env_local", SessionID: "sess_local"}, api, cancel, func(c heartbeatStopCause) {
 		cause = c
 	})
 	if cause != heartbeatStopCausePermanentFailure {
@@ -377,7 +360,7 @@ func TestEnvironmentWorkerHeartbeatPrefersStopRequestedStateOverLeaseNotExtended
 		heartbeat: func(context.Context, selfhosted.HeartbeatWorkRequest) (*selfhosted.HeartbeatResponse, error) {
 			return &selfhosted.HeartbeatResponse{
 				LastHeartbeat: time.Now().UTC().Format(time.RFC3339Nano),
-				LeaseExtended: selfhosted.BoolPtr(false),
+				LeaseExtended: false,
 				State:         selfhosted.WorkStateStopping,
 			}, nil
 		},
@@ -390,11 +373,7 @@ func TestEnvironmentWorkerHeartbeatPrefersStopRequestedStateOverLeaseNotExtended
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	var cause heartbeatStopCause
-	w.heartbeatLoop(ctx, selfhosted.WorkItem{
-		ID:            "work_local",
-		EnvironmentID: "env_local",
-		SessionID:     "sess_local",
-	}, api, cancel, func(c heartbeatStopCause) {
+	w.heartbeatLoop(ctx, claimedWork{ID: "work_local", EnvironmentID: "env_local", SessionID: "sess_local"}, api, cancel, func(c heartbeatStopCause) {
 		cause = c
 	})
 	if cause != heartbeatStopCauseStopRequested {
@@ -426,13 +405,9 @@ func TestEnvironmentWorkerHeartbeatUsesAnthropicDefaultTTL(t *testing.T) {
 	})
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	w.heartbeatLoop(ctx, selfhosted.WorkItem{
-		ID:            "work_local",
-		EnvironmentID: "env_local",
-		SessionID:     "sess_local",
-	}, api, cancel, nil)
-	if got.DesiredTTLSeconds != int(heartbeatDefault/time.Second) {
-		t.Fatalf("desired_ttl_seconds=%d", got.DesiredTTLSeconds)
+	w.heartbeatLoop(ctx, claimedWork{ID: "work_local", EnvironmentID: "env_local", SessionID: "sess_local"}, api, cancel, nil)
+	if value, ok := got.DesiredTTLSeconds.Get(); !ok || value != int64(heartbeatDefault/time.Second) {
+		t.Fatalf("desired_ttl_seconds=%+v", got.DesiredTTLSeconds)
 	}
 	if requestTimeout < heartbeatDefault/2-time.Second || requestTimeout > heartbeatDefault/2 {
 		t.Fatalf("heartbeat request timeout=%s", requestTimeout)

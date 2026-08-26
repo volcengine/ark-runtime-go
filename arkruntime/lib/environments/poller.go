@@ -17,6 +17,7 @@ import (
 
 	"github.com/volcengine/ark-runtime-go/arkruntime"
 	"github.com/volcengine/ark-runtime-go/arkruntime/internal/selfhostedlog"
+	"github.com/volcengine/ark-runtime-go/arkruntime/model/environment"
 	selfhosted "github.com/volcengine/ark-runtime-go/arkruntime/selfhosted"
 )
 
@@ -131,7 +132,7 @@ func (p *WorkPoller) Next() bool {
 		if err := p.api.AckWork(p.ctx, selfhosted.AckWorkRequest{
 			EnvironmentID: item.EnvironmentID,
 			WorkID:        item.ID,
-			WorkerID:      p.opts.WorkerID,
+			WorkerID:      environment.NewOptString(p.opts.WorkerID),
 		}); err != nil {
 			p.logger.Warn("ack work failed", "work_id", item.ID, "err", err)
 			// ACK 是 queued -> starting 的竞争操作。失败时无法证明当前
@@ -204,7 +205,7 @@ func (p *WorkPoller) discardInvalidWork(item selfhosted.WorkItem, _ string) {
 	if err := p.api.AckWork(p.ctx, selfhosted.AckWorkRequest{
 		EnvironmentID: item.EnvironmentID,
 		WorkID:        item.ID,
-		WorkerID:      p.opts.WorkerID,
+		WorkerID:      environment.NewOptString(p.opts.WorkerID),
 	}); err != nil {
 		p.logger.Warn("ack invalid work failed", "work_id", item.ID, "err", err)
 		return
@@ -214,7 +215,7 @@ func (p *WorkPoller) discardInvalidWork(item selfhosted.WorkItem, _ string) {
 	if err := p.api.StopWork(ctx, selfhosted.StopWorkRequest{
 		EnvironmentID: item.EnvironmentID,
 		WorkID:        item.ID,
-		Force:         true,
+		Force:         environment.NewOptBool(true),
 	}); err != nil && !isResolvedStatus(err) {
 		p.logger.Warn("stop invalid work failed", "work_id", item.ID, "err", err)
 	}

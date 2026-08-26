@@ -12,6 +12,8 @@ import (
 	"fmt"
 	"io"
 	"time"
+
+	"github.com/volcengine/ark-runtime-go/arkruntime/model/environment"
 )
 
 const (
@@ -67,19 +69,15 @@ const (
 
 const (
 	// WorkStateQueued 表示 work 仍在队列中。
-	WorkStateQueued = "queued"
+	WorkStateQueued = environment.WorkStateQueued
 	// WorkStateStarting 表示 work 已 ack 并正在启动执行环境。
-	WorkStateStarting = "starting"
+	WorkStateStarting = environment.WorkStateStarting
 	// WorkStateActive 表示 work lease 仍归当前 worker 所有。
-	WorkStateActive = "active"
-	// WorkStateRunning 兼容 MA 早期返回的 running 状态。
-	//
-	// Deprecated: MA work state 不再包含 running，使用 active。
-	WorkStateRunning = "running"
+	WorkStateActive = environment.WorkStateActive
 	// WorkStateStopping 表示控制面要求 worker 停止当前 work。
-	WorkStateStopping = "stopping"
+	WorkStateStopping = environment.WorkStateStopping
 	// WorkStateStopped 表示当前 work 已经停止。
-	WorkStateStopped = "stopped"
+	WorkStateStopped = environment.WorkStateStopped
 )
 
 const (
@@ -106,17 +104,6 @@ const (
 	WorkerErrorKindInvalidResponse = "invalid_response"
 )
 
-const (
-	// DefaultWorkerClientType 保留用于源码兼容。
-	//
-	// Deprecated: MA work API 不再接收 worker client header。
-	DefaultWorkerClientType = "ark-self-hosted-worker-go"
-	// DefaultWorkerClientVersion 保留用于源码兼容。
-	//
-	// Deprecated: MA work API 不再接收 worker client header。
-	DefaultWorkerClientVersion = "0.1.0"
-)
-
 // ErrEventStreamUnsupported 表示当前 API 实现不支持 SSE 事件流。
 var ErrEventStreamUnsupported = errors.New("ark event stream is not configured")
 
@@ -138,77 +125,19 @@ type SkillResolver interface {
 }
 
 // PollWorkRequest 是 worker 轮询 work queue 的请求。
-type PollWorkRequest struct {
-	EnvironmentID string `json:"environment_id"`
-	WorkerID      string `json:"worker_id,omitempty"`
-	// Deprecated: MA poll 每次最多返回一个 work。
-	MaxItems           int `json:"max_items,omitempty"`
-	BlockMS            int `json:"block_ms,omitempty"`
-	ReclaimOlderThanMS int `json:"reclaim_older_than_ms,omitempty"`
-	// Deprecated: MA work API 不再接收 worker client header。
-	WorkerClientType string `json:"-"`
-	// Deprecated: MA work API 不再接收 worker client header。
-	WorkerClientVersion string `json:"-"`
-}
+type PollWorkRequest = environment.PollWorkRequest
 
 // AckWorkRequest 是 worker 确认已接收 work 的请求。
-type AckWorkRequest struct {
-	EnvironmentID string `json:"environment_id"`
-	WorkID        string `json:"work_id"`
-	WorkerID      string `json:"worker_id,omitempty"`
-	// Deprecated: MA ack 接口不再接收 lease_id。
-	LeaseID string `json:"lease_id,omitempty"`
-}
+type AckWorkRequest = environment.AckWorkRequest
 
 // HeartbeatWorkRequest 是 worker 刷新 work lease 的请求。
-type HeartbeatWorkRequest struct {
-	EnvironmentID         string `json:"environment_id"`
-	WorkID                string `json:"work_id"`
-	ExpectedLastHeartbeat string `json:"expected_last_heartbeat,omitempty"`
-	DesiredTTLSeconds     int    `json:"desired_ttl_seconds,omitempty"`
-	// Deprecated: MA heartbeat 接口不再接收 lease_id。
-	LeaseID string `json:"lease_id,omitempty"`
-	// Deprecated: MA heartbeat 接口不再接收 worker_id。
-	WorkerID string `json:"worker_id,omitempty"`
-	// Deprecated: 使用 ExpectedLastHeartbeat 表达 CAS 期望。
-	LastHeartbeat string `json:"last_heartbeat,omitempty"`
-	// Deprecated: MA heartbeat 接口不再接收 active_tool_call_id。
-	ActiveToolCallID string `json:"active_tool_call_id,omitempty"`
-}
+type HeartbeatWorkRequest = environment.HeartbeatWorkRequest
 
 // HeartbeatResponse 是控制面返回的 heartbeat 结果。
-type HeartbeatResponse struct {
-	LastHeartbeat string `json:"last_heartbeat,omitempty"`
-	LeaseExtended *bool  `json:"lease_extended,omitempty"`
-	State         string `json:"state,omitempty"`
-	TTLSeconds    int    `json:"ttl_seconds,omitempty"`
-	Type          string `json:"type,omitempty"`
-	// Deprecated: MA heartbeat 响应不再返回 lease_expires_at。
-	LeaseExpiresAt string `json:"lease_expires_at,omitempty"`
-	// Deprecated: 使用 TTLSeconds。
-	LeaseSeconds int `json:"lease_seconds,omitempty"`
-	// Deprecated: 使用 State。
-	Status string `json:"status,omitempty"`
-	// Deprecated: 使用 State 判断 stopping/stopped。
-	StopRequested bool `json:"stop_requested,omitempty"`
-	// Deprecated: MA heartbeat 响应体不再返回 request_id。
-	RequestID string `json:"request_id,omitempty"`
-}
+type HeartbeatResponse = environment.HeartbeatWorkResponse
 
 // StopWorkRequest 是 worker 请求控制面结束或停止 work 的请求。
-type StopWorkRequest struct {
-	EnvironmentID string `json:"environment_id"`
-	WorkID        string `json:"work_id"`
-	Force         bool   `json:"force,omitempty"`
-	// Deprecated: MA stop 接口不再接收 lease_id。
-	LeaseID string `json:"lease_id,omitempty"`
-	// Deprecated: MA stop 接口不再接收 worker_id。
-	WorkerID string `json:"worker_id,omitempty"`
-	// Deprecated: MA stop 接口只接收 force。
-	Reason string `json:"reason,omitempty"`
-	// Deprecated: MA stop 接口只接收 force。
-	Message string `json:"message,omitempty"`
-}
+type StopWorkRequest = environment.StopWorkRequest
 
 // GetSessionRequest 是读取 session 配置的请求。
 type GetSessionRequest struct {
@@ -254,83 +183,13 @@ type OpenSkillRequest struct {
 }
 
 // WorkItem 表示控制面分配给 worker 的一份工作。
-type WorkItem struct {
-	ID                string    `json:"id"`
-	AcknowledgedAt    string    `json:"acknowledged_at,omitempty"`
-	CreatedAt         string    `json:"created_at,omitempty"`
-	Data              WorkData  `json:"data,omitempty"`
-	EnvironmentID     string    `json:"environment_id,omitempty"`
-	LatestHeartbeatAt string    `json:"latest_heartbeat_at,omitempty"`
-	Tags              []WorkTag `json:"tags,omitempty"`
-	Secret            string    `json:"secret,omitempty"`
-	StartedAt         string    `json:"started_at,omitempty"`
-	State             string    `json:"state,omitempty"`
-	StopRequestedAt   string    `json:"stop_requested_at,omitempty"`
-	StoppedAt         string    `json:"stopped_at,omitempty"`
-	Type              string    `json:"type,omitempty"`
-	// Deprecated: 使用 Data.ID。
-	SessionID string `json:"session_id,omitempty"`
-	// Deprecated: 使用 State。
-	Status string `json:"status,omitempty"`
-	// Deprecated: MA work item 不再返回 attempt。
-	Attempt int `json:"attempt,omitempty"`
-	// Deprecated: MA work item 不再返回 lease_id。
-	LeaseID string `json:"lease_id,omitempty"`
-	// Deprecated: MA work item 不再返回 lease_expires_at。
-	LeaseExpiresAt string `json:"lease_expires_at,omitempty"`
-	// Deprecated: MA work item 不再返回 request_id。
-	RequestID string `json:"request_id,omitempty"`
-	// Deprecated: MA work item 不再返回 ttl_seconds。
-	TTLSeconds int `json:"ttl_seconds,omitempty"`
-	// Deprecated: MA work item 不再返回 lease_seconds。
-	LeaseSeconds int `json:"lease_seconds,omitempty"`
-	// Deprecated: 使用 LatestHeartbeatAt。
-	LastHeartbeat string `json:"last_heartbeat,omitempty"`
-}
-
-// SessionIDValue 返回 work item 对应的 session id。
-func (w WorkItem) SessionIDValue() string {
-	if w.SessionID != "" {
-		return w.SessionID
-	}
-	if w.Data.SessionID != "" {
-		return w.Data.SessionID
-	}
-	if w.Data.ID != "" && (w.Data.Type == "" || w.Data.Type == "session") {
-		return w.Data.ID
-	}
-	return ""
-}
-
-// LeaseTTLSeconds 返回 work item 的 lease TTL，兼容旧字段 lease_seconds。
-func (w WorkItem) LeaseTTLSeconds() int {
-	if w.TTLSeconds > 0 {
-		return w.TTLSeconds
-	}
-	return w.LeaseSeconds
-}
-
-// LatestHeartbeatValue 返回 work item 的 heartbeat CAS 值，兼容旧字段 last_heartbeat。
-func (w WorkItem) LatestHeartbeatValue() string {
-	if w.LatestHeartbeatAt != "" {
-		return w.LatestHeartbeatAt
-	}
-	return w.LastHeartbeat
-}
+type WorkItem = environment.WorkItem
 
 // WorkTag 是 work item 关联的火山资源标签。
-type WorkTag struct {
-	Key   string `json:"key"`
-	Value string `json:"value,omitempty"`
-}
+type WorkTag = environment.VolcTag
 
 // WorkData 是 work item 的业务载荷。
-type WorkData struct {
-	Type string `json:"type,omitempty"`
-	ID   string `json:"id,omitempty"`
-	// Deprecated: 使用 ID。
-	SessionID string `json:"session_id,omitempty"`
-}
+type WorkData = environment.WorkData
 
 // Session 是 worker 启动一个 session 所需的最小配置快照。
 type Session struct {

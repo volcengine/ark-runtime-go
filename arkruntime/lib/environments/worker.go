@@ -15,6 +15,7 @@ import (
 
 	"github.com/volcengine/ark-runtime-go/arkruntime"
 	"github.com/volcengine/ark-runtime-go/arkruntime/internal/selfhostedlog"
+	"github.com/volcengine/ark-runtime-go/arkruntime/model/environment"
 	selfhosted "github.com/volcengine/ark-runtime-go/arkruntime/selfhosted"
 	"github.com/volcengine/ark-runtime-go/arkruntime/selfhosted/envinit"
 	"github.com/volcengine/ark-runtime-go/arkruntime/tools/agenttoolset"
@@ -106,9 +107,14 @@ func (w *EnvironmentWorker) Run(ctx context.Context) error {
 }
 
 func (w *EnvironmentWorker) runClaimedWork(ctx context.Context, item selfhosted.WorkItem, logger *selfhostedlog.Logger) {
-	if err := w.handleItem(ctx, item, false); err != nil &&
+	work, err := claimedWorkFromItem(item, w.opts.EnvironmentID)
+	if err != nil {
+		logger.Warn("handle work failed", "work_id", item.ID, "err", err)
+		return
+	}
+	if err := w.handleItem(ctx, work, false); err != nil &&
 		!isBenignWorkerExit(err) {
-		logger.Warn("handle work failed", "work_id", item.ID, "session_id", item.SessionIDValue(), "err", err)
+		logger.Warn("handle work failed", "work_id", work.ID, "session_id", work.SessionID, "err", err)
 	}
 }
 
@@ -125,37 +131,27 @@ func (w *EnvironmentWorker) HandleItem(ctx context.Context, opts HandleItemOptio
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	item, err := w.resolveHandleItem(opts)
+	work, err := claimedWorkFromOptions(opts)
 	if err != nil {
 		return err
 	}
-	if err := w.handleItem(ctx, item, true); err != nil &&
+	if err := w.handleItem(ctx, work, true); err != nil &&
 		!isBenignWorkerExit(err) {
 		return err
 	}
 	return nil
 }
 
-func (w *EnvironmentWorker) handleItem(ctx context.Context, item selfhosted.WorkItem, useWorkdirAsSession bool) (err error) {
+func (w *EnvironmentWorker) handleItem(ctx context.Context, work claimedWork, useWorkdirAsSession bool) (err error) {
 	if w.api == nil {
 		return errors.New("environments: API is required")
 	}
-	if item.EnvironmentID == "" {
-		item.EnvironmentID = firstNonEmpty(w.opts.EnvironmentID, os.Getenv("MA_ENVIRONMENT_ID"))
-	}
-	if item.ID == "" {
-		return errors.New("work item id must not be empty")
-	}
-	sessionID := item.SessionIDValue()
-	if sessionID == "" {
-		return errors.New("work item does not contain session id")
-	}
-	workdir, err := w.workdirFor(sessionID, useWorkdirAsSession)
+	workdir, err := w.workdirFor(work.SessionID, useWorkdirAsSession)
 	if err != nil {
 		return err
 	}
 	api := w.api
-	logger := w.logger().With("component", "environment-worker", "work_id", item.ID, "session_id", sessionID, "workdir", workdir)
+	logger := w.logger().With("component", "environment-worker", "work_id", work.ID, "session_id", work.SessionID, "workdir", workdir)
 
 	workCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -163,7 +159,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, item selfhosted.Work
 	heartbeatDone := make(chan struct{})
 	go func() {
 		defer close(heartbeatDone)
-		w.heartbeatLoop(workCtx, item, api, cancel, func(cause heartbeatStopCause) {
+		w.heartbeatLoop(workCtx, work, api, cancel, func(cause heartbeatStopCause) {
 			heartbeatCause.Store(string(cause))
 		})
 	}()
@@ -173,7 +169,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, item selfhosted.Work
 		<-heartbeatDone
 		cause := loadHeartbeatStopCause(&heartbeatCause)
 		if shouldStopItem(cause) {
-			_ = w.stopItem(api, item)
+			_ = w.stopItem(api, work)
 		} else {
 			logger.Info("skip stop work after heartbeat ownership became uncertain", "cause", cause)
 		}
@@ -182,7 +178,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, item selfhosted.Work
 		}
 	}()
 
-	session, err := api.GetSession(workCtx, selfhosted.GetSessionRequest{SessionID: sessionID})
+	session, err := api.GetSession(workCtx, selfhosted.GetSessionRequest{SessionID: work.SessionID})
 	if err != nil {
 		return fmt.Errorf("get session: %w", err)
 	}
@@ -191,7 +187,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, item selfhosted.Work
 		return err
 	}
 	if session.ID == "" {
-		session.ID = sessionID
+		session.ID = work.SessionID
 	}
 	toolEnv := w.toolContext(workdir)
 	initOpts := toolEnv.InitOptions()
@@ -211,8 +207,8 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, item selfhosted.Work
 	if err != nil {
 		return fmt.Errorf("create tool result store: %w", err)
 	}
-	runner := selfhosted.NewSessionToolRunner(workCtx, api, sessionID, selfhosted.SessionToolRunnerOptions{
-		WorkID:      item.ID,
+	runner := selfhosted.NewSessionToolRunner(workCtx, api, work.SessionID, selfhosted.SessionToolRunnerOptions{
+		WorkID:      work.ID,
 		Tools:       tools,
 		CustomTools: w.opts.CustomTools,
 		ResultStore: store,
@@ -289,28 +285,20 @@ func (w *EnvironmentWorker) workdirFor(sessionID string, useWorkdirAsSession boo
 	return sessionWorkdir(absRoot, sessionID)
 }
 
-func (w *EnvironmentWorker) resolveHandleItem(opts HandleItemOptions) (selfhosted.WorkItem, error) {
-	item, err := workItemFromOptions(opts)
-	if err != nil {
-		return item, err
-	}
-	return item, nil
-}
-
-func (w *EnvironmentWorker) stopItem(api selfhosted.API, item selfhosted.WorkItem) error {
+func (w *EnvironmentWorker) stopItem(api selfhosted.API, work claimedWork) error {
 	stopCtx, stopCancel := context.WithTimeout(context.Background(), stopTimeout)
 	defer stopCancel()
 	req := selfhosted.StopWorkRequest{
-		EnvironmentID: item.EnvironmentID,
-		WorkID:        item.ID,
-		Force:         true,
+		EnvironmentID: work.EnvironmentID,
+		WorkID:        work.ID,
+		Force:         environment.NewOptBool(true),
 	}
 	if err := api.StopWork(stopCtx, req); err != nil {
 		if selfhosted.IsStatus(err, 409) || selfhosted.IsStatus(err, 412) {
-			w.logger().Info("stop work already resolved", "work_id", item.ID, "err", err)
+			w.logger().Info("stop work already resolved", "work_id", work.ID, "err", err)
 			return nil
 		}
-		w.logger().Warn("stop work failed", "work_id", item.ID, "err", err)
+		w.logger().Warn("stop work failed", "work_id", work.ID, "err", err)
 		return err
 	}
 	return nil
@@ -348,29 +336,47 @@ func isBenignWorkerExit(err error) bool {
 		errors.Is(err, selfhosted.ErrSessionTerminated)
 }
 
-func workItemFromOptions(opts HandleItemOptions) (selfhosted.WorkItem, error) {
+type claimedWork struct {
+	ID                string
+	EnvironmentID     string
+	SessionID         string
+	LatestHeartbeatAt string
+}
+
+func claimedWorkFromItem(item selfhosted.WorkItem, fallbackEnvironmentID string) (claimedWork, error) {
+	work := claimedWork{
+		ID:                item.ID,
+		EnvironmentID:     firstNonEmpty(item.EnvironmentID, fallbackEnvironmentID),
+		SessionID:         item.SessionIDValue(),
+		LatestHeartbeatAt: item.LatestHeartbeatValue(),
+	}
+	return validateClaimedWork(work)
+}
+
+func claimedWorkFromOptions(opts HandleItemOptions) (claimedWork, error) {
 	workID := firstNonEmpty(opts.WorkID, os.Getenv("MA_WORK_ID"))
 	environmentID := firstNonEmpty(opts.EnvironmentID, os.Getenv("MA_ENVIRONMENT_ID"))
 	sessionID := firstNonEmpty(opts.SessionID, os.Getenv("MA_SESSION_ID"))
 	latestHeartbeatAt := firstNonEmpty(opts.LatestHeartbeatAt, os.Getenv("MA_LATEST_HEARTBEAT_AT"))
-	if workID == "" {
-		return selfhosted.WorkItem{}, errors.New("environments: work id is required")
-	}
-	if environmentID == "" {
-		return selfhosted.WorkItem{}, errors.New("environments: environment id is required")
-	}
-	if sessionID == "" {
-		return selfhosted.WorkItem{}, errors.New("environments: session id is required")
-	}
-	return selfhosted.WorkItem{
+	return validateClaimedWork(claimedWork{
 		ID:                workID,
 		EnvironmentID:     environmentID,
+		SessionID:         sessionID,
 		LatestHeartbeatAt: latestHeartbeatAt,
-		Data: selfhosted.WorkData{
-			Type: "session",
-			ID:   sessionID,
-		},
-	}, nil
+	})
+}
+
+func validateClaimedWork(work claimedWork) (claimedWork, error) {
+	if work.ID == "" {
+		return claimedWork{}, errors.New("environments: work id is required")
+	}
+	if work.EnvironmentID == "" {
+		return claimedWork{}, errors.New("environments: environment id is required")
+	}
+	if work.SessionID == "" {
+		return claimedWork{}, errors.New("environments: session id is required")
+	}
+	return work, nil
 }
 
 func firstNonEmpty(values ...string) string {

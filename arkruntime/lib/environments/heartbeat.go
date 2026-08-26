@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/volcengine/ark-runtime-go/arkruntime/model/environment"
 	selfhosted "github.com/volcengine/ark-runtime-go/arkruntime/selfhosted"
 )
 
@@ -25,11 +26,11 @@ const (
 	heartbeatStopCausePermanentFailure heartbeatStopCause = "heartbeat_permanent_failure"
 )
 
-func (w *EnvironmentWorker) heartbeatLoop(ctx context.Context, item selfhosted.WorkItem, api selfhosted.API, cancel context.CancelFunc, markStopped func(heartbeatStopCause)) {
+func (w *EnvironmentWorker) heartbeatLoop(ctx context.Context, work claimedWork, api selfhosted.API, cancel context.CancelFunc, markStopped func(heartbeatStopCause)) {
 	interval := clampHeartbeatInterval(heartbeatDefault/2, heartbeatDefault)
 	ttl := heartbeatDefault
-	logger := w.logger().With("component", "environment-worker", "work_id", item.ID, "session_id", item.SessionIDValue())
-	last := item.LatestHeartbeatValue()
+	logger := w.logger().With("component", "environment-worker", "work_id", work.ID, "session_id", work.SessionID)
+	last := work.LatestHeartbeatAt
 	if last == "" {
 		last = selfhosted.ExpectedLastHeartbeatNoHeartbeat
 	}
@@ -38,10 +39,10 @@ func (w *EnvironmentWorker) heartbeatLoop(ctx context.Context, item selfhosted.W
 		beatCtx, beatCancel := context.WithTimeout(ctx, interval)
 		defer beatCancel()
 		resp, err := api.HeartbeatWork(beatCtx, selfhosted.HeartbeatWorkRequest{
-			EnvironmentID:         item.EnvironmentID,
-			WorkID:                item.ID,
-			ExpectedLastHeartbeat: last,
-			DesiredTTLSeconds:     int(ttl / time.Second),
+			EnvironmentID:         work.EnvironmentID,
+			WorkID:                work.ID,
+			ExpectedLastHeartbeat: environment.NewOptString(last),
+			DesiredTTLSeconds:     environment.NewOptInt64(int64(ttl / time.Second)),
 		})
 		if err != nil {
 			if selfhosted.IsStatus(err, http.StatusPreconditionFailed) {
@@ -95,7 +96,7 @@ func (w *EnvironmentWorker) heartbeatLoop(ctx context.Context, item selfhosted.W
 			cancel()
 			return false
 		}
-		if resp.LeaseExtended != nil && !*resp.LeaseExtended {
+		if !resp.LeaseExtended {
 			logger.Warn("heartbeat lease not extended", "state", state)
 			if markStopped != nil {
 				markStopped(heartbeatStopCauseLeaseNotExtended)
