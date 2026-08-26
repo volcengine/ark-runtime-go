@@ -12,52 +12,6 @@ import (
 	"github.com/volcengine/ark-runtime-go/arkruntime/internal/validate"
 )
 
-func (s AgentIdentifier) Validate() error {
-	switch s.Type {
-	case StringAgentIdentifier:
-		return nil // no validation needed
-	case AgentRefAgentIdentifier:
-		if err := s.AgentRef.Validate(); err != nil {
-			return err
-		}
-		return nil
-	default:
-		return errors.Errorf("invalid type %q", s.Type)
-	}
-}
-
-func (s *AgentRef) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s AgentRefType) Validate() error {
-	switch s {
-	case "agent":
-		return nil
-	default:
-		return errors.Errorf("invalid value: %v", s)
-	}
-}
-
 func (s *CreateSessionRequest) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -65,13 +19,20 @@ func (s *CreateSessionRequest) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.Agent.Validate(); err != nil {
-			return err
+		if value, ok := s.Environment.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
 		}
 		return nil
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
-			Name:  "agent",
+			Name:  "environment",
 			Error: err,
 		})
 	}
@@ -132,6 +93,125 @@ func (s *CreateSessionResourceRequest) Validate() error {
 func (s CreateSessionResourceRequestType) Validate() error {
 	switch s {
 	case "file":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *EnvironmentConfigOverride) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if value, ok := s.Packages.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "packages",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s *EnvironmentPackagesConfig) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if value, ok := s.Type.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s EnvironmentPackagesConfigType) Validate() error {
+	switch s {
+	case "packages":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *EnvironmentWithOverrides) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.Config.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "config",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s EnvironmentWithOverridesType) Validate() error {
+	switch s {
+	case "environment_with_overrides":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)
@@ -546,6 +626,29 @@ func (s *SendSessionEventsRequest) Validate() error {
 	return nil
 }
 
+func (s *SendSessionEventsResponse) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if s.Data == nil {
+			return errors.New("nil is invalid value")
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "data",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
 func (s *Session) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -773,7 +876,7 @@ func (s SessionThreadStatus) Validate() error {
 		return nil
 	case "terminated":
 		return nil
-	case "archived":
+	case "rescheduling":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)

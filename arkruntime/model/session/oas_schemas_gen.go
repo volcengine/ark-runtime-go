@@ -77,25 +77,39 @@ func NewAgentRefAgentIdentifier(v AgentRef) AgentIdentifier {
 	return s
 }
 
-// Agent 引用（对象形态）：`type: "agent"` + id + optional version。
-// 与 CreateSessionRequest.agent 联合使用。.
+// Agent 引用（对象形态）：`type: "agent"` 或 `"agent_with_overrides"`。
+// MA wire 上两种对象形态都走同一个 JSON object 承载，避免 SDK 生成复杂 union。.
 // Ref: #/components/schemas/AgentRef
 type AgentRef struct {
-	// 固定 `"agent"`。.
-	Type AgentRefType `json:"type"`
+	// `"agent"` 或 `"agent_with_overrides"`。.
+	Type string `json:"type"`
 	// Agent ID。.
-	ID string `json:"id"`
+	ID OptString `json:"id"`
 	// Agent 版本号；不传走最新。.
 	Version OptInt32 `json:"version"`
+	// System prompt 覆写。.
+	System OptString `json:"system"`
+	// 工具配置覆写。.
+	Tools []AgentRefToolsItem `json:"tools"`
+	// MCP server 配置覆写。.
+	McpServers []AgentRefMcpServersItem `json:"mcp_servers"`
+	// Skill 配置覆写。.
+	Skills []AgentRefSkillsItem `json:"skills"`
+	// 多 Agent 配置覆写。.
+	Multiagent OptAgentRefMultiagent `json:"multiagent"`
+	// Session 响应中冻结的 Agent 展示名。.
+	DisplayName OptString `json:"display_name"`
+	// 模型运行参数覆写。.
+	Model OptModelOverrides `json:"model"`
 }
 
 // GetType returns the value of Type.
-func (s *AgentRef) GetType() AgentRefType {
+func (s *AgentRef) GetType() string {
 	return s.Type
 }
 
 // GetID returns the value of ID.
-func (s *AgentRef) GetID() string {
+func (s *AgentRef) GetID() OptString {
 	return s.ID
 }
 
@@ -104,13 +118,48 @@ func (s *AgentRef) GetVersion() OptInt32 {
 	return s.Version
 }
 
+// GetSystem returns the value of System.
+func (s *AgentRef) GetSystem() OptString {
+	return s.System
+}
+
+// GetTools returns the value of Tools.
+func (s *AgentRef) GetTools() []AgentRefToolsItem {
+	return s.Tools
+}
+
+// GetMcpServers returns the value of McpServers.
+func (s *AgentRef) GetMcpServers() []AgentRefMcpServersItem {
+	return s.McpServers
+}
+
+// GetSkills returns the value of Skills.
+func (s *AgentRef) GetSkills() []AgentRefSkillsItem {
+	return s.Skills
+}
+
+// GetMultiagent returns the value of Multiagent.
+func (s *AgentRef) GetMultiagent() OptAgentRefMultiagent {
+	return s.Multiagent
+}
+
+// GetDisplayName returns the value of DisplayName.
+func (s *AgentRef) GetDisplayName() OptString {
+	return s.DisplayName
+}
+
+// GetModel returns the value of Model.
+func (s *AgentRef) GetModel() OptModelOverrides {
+	return s.Model
+}
+
 // SetType sets the value of Type.
-func (s *AgentRef) SetType(val AgentRefType) {
+func (s *AgentRef) SetType(val string) {
 	s.Type = val
 }
 
 // SetID sets the value of ID.
-func (s *AgentRef) SetID(val string) {
+func (s *AgentRef) SetID(val OptString) {
 	s.ID = val
 }
 
@@ -119,39 +168,84 @@ func (s *AgentRef) SetVersion(val OptInt32) {
 	s.Version = val
 }
 
-// 固定 `"agent"`。.
-type AgentRefType string
-
-const (
-	AgentRefTypeAgent AgentRefType = "agent"
-)
-
-// AllValues returns all AgentRefType values.
-func (AgentRefType) AllValues() []AgentRefType {
-	return []AgentRefType{
-		AgentRefTypeAgent,
-	}
+// SetSystem sets the value of System.
+func (s *AgentRef) SetSystem(val OptString) {
+	s.System = val
 }
 
-// MarshalText implements encoding.TextMarshaler.
-func (s AgentRefType) MarshalText() ([]byte, error) {
-	switch s {
-	case AgentRefTypeAgent:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
+// SetTools sets the value of Tools.
+func (s *AgentRef) SetTools(val []AgentRefToolsItem) {
+	s.Tools = val
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *AgentRefType) UnmarshalText(data []byte) error {
-	switch AgentRefType(data) {
-	case AgentRefTypeAgent:
-		*s = AgentRefTypeAgent
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
+// SetMcpServers sets the value of McpServers.
+func (s *AgentRef) SetMcpServers(val []AgentRefMcpServersItem) {
+	s.McpServers = val
+}
+
+// SetSkills sets the value of Skills.
+func (s *AgentRef) SetSkills(val []AgentRefSkillsItem) {
+	s.Skills = val
+}
+
+// SetMultiagent sets the value of Multiagent.
+func (s *AgentRef) SetMultiagent(val OptAgentRefMultiagent) {
+	s.Multiagent = val
+}
+
+// SetDisplayName sets the value of DisplayName.
+func (s *AgentRef) SetDisplayName(val OptString) {
+	s.DisplayName = val
+}
+
+// SetModel sets the value of Model.
+func (s *AgentRef) SetModel(val OptModelOverrides) {
+	s.Model = val
+}
+
+type AgentRefMcpServersItem map[string]jx.Raw
+
+func (s *AgentRefMcpServersItem) init() AgentRefMcpServersItem {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
 	}
+	return m
+}
+
+// 多 Agent 配置覆写。.
+type AgentRefMultiagent map[string]jx.Raw
+
+func (s *AgentRefMultiagent) init() AgentRefMultiagent {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type AgentRefSkillsItem map[string]jx.Raw
+
+func (s *AgentRefSkillsItem) init() AgentRefSkillsItem {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type AgentRefToolsItem map[string]jx.Raw
+
+func (s *AgentRefToolsItem) init() AgentRefToolsItem {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
 }
 
 // 直接以 base64 携带的文档数据。.
@@ -249,8 +343,10 @@ func (s *CacheCreation) SetEphemeral5mInputTokens(val OptInt64) {
 type CreateSessionRequest struct {
 	// Agent 标识。.
 	Agent AgentIdentifier `json:"agent"`
-	// 关联的 Environment ID。.
-	EnvironmentID string `json:"environment_id"`
+	// 关联的 Environment ID。与 `environment` 二选一。.
+	EnvironmentID OptString `json:"environment_id"`
+	// 关联 Environment 的覆写引用。与 `environment_id` 二选一。.
+	Environment OptEnvironmentWithOverrides `json:"environment"`
 	// 资源标签。.
 	Tags []Tag `json:"tags"`
 	// 挂载资源列表。.
@@ -267,8 +363,13 @@ func (s *CreateSessionRequest) GetAgent() AgentIdentifier {
 }
 
 // GetEnvironmentID returns the value of EnvironmentID.
-func (s *CreateSessionRequest) GetEnvironmentID() string {
+func (s *CreateSessionRequest) GetEnvironmentID() OptString {
 	return s.EnvironmentID
+}
+
+// GetEnvironment returns the value of Environment.
+func (s *CreateSessionRequest) GetEnvironment() OptEnvironmentWithOverrides {
+	return s.Environment
 }
 
 // GetTags returns the value of Tags.
@@ -297,8 +398,13 @@ func (s *CreateSessionRequest) SetAgent(val AgentIdentifier) {
 }
 
 // SetEnvironmentID sets the value of EnvironmentID.
-func (s *CreateSessionRequest) SetEnvironmentID(val string) {
+func (s *CreateSessionRequest) SetEnvironmentID(val OptString) {
 	s.EnvironmentID = val
+}
+
+// SetEnvironment sets the value of Environment.
+func (s *CreateSessionRequest) SetEnvironment(val OptEnvironmentWithOverrides) {
+	s.Environment = val
 }
 
 // SetTags sets the value of Tags.
@@ -555,6 +661,377 @@ func NewFileDocumentSourceDocumentSourceSum(v FileDocumentSource) DocumentSource
 	var s DocumentSourceSum
 	s.SetFileDocumentSource(v)
 	return s
+}
+
+// Environment 覆写时使用的运行环境配置。.
+// Ref: #/components/schemas/EnvironmentConfigOverride
+type EnvironmentConfigOverride struct {
+	// 运行环境类型。.
+	Type string `json:"type"`
+	// 容器出网策略。.
+	Networking OptEnvironmentNetworkingConfig `json:"networking"`
+	// 启动时预装的依赖包。.
+	Packages OptEnvironmentPackagesConfig `json:"packages"`
+	// 容器环境变量。.
+	Env OptEnvironmentConfigOverrideEnv `json:"env"`
+	// 沙箱启动脚本。.
+	SetupScript OptString `json:"setup_script"`
+	// Environment outputs 的 TOS 存储配置。.
+	Tos OptEnvironmentTosConfig `json:"tos"`
+}
+
+// GetType returns the value of Type.
+func (s *EnvironmentConfigOverride) GetType() string {
+	return s.Type
+}
+
+// GetNetworking returns the value of Networking.
+func (s *EnvironmentConfigOverride) GetNetworking() OptEnvironmentNetworkingConfig {
+	return s.Networking
+}
+
+// GetPackages returns the value of Packages.
+func (s *EnvironmentConfigOverride) GetPackages() OptEnvironmentPackagesConfig {
+	return s.Packages
+}
+
+// GetEnv returns the value of Env.
+func (s *EnvironmentConfigOverride) GetEnv() OptEnvironmentConfigOverrideEnv {
+	return s.Env
+}
+
+// GetSetupScript returns the value of SetupScript.
+func (s *EnvironmentConfigOverride) GetSetupScript() OptString {
+	return s.SetupScript
+}
+
+// GetTos returns the value of Tos.
+func (s *EnvironmentConfigOverride) GetTos() OptEnvironmentTosConfig {
+	return s.Tos
+}
+
+// SetType sets the value of Type.
+func (s *EnvironmentConfigOverride) SetType(val string) {
+	s.Type = val
+}
+
+// SetNetworking sets the value of Networking.
+func (s *EnvironmentConfigOverride) SetNetworking(val OptEnvironmentNetworkingConfig) {
+	s.Networking = val
+}
+
+// SetPackages sets the value of Packages.
+func (s *EnvironmentConfigOverride) SetPackages(val OptEnvironmentPackagesConfig) {
+	s.Packages = val
+}
+
+// SetEnv sets the value of Env.
+func (s *EnvironmentConfigOverride) SetEnv(val OptEnvironmentConfigOverrideEnv) {
+	s.Env = val
+}
+
+// SetSetupScript sets the value of SetupScript.
+func (s *EnvironmentConfigOverride) SetSetupScript(val OptString) {
+	s.SetupScript = val
+}
+
+// SetTos sets the value of Tos.
+func (s *EnvironmentConfigOverride) SetTos(val OptEnvironmentTosConfig) {
+	s.Tos = val
+}
+
+// 容器环境变量。.
+type EnvironmentConfigOverrideEnv map[string]string
+
+func (s *EnvironmentConfigOverrideEnv) init() EnvironmentConfigOverrideEnv {
+	m := *s
+	if m == nil {
+		m = map[string]string{}
+		*s = m
+	}
+	return m
+}
+
+// Environment 覆写时使用的容器出网策略。.
+// Ref: #/components/schemas/EnvironmentNetworkingConfig
+type EnvironmentNetworkingConfig struct {
+	// 出网策略类型。.
+	Type string `json:"type"`
+	// 是否允许出网到 MCP servers。.
+	AllowMcpServers OptBool `json:"allow_mcp_servers"`
+	// 是否允许访问包管理器。.
+	AllowPackageManagers OptBool `json:"allow_package_managers"`
+	// 显式允许的出网域名。.
+	AllowedHosts []string `json:"allowed_hosts"`
+}
+
+// GetType returns the value of Type.
+func (s *EnvironmentNetworkingConfig) GetType() string {
+	return s.Type
+}
+
+// GetAllowMcpServers returns the value of AllowMcpServers.
+func (s *EnvironmentNetworkingConfig) GetAllowMcpServers() OptBool {
+	return s.AllowMcpServers
+}
+
+// GetAllowPackageManagers returns the value of AllowPackageManagers.
+func (s *EnvironmentNetworkingConfig) GetAllowPackageManagers() OptBool {
+	return s.AllowPackageManagers
+}
+
+// GetAllowedHosts returns the value of AllowedHosts.
+func (s *EnvironmentNetworkingConfig) GetAllowedHosts() []string {
+	return s.AllowedHosts
+}
+
+// SetType sets the value of Type.
+func (s *EnvironmentNetworkingConfig) SetType(val string) {
+	s.Type = val
+}
+
+// SetAllowMcpServers sets the value of AllowMcpServers.
+func (s *EnvironmentNetworkingConfig) SetAllowMcpServers(val OptBool) {
+	s.AllowMcpServers = val
+}
+
+// SetAllowPackageManagers sets the value of AllowPackageManagers.
+func (s *EnvironmentNetworkingConfig) SetAllowPackageManagers(val OptBool) {
+	s.AllowPackageManagers = val
+}
+
+// SetAllowedHosts sets the value of AllowedHosts.
+func (s *EnvironmentNetworkingConfig) SetAllowedHosts(val []string) {
+	s.AllowedHosts = val
+}
+
+// Environment 覆写时使用的预装依赖包配置。.
+// Ref: #/components/schemas/EnvironmentPackagesConfig
+type EnvironmentPackagesConfig struct {
+	// 固定 `"packages"`。.
+	Type OptEnvironmentPackagesConfigType `json:"type"`
+	// Pip 依赖。.
+	Pip []string `json:"pip"`
+	// Apt 依赖。.
+	Apt []string `json:"apt"`
+	// Npm 依赖。.
+	Npm []string `json:"npm"`
+	// Cargo 依赖。.
+	Cargo []string `json:"cargo"`
+	// Gem 依赖。.
+	Gem []string `json:"gem"`
+	// Go module 依赖。.
+	Go []string `json:"go"`
+}
+
+// GetType returns the value of Type.
+func (s *EnvironmentPackagesConfig) GetType() OptEnvironmentPackagesConfigType {
+	return s.Type
+}
+
+// GetPip returns the value of Pip.
+func (s *EnvironmentPackagesConfig) GetPip() []string {
+	return s.Pip
+}
+
+// GetApt returns the value of Apt.
+func (s *EnvironmentPackagesConfig) GetApt() []string {
+	return s.Apt
+}
+
+// GetNpm returns the value of Npm.
+func (s *EnvironmentPackagesConfig) GetNpm() []string {
+	return s.Npm
+}
+
+// GetCargo returns the value of Cargo.
+func (s *EnvironmentPackagesConfig) GetCargo() []string {
+	return s.Cargo
+}
+
+// GetGem returns the value of Gem.
+func (s *EnvironmentPackagesConfig) GetGem() []string {
+	return s.Gem
+}
+
+// GetGo returns the value of Go.
+func (s *EnvironmentPackagesConfig) GetGo() []string {
+	return s.Go
+}
+
+// SetType sets the value of Type.
+func (s *EnvironmentPackagesConfig) SetType(val OptEnvironmentPackagesConfigType) {
+	s.Type = val
+}
+
+// SetPip sets the value of Pip.
+func (s *EnvironmentPackagesConfig) SetPip(val []string) {
+	s.Pip = val
+}
+
+// SetApt sets the value of Apt.
+func (s *EnvironmentPackagesConfig) SetApt(val []string) {
+	s.Apt = val
+}
+
+// SetNpm sets the value of Npm.
+func (s *EnvironmentPackagesConfig) SetNpm(val []string) {
+	s.Npm = val
+}
+
+// SetCargo sets the value of Cargo.
+func (s *EnvironmentPackagesConfig) SetCargo(val []string) {
+	s.Cargo = val
+}
+
+// SetGem sets the value of Gem.
+func (s *EnvironmentPackagesConfig) SetGem(val []string) {
+	s.Gem = val
+}
+
+// SetGo sets the value of Go.
+func (s *EnvironmentPackagesConfig) SetGo(val []string) {
+	s.Go = val
+}
+
+// 固定 `"packages"`。.
+type EnvironmentPackagesConfigType string
+
+const (
+	EnvironmentPackagesConfigTypePackages EnvironmentPackagesConfigType = "packages"
+)
+
+// AllValues returns all EnvironmentPackagesConfigType values.
+func (EnvironmentPackagesConfigType) AllValues() []EnvironmentPackagesConfigType {
+	return []EnvironmentPackagesConfigType{
+		EnvironmentPackagesConfigTypePackages,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s EnvironmentPackagesConfigType) MarshalText() ([]byte, error) {
+	switch s {
+	case EnvironmentPackagesConfigTypePackages:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *EnvironmentPackagesConfigType) UnmarshalText(data []byte) error {
+	switch EnvironmentPackagesConfigType(data) {
+	case EnvironmentPackagesConfigTypePackages:
+		*s = EnvironmentPackagesConfigTypePackages
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Environment 覆写时使用的 TOS 配置。.
+// Ref: #/components/schemas/EnvironmentTosConfig
+type EnvironmentTosConfig struct {
+	// TOS bucket 名称。.
+	Bucket OptString `json:"bucket"`
+	// TOS 前缀。.
+	Prefix OptString `json:"prefix"`
+}
+
+// GetBucket returns the value of Bucket.
+func (s *EnvironmentTosConfig) GetBucket() OptString {
+	return s.Bucket
+}
+
+// GetPrefix returns the value of Prefix.
+func (s *EnvironmentTosConfig) GetPrefix() OptString {
+	return s.Prefix
+}
+
+// SetBucket sets the value of Bucket.
+func (s *EnvironmentTosConfig) SetBucket(val OptString) {
+	s.Bucket = val
+}
+
+// SetPrefix sets the value of Prefix.
+func (s *EnvironmentTosConfig) SetPrefix(val OptString) {
+	s.Prefix = val
+}
+
+// CreateSession 时的 Environment 覆写引用。.
+// Ref: #/components/schemas/EnvironmentWithOverrides
+type EnvironmentWithOverrides struct {
+	// 固定 `"environment_with_overrides"`。.
+	Type EnvironmentWithOverridesType `json:"type"`
+	// Base Environment ID。.
+	ID string `json:"id"`
+	// 运行时配置覆写。.
+	Config OptEnvironmentConfigOverride `json:"config"`
+}
+
+// GetType returns the value of Type.
+func (s *EnvironmentWithOverrides) GetType() EnvironmentWithOverridesType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *EnvironmentWithOverrides) GetID() string {
+	return s.ID
+}
+
+// GetConfig returns the value of Config.
+func (s *EnvironmentWithOverrides) GetConfig() OptEnvironmentConfigOverride {
+	return s.Config
+}
+
+// SetType sets the value of Type.
+func (s *EnvironmentWithOverrides) SetType(val EnvironmentWithOverridesType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *EnvironmentWithOverrides) SetID(val string) {
+	s.ID = val
+}
+
+// SetConfig sets the value of Config.
+func (s *EnvironmentWithOverrides) SetConfig(val OptEnvironmentConfigOverride) {
+	s.Config = val
+}
+
+// 固定 `"environment_with_overrides"`。.
+type EnvironmentWithOverridesType string
+
+const (
+	EnvironmentWithOverridesTypeEnvironmentWithOverrides EnvironmentWithOverridesType = "environment_with_overrides"
+)
+
+// AllValues returns all EnvironmentWithOverridesType values.
+func (EnvironmentWithOverridesType) AllValues() []EnvironmentWithOverridesType {
+	return []EnvironmentWithOverridesType{
+		EnvironmentWithOverridesTypeEnvironmentWithOverrides,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s EnvironmentWithOverridesType) MarshalText() ([]byte, error) {
+	switch s {
+	case EnvironmentWithOverridesTypeEnvironmentWithOverrides:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *EnvironmentWithOverridesType) UnmarshalText(data []byte) error {
+	switch EnvironmentWithOverridesType(data) {
+	case EnvironmentWithOverridesTypeEnvironmentWithOverrides:
+		*s = EnvironmentWithOverridesTypeEnvironmentWithOverrides
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // 通过 Files API 上传后引用的文档。.
@@ -2040,6 +2517,93 @@ func (s *ManagedAgentsUserToolResultEventParams) SetSessionThreadID(val OptStrin
 	s.SessionThreadID = val
 }
 
+// Session 创建时允许临时覆写的模型运行参数。.
+// Ref: #/components/schemas/ModelOverrides
+type ModelOverrides struct {
+	// 模型速度档位。.
+	Speed OptString `json:"speed"`
+	// Thinking 配置。.
+	Thinking OptString `json:"thinking"`
+	// 推理努力程度。.
+	ReasoningEffort OptString `json:"reasoning_effort"`
+}
+
+// GetSpeed returns the value of Speed.
+func (s *ModelOverrides) GetSpeed() OptString {
+	return s.Speed
+}
+
+// GetThinking returns the value of Thinking.
+func (s *ModelOverrides) GetThinking() OptString {
+	return s.Thinking
+}
+
+// GetReasoningEffort returns the value of ReasoningEffort.
+func (s *ModelOverrides) GetReasoningEffort() OptString {
+	return s.ReasoningEffort
+}
+
+// SetSpeed sets the value of Speed.
+func (s *ModelOverrides) SetSpeed(val OptString) {
+	s.Speed = val
+}
+
+// SetThinking sets the value of Thinking.
+func (s *ModelOverrides) SetThinking(val OptString) {
+	s.Thinking = val
+}
+
+// SetReasoningEffort sets the value of ReasoningEffort.
+func (s *ModelOverrides) SetReasoningEffort(val OptString) {
+	s.ReasoningEffort = val
+}
+
+// NewOptAgentRefMultiagent returns new OptAgentRefMultiagent with value set to v.
+func NewOptAgentRefMultiagent(v AgentRefMultiagent) OptAgentRefMultiagent {
+	return OptAgentRefMultiagent{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAgentRefMultiagent is optional AgentRefMultiagent.
+type OptAgentRefMultiagent struct {
+	Value AgentRefMultiagent
+	Set   bool
+}
+
+// IsSet returns true if OptAgentRefMultiagent was set.
+func (o OptAgentRefMultiagent) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAgentRefMultiagent) Reset() {
+	var v AgentRefMultiagent
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAgentRefMultiagent) SetTo(v AgentRefMultiagent) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAgentRefMultiagent) Get() (v AgentRefMultiagent, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAgentRefMultiagent) Or(d AgentRefMultiagent) AgentRefMultiagent {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptBool returns new OptBool with value set to v.
 func NewOptBool(v bool) OptBool {
 	return OptBool{
@@ -2126,6 +2690,328 @@ func (o OptCacheCreation) Get() (v CacheCreation, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptCacheCreation) Or(d CacheCreation) CacheCreation {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptEnvironmentConfigOverride returns new OptEnvironmentConfigOverride with value set to v.
+func NewOptEnvironmentConfigOverride(v EnvironmentConfigOverride) OptEnvironmentConfigOverride {
+	return OptEnvironmentConfigOverride{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEnvironmentConfigOverride is optional EnvironmentConfigOverride.
+type OptEnvironmentConfigOverride struct {
+	Value EnvironmentConfigOverride
+	Set   bool
+}
+
+// IsSet returns true if OptEnvironmentConfigOverride was set.
+func (o OptEnvironmentConfigOverride) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEnvironmentConfigOverride) Reset() {
+	var v EnvironmentConfigOverride
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEnvironmentConfigOverride) SetTo(v EnvironmentConfigOverride) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEnvironmentConfigOverride) Get() (v EnvironmentConfigOverride, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEnvironmentConfigOverride) Or(d EnvironmentConfigOverride) EnvironmentConfigOverride {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptEnvironmentConfigOverrideEnv returns new OptEnvironmentConfigOverrideEnv with value set to v.
+func NewOptEnvironmentConfigOverrideEnv(v EnvironmentConfigOverrideEnv) OptEnvironmentConfigOverrideEnv {
+	return OptEnvironmentConfigOverrideEnv{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEnvironmentConfigOverrideEnv is optional EnvironmentConfigOverrideEnv.
+type OptEnvironmentConfigOverrideEnv struct {
+	Value EnvironmentConfigOverrideEnv
+	Set   bool
+}
+
+// IsSet returns true if OptEnvironmentConfigOverrideEnv was set.
+func (o OptEnvironmentConfigOverrideEnv) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEnvironmentConfigOverrideEnv) Reset() {
+	var v EnvironmentConfigOverrideEnv
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEnvironmentConfigOverrideEnv) SetTo(v EnvironmentConfigOverrideEnv) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEnvironmentConfigOverrideEnv) Get() (v EnvironmentConfigOverrideEnv, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEnvironmentConfigOverrideEnv) Or(d EnvironmentConfigOverrideEnv) EnvironmentConfigOverrideEnv {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptEnvironmentNetworkingConfig returns new OptEnvironmentNetworkingConfig with value set to v.
+func NewOptEnvironmentNetworkingConfig(v EnvironmentNetworkingConfig) OptEnvironmentNetworkingConfig {
+	return OptEnvironmentNetworkingConfig{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEnvironmentNetworkingConfig is optional EnvironmentNetworkingConfig.
+type OptEnvironmentNetworkingConfig struct {
+	Value EnvironmentNetworkingConfig
+	Set   bool
+}
+
+// IsSet returns true if OptEnvironmentNetworkingConfig was set.
+func (o OptEnvironmentNetworkingConfig) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEnvironmentNetworkingConfig) Reset() {
+	var v EnvironmentNetworkingConfig
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEnvironmentNetworkingConfig) SetTo(v EnvironmentNetworkingConfig) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEnvironmentNetworkingConfig) Get() (v EnvironmentNetworkingConfig, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEnvironmentNetworkingConfig) Or(d EnvironmentNetworkingConfig) EnvironmentNetworkingConfig {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptEnvironmentPackagesConfig returns new OptEnvironmentPackagesConfig with value set to v.
+func NewOptEnvironmentPackagesConfig(v EnvironmentPackagesConfig) OptEnvironmentPackagesConfig {
+	return OptEnvironmentPackagesConfig{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEnvironmentPackagesConfig is optional EnvironmentPackagesConfig.
+type OptEnvironmentPackagesConfig struct {
+	Value EnvironmentPackagesConfig
+	Set   bool
+}
+
+// IsSet returns true if OptEnvironmentPackagesConfig was set.
+func (o OptEnvironmentPackagesConfig) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEnvironmentPackagesConfig) Reset() {
+	var v EnvironmentPackagesConfig
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEnvironmentPackagesConfig) SetTo(v EnvironmentPackagesConfig) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEnvironmentPackagesConfig) Get() (v EnvironmentPackagesConfig, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEnvironmentPackagesConfig) Or(d EnvironmentPackagesConfig) EnvironmentPackagesConfig {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptEnvironmentPackagesConfigType returns new OptEnvironmentPackagesConfigType with value set to v.
+func NewOptEnvironmentPackagesConfigType(v EnvironmentPackagesConfigType) OptEnvironmentPackagesConfigType {
+	return OptEnvironmentPackagesConfigType{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEnvironmentPackagesConfigType is optional EnvironmentPackagesConfigType.
+type OptEnvironmentPackagesConfigType struct {
+	Value EnvironmentPackagesConfigType
+	Set   bool
+}
+
+// IsSet returns true if OptEnvironmentPackagesConfigType was set.
+func (o OptEnvironmentPackagesConfigType) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEnvironmentPackagesConfigType) Reset() {
+	var v EnvironmentPackagesConfigType
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEnvironmentPackagesConfigType) SetTo(v EnvironmentPackagesConfigType) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEnvironmentPackagesConfigType) Get() (v EnvironmentPackagesConfigType, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEnvironmentPackagesConfigType) Or(d EnvironmentPackagesConfigType) EnvironmentPackagesConfigType {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptEnvironmentTosConfig returns new OptEnvironmentTosConfig with value set to v.
+func NewOptEnvironmentTosConfig(v EnvironmentTosConfig) OptEnvironmentTosConfig {
+	return OptEnvironmentTosConfig{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEnvironmentTosConfig is optional EnvironmentTosConfig.
+type OptEnvironmentTosConfig struct {
+	Value EnvironmentTosConfig
+	Set   bool
+}
+
+// IsSet returns true if OptEnvironmentTosConfig was set.
+func (o OptEnvironmentTosConfig) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEnvironmentTosConfig) Reset() {
+	var v EnvironmentTosConfig
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEnvironmentTosConfig) SetTo(v EnvironmentTosConfig) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEnvironmentTosConfig) Get() (v EnvironmentTosConfig, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEnvironmentTosConfig) Or(d EnvironmentTosConfig) EnvironmentTosConfig {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptEnvironmentWithOverrides returns new OptEnvironmentWithOverrides with value set to v.
+func NewOptEnvironmentWithOverrides(v EnvironmentWithOverrides) OptEnvironmentWithOverrides {
+	return OptEnvironmentWithOverrides{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEnvironmentWithOverrides is optional EnvironmentWithOverrides.
+type OptEnvironmentWithOverrides struct {
+	Value EnvironmentWithOverrides
+	Set   bool
+}
+
+// IsSet returns true if OptEnvironmentWithOverrides was set.
+func (o OptEnvironmentWithOverrides) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEnvironmentWithOverrides) Reset() {
+	var v EnvironmentWithOverrides
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEnvironmentWithOverrides) SetTo(v EnvironmentWithOverrides) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEnvironmentWithOverrides) Get() (v EnvironmentWithOverrides, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEnvironmentWithOverrides) Or(d EnvironmentWithOverrides) EnvironmentWithOverrides {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -2264,6 +3150,115 @@ func (o OptListSessionsOrder) Get() (v ListSessionsOrder, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptListSessionsOrder) Or(d ListSessionsOrder) ListSessionsOrder {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptModelOverrides returns new OptModelOverrides with value set to v.
+func NewOptModelOverrides(v ModelOverrides) OptModelOverrides {
+	return OptModelOverrides{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptModelOverrides is optional ModelOverrides.
+type OptModelOverrides struct {
+	Value ModelOverrides
+	Set   bool
+}
+
+// IsSet returns true if OptModelOverrides was set.
+func (o OptModelOverrides) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptModelOverrides) Reset() {
+	var v ModelOverrides
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptModelOverrides) SetTo(v ModelOverrides) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptModelOverrides) Get() (v ModelOverrides, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptModelOverrides) Or(d ModelOverrides) ModelOverrides {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilSessionEnvironment returns new OptNilSessionEnvironment with value set to v.
+func NewOptNilSessionEnvironment(v SessionEnvironment) OptNilSessionEnvironment {
+	return OptNilSessionEnvironment{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilSessionEnvironment is optional nullable SessionEnvironment.
+type OptNilSessionEnvironment struct {
+	Value SessionEnvironment
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilSessionEnvironment was set.
+func (o OptNilSessionEnvironment) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilSessionEnvironment) Reset() {
+	var v SessionEnvironment
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilSessionEnvironment) SetTo(v SessionEnvironment) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilSessionEnvironment) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilSessionEnvironment) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v SessionEnvironment
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilSessionEnvironment) Get() (v SessionEnvironment, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilSessionEnvironment) Or(d SessionEnvironment) SessionEnvironment {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -2760,18 +3755,29 @@ func (s *SendSessionEventsRequest) SetEvents(val []ManagedAgentsEventParams) {
 // SendSessionEvents 响应体（回执）。.
 // Ref: #/components/schemas/SendSessionEventsResponse
 type SendSessionEventsResponse struct {
-	// 是否成功接收（server 决定语义）。.
-	Success OptBool `json:"success"`
+	// 服务端落库 / 转发完成后的事件回声。.
+	Data []SendSessionEventsResponseDataItem `json:"data"`
 }
 
-// GetSuccess returns the value of Success.
-func (s *SendSessionEventsResponse) GetSuccess() OptBool {
-	return s.Success
+// GetData returns the value of Data.
+func (s *SendSessionEventsResponse) GetData() []SendSessionEventsResponseDataItem {
+	return s.Data
 }
 
-// SetSuccess sets the value of Success.
-func (s *SendSessionEventsResponse) SetSuccess(val OptBool) {
-	s.Success = val
+// SetData sets the value of Data.
+func (s *SendSessionEventsResponse) SetData(val []SendSessionEventsResponseDataItem) {
+	s.Data = val
+}
+
+type SendSessionEventsResponseDataItem map[string]jx.Raw
+
+func (s *SendSessionEventsResponseDataItem) init() SendSessionEventsResponseDataItem {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
 }
 
 // 一次 Agent 会话。
@@ -2807,6 +3813,8 @@ type Session struct {
 	Usage OptNilSessionUsage `json:"usage"`
 	// 资源标签。.
 	Tags OptNilTagArray `json:"tags"`
+	// Session 创建时冻结的 Environment 快照。.
+	Environment OptNilSessionEnvironment `json:"environment"`
 }
 
 // GetID returns the value of ID.
@@ -2874,6 +3882,11 @@ func (s *Session) GetTags() OptNilTagArray {
 	return s.Tags
 }
 
+// GetEnvironment returns the value of Environment.
+func (s *Session) GetEnvironment() OptNilSessionEnvironment {
+	return s.Environment
+}
+
 // SetID sets the value of ID.
 func (s *Session) SetID(val string) {
 	s.ID = val
@@ -2939,11 +3952,27 @@ func (s *Session) SetTags(val OptNilTagArray) {
 	s.Tags = val
 }
 
+// SetEnvironment sets the value of Environment.
+func (s *Session) SetEnvironment(val OptNilSessionEnvironment) {
+	s.Environment = val
+}
+
 // Agent 快照。反映创建瞬间的 Agent wire 形态；shape 与 Ark.Agent 的
 // Agent 一致。.
 type SessionAgent map[string]jx.Raw
 
 func (s *SessionAgent) init() SessionAgent {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type SessionEnvironment map[string]jx.Raw
+
+func (s *SessionEnvironment) init() SessionEnvironment {
 	m := *s
 	if m == nil {
 		m = map[string]jx.Raw{}
@@ -3352,10 +4381,10 @@ func (s *SessionThread) SetUpdatedAt(val string) {
 type SessionThreadStatus string
 
 const (
-	SessionThreadStatusIdle       SessionThreadStatus = "idle"
-	SessionThreadStatusRunning    SessionThreadStatus = "running"
-	SessionThreadStatusTerminated SessionThreadStatus = "terminated"
-	SessionThreadStatusArchived   SessionThreadStatus = "archived"
+	SessionThreadStatusIdle         SessionThreadStatus = "idle"
+	SessionThreadStatusRunning      SessionThreadStatus = "running"
+	SessionThreadStatusTerminated   SessionThreadStatus = "terminated"
+	SessionThreadStatusRescheduling SessionThreadStatus = "rescheduling"
 )
 
 // AllValues returns all SessionThreadStatus values.
@@ -3364,7 +4393,7 @@ func (SessionThreadStatus) AllValues() []SessionThreadStatus {
 		SessionThreadStatusIdle,
 		SessionThreadStatusRunning,
 		SessionThreadStatusTerminated,
-		SessionThreadStatusArchived,
+		SessionThreadStatusRescheduling,
 	}
 }
 
@@ -3377,7 +4406,7 @@ func (s SessionThreadStatus) MarshalText() ([]byte, error) {
 		return []byte(s), nil
 	case SessionThreadStatusTerminated:
 		return []byte(s), nil
-	case SessionThreadStatusArchived:
+	case SessionThreadStatusRescheduling:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -3396,8 +4425,8 @@ func (s *SessionThreadStatus) UnmarshalText(data []byte) error {
 	case SessionThreadStatusTerminated:
 		*s = SessionThreadStatusTerminated
 		return nil
-	case SessionThreadStatusArchived:
-		*s = SessionThreadStatusArchived
+	case SessionThreadStatusRescheduling:
+		*s = SessionThreadStatusRescheduling
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

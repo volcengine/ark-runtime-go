@@ -197,10 +197,28 @@ func (c *Client) StreamSessionEvents(
 	sessionID string,
 	setters ...requestOption,
 ) (*session.StreamDecoder, error) {
+	return c.StreamSessionEventsWithParams(ctx, sessionID, nil, setters...)
+}
+
+// StreamSessionEventsWithParams opens a text/event-stream connection with
+// query parameters such as event_deltas.
+func (c *Client) StreamSessionEventsWithParams(
+	ctx context.Context,
+	sessionID string,
+	params *session.SessionEventsStreamEventsParams,
+	setters ...requestOption,
+) (*session.StreamDecoder, error) {
 	if sessionID == "" {
 		return nil, errors.New("missing required session_id")
 	}
+	q, qerr := session.URLQuerySessionEventsStream(params)
+	if qerr != nil {
+		return nil, qerr
+	}
 	u := c.fullURL(fmt.Sprintf("%s/%s/events/stream", sessionsPrefix, session.PathEscape(sessionID)))
+	if encoded := q.Encode(); encoded != "" {
+		u = u + "?" + encoded
+	}
 
 	opts := append(setters, withBody(nil), WithCustomHeader("Accept", "text/event-stream"))
 	req, reqErr := c.newRequest(ctx, http.MethodGet, u, "", "", opts...)
@@ -355,13 +373,31 @@ func (c *Client) StreamSessionThreadEvents(
 	sessionID, threadID string,
 	setters ...requestOption,
 ) (*session.StreamDecoder, error) {
+	return c.StreamSessionThreadEventsWithParams(ctx, sessionID, threadID, nil, setters...)
+}
+
+// StreamSessionThreadEventsWithParams opens a thread-scoped SSE stream with
+// query parameters such as event_deltas.
+func (c *Client) StreamSessionThreadEventsWithParams(
+	ctx context.Context,
+	sessionID, threadID string,
+	params *session.SessionThreadsStreamEventsParams,
+	setters ...requestOption,
+) (*session.StreamDecoder, error) {
 	if sessionID == "" {
 		return nil, errors.New("missing required session_id")
 	}
 	if threadID == "" {
 		return nil, errors.New("missing required thread_id")
 	}
+	q, qerr := session.URLQuerySessionThreadEventsStream(params)
+	if qerr != nil {
+		return nil, qerr
+	}
 	u := c.fullURL(sessionThreadPath(sessionID, threadID) + "/stream")
+	if encoded := q.Encode(); encoded != "" {
+		u = u + "?" + encoded
+	}
 	opts := append(setters, withBody(nil), WithCustomHeader("Accept", "text/event-stream"))
 	req, reqErr := c.newRequest(ctx, http.MethodGet, u, "", "", opts...)
 	if reqErr != nil {

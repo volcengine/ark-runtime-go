@@ -54,6 +54,14 @@ func NewClientWithAkSk(ak, sk string, setters ...ConfigOption) *Client {
 	return newClientWithConfig(config)
 }
 
+// HTTPClient returns the configured HTTP client.
+func (c *Client) HTTPClient() *http.Client {
+	if c == nil || c.config.HTTPClient == nil {
+		return http.DefaultClient
+	}
+	return c.config.HTTPClient
+}
+
 // NewVolcClient constructs a client targeting the Volcengine cloud
 // (ark.cn-beijing.volces.com). Reads ARK_API_KEY for api-key auth and
 // VOLC_ACCESSKEY/VOLC_SECRETKEY for AK/SK auth, in that preference order.

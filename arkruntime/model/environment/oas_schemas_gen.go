@@ -126,6 +126,10 @@ type EnvConfig struct {
 	Packages OptPackagesConfig `json:"packages"`
 	// 容器启动时注入的环境变量。.
 	Env OptEnvConfigEnv `json:"env"`
+	// 沙箱启动阶段执行的初始化脚本。.
+	SetupScript OptString `json:"setup_script"`
+	// Environment outputs 的 TOS 存储配置。.
+	Tos OptTosConfig `json:"tos"`
 }
 
 // GetType returns the value of Type.
@@ -148,6 +152,16 @@ func (s *EnvConfig) GetEnv() OptEnvConfigEnv {
 	return s.Env
 }
 
+// GetSetupScript returns the value of SetupScript.
+func (s *EnvConfig) GetSetupScript() OptString {
+	return s.SetupScript
+}
+
+// GetTos returns the value of Tos.
+func (s *EnvConfig) GetTos() OptTosConfig {
+	return s.Tos
+}
+
 // SetType sets the value of Type.
 func (s *EnvConfig) SetType(val EnvConfigType) {
 	s.Type = val
@@ -166,6 +180,16 @@ func (s *EnvConfig) SetPackages(val OptPackagesConfig) {
 // SetEnv sets the value of Env.
 func (s *EnvConfig) SetEnv(val OptEnvConfigEnv) {
 	s.Env = val
+}
+
+// SetSetupScript sets the value of SetupScript.
+func (s *EnvConfig) SetSetupScript(val OptString) {
+	s.SetupScript = val
+}
+
+// SetTos sets the value of Tos.
+func (s *EnvConfig) SetTos(val OptTosConfig) {
+	s.Tos = val
 }
 
 // 容器启动时注入的环境变量。.
@@ -244,6 +268,8 @@ type Environment struct {
 	CreatedAt string `json:"created_at"`
 	// RFC 3339 时间。.
 	UpdatedAt string `json:"updated_at"`
+	// Session 使用 EnvironmentWithOverrides 时，本次被覆写的 config 子字段。.
+	OverriddenFields []string `json:"overridden_fields"`
 }
 
 // GetID returns the value of ID.
@@ -291,6 +317,11 @@ func (s *Environment) GetUpdatedAt() string {
 	return s.UpdatedAt
 }
 
+// GetOverriddenFields returns the value of OverriddenFields.
+func (s *Environment) GetOverriddenFields() []string {
+	return s.OverriddenFields
+}
+
 // SetID sets the value of ID.
 func (s *Environment) SetID(val string) {
 	s.ID = val
@@ -334,6 +365,11 @@ func (s *Environment) SetCreatedAt(val string) {
 // SetUpdatedAt sets the value of UpdatedAt.
 func (s *Environment) SetUpdatedAt(val string) {
 	s.UpdatedAt = val
+}
+
+// SetOverriddenFields sets the value of OverriddenFields.
+func (s *Environment) SetOverriddenFields(val []string) {
+	s.OverriddenFields = val
 }
 
 // 用户自定义键值对元数据。.
@@ -420,6 +456,106 @@ func (s *EnvironmentType) UnmarshalText(data []byte) error {
 	switch EnvironmentType(data) {
 	case EnvironmentTypeEnvironment:
 		*s = EnvironmentTypeEnvironment
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Heartbeat work 的响应体。.
+// Ref: #/components/schemas/HeartbeatWorkResponse
+type HeartbeatWorkResponse struct {
+	// 控制面接受的 heartbeat 时间，RFC 3339。.
+	LastHeartbeat string `json:"last_heartbeat"`
+	// Lease 是否被刷新。.
+	LeaseExtended bool `json:"lease_extended"`
+	// Work 生命周期状态。.
+	State WorkState `json:"state"`
+	// Lease TTL 秒数。.
+	TTLSeconds int64 `json:"ttl_seconds"`
+	// 对象类型，固定为 `work_heartbeat`。.
+	Type HeartbeatWorkResponseType `json:"type"`
+}
+
+// GetLastHeartbeat returns the value of LastHeartbeat.
+func (s *HeartbeatWorkResponse) GetLastHeartbeat() string {
+	return s.LastHeartbeat
+}
+
+// GetLeaseExtended returns the value of LeaseExtended.
+func (s *HeartbeatWorkResponse) GetLeaseExtended() bool {
+	return s.LeaseExtended
+}
+
+// GetState returns the value of State.
+func (s *HeartbeatWorkResponse) GetState() WorkState {
+	return s.State
+}
+
+// GetTTLSeconds returns the value of TTLSeconds.
+func (s *HeartbeatWorkResponse) GetTTLSeconds() int64 {
+	return s.TTLSeconds
+}
+
+// GetType returns the value of Type.
+func (s *HeartbeatWorkResponse) GetType() HeartbeatWorkResponseType {
+	return s.Type
+}
+
+// SetLastHeartbeat sets the value of LastHeartbeat.
+func (s *HeartbeatWorkResponse) SetLastHeartbeat(val string) {
+	s.LastHeartbeat = val
+}
+
+// SetLeaseExtended sets the value of LeaseExtended.
+func (s *HeartbeatWorkResponse) SetLeaseExtended(val bool) {
+	s.LeaseExtended = val
+}
+
+// SetState sets the value of State.
+func (s *HeartbeatWorkResponse) SetState(val WorkState) {
+	s.State = val
+}
+
+// SetTTLSeconds sets the value of TTLSeconds.
+func (s *HeartbeatWorkResponse) SetTTLSeconds(val int64) {
+	s.TTLSeconds = val
+}
+
+// SetType sets the value of Type.
+func (s *HeartbeatWorkResponse) SetType(val HeartbeatWorkResponseType) {
+	s.Type = val
+}
+
+// 对象类型，固定为 `work_heartbeat`。.
+type HeartbeatWorkResponseType string
+
+const (
+	HeartbeatWorkResponseTypeWorkHeartbeat HeartbeatWorkResponseType = "work_heartbeat"
+)
+
+// AllValues returns all HeartbeatWorkResponseType values.
+func (HeartbeatWorkResponseType) AllValues() []HeartbeatWorkResponseType {
+	return []HeartbeatWorkResponseType{
+		HeartbeatWorkResponseTypeWorkHeartbeat,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s HeartbeatWorkResponseType) MarshalText() ([]byte, error) {
+	switch s {
+	case HeartbeatWorkResponseTypeWorkHeartbeat:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *HeartbeatWorkResponseType) UnmarshalText(data []byte) error {
+	switch HeartbeatWorkResponseType(data) {
+	case HeartbeatWorkResponseTypeWorkHeartbeat:
+		*s = HeartbeatWorkResponseTypeWorkHeartbeat
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -876,6 +1012,52 @@ func (o OptInt32) Or(d int32) int32 {
 	return d
 }
 
+// NewOptInt64 returns new OptInt64 with value set to v.
+func NewOptInt64(v int64) OptInt64 {
+	return OptInt64{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptInt64 is optional int64.
+type OptInt64 struct {
+	Value int64
+	Set   bool
+}
+
+// IsSet returns true if OptInt64 was set.
+func (o OptInt64) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptInt64) Reset() {
+	var v int64
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptInt64) SetTo(v int64) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptInt64) Get() (v int64, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptInt64) Or(d int64) int64 {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNetworkingConfig returns new OptNetworkingConfig with value set to v.
 func NewOptNetworkingConfig(v NetworkingConfig) OptNetworkingConfig {
 	return OptNetworkingConfig{
@@ -1014,6 +1196,52 @@ func (o OptPackagesConfigType) Or(d PackagesConfigType) PackagesConfigType {
 	return d
 }
 
+// NewOptStopWorkBody returns new OptStopWorkBody with value set to v.
+func NewOptStopWorkBody(v StopWorkBody) OptStopWorkBody {
+	return OptStopWorkBody{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptStopWorkBody is optional StopWorkBody.
+type OptStopWorkBody struct {
+	Value StopWorkBody
+	Set   bool
+}
+
+// IsSet returns true if OptStopWorkBody was set.
+func (o OptStopWorkBody) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptStopWorkBody) Reset() {
+	var v StopWorkBody
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptStopWorkBody) SetTo(v StopWorkBody) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptStopWorkBody) Get() (v StopWorkBody, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptStopWorkBody) Or(d StopWorkBody) StopWorkBody {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptString returns new OptString with value set to v.
 func NewOptString(v string) OptString {
 	return OptString{
@@ -1054,6 +1282,52 @@ func (o OptString) Get() (v string, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptString) Or(d string) string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptTosConfig returns new OptTosConfig with value set to v.
+func NewOptTosConfig(v TosConfig) OptTosConfig {
+	return OptTosConfig{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptTosConfig is optional TosConfig.
+type OptTosConfig struct {
+	Value TosConfig
+	Set   bool
+}
+
+// IsSet returns true if OptTosConfig was set.
+func (o OptTosConfig) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptTosConfig) Reset() {
+	var v TosConfig
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptTosConfig) SetTo(v TosConfig) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptTosConfig) Get() (v TosConfig, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptTosConfig) Or(d TosConfig) TosConfig {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -1231,6 +1505,53 @@ func (s *PackagesConfigType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Stop work 的请求体。.
+// Ref: #/components/schemas/StopWorkBody
+type StopWorkBody struct {
+	// 是否强制停止。.
+	Force OptBool `json:"force"`
+}
+
+// GetForce returns the value of Force.
+func (s *StopWorkBody) GetForce() OptBool {
+	return s.Force
+}
+
+// SetForce sets the value of Force.
+func (s *StopWorkBody) SetForce(val OptBool) {
+	s.Force = val
+}
+
+// Environment 产物存储位置。设置后 outputs 文件会注册到用户指定的 TOS
+// bucket/prefix；不设置则走方舟默认存储。.
+// Ref: #/components/schemas/TosConfig
+type TosConfig struct {
+	// TOS bucket 名称。.
+	Bucket OptString `json:"bucket"`
+	// TOS 前缀。.
+	Prefix OptString `json:"prefix"`
+}
+
+// GetBucket returns the value of Bucket.
+func (s *TosConfig) GetBucket() OptString {
+	return s.Bucket
+}
+
+// GetPrefix returns the value of Prefix.
+func (s *TosConfig) GetPrefix() OptString {
+	return s.Prefix
+}
+
+// SetBucket sets the value of Bucket.
+func (s *TosConfig) SetBucket(val OptString) {
+	s.Bucket = val
+}
+
+// SetPrefix sets the value of Prefix.
+func (s *TosConfig) SetPrefix(val OptString) {
+	s.Prefix = val
+}
+
 // 更新 Environment 的请求体。语义：
 // - 省略字段 = 保留原值
 // - `description` 显式空字符串或 null = 清空
@@ -1310,4 +1631,322 @@ func (s *UpdateEnvironmentRequestMetadata) init() UpdateEnvironmentRequestMetada
 		*s = m
 	}
 	return m
+}
+
+// Work 关联的标签。.
+// Ref: #/components/schemas/VolcTag
+type VolcTag struct {
+	// 标签 key。.
+	Key string `json:"key"`
+	// 标签 value。.
+	Value OptString `json:"value"`
+}
+
+// GetKey returns the value of Key.
+func (s *VolcTag) GetKey() string {
+	return s.Key
+}
+
+// GetValue returns the value of Value.
+func (s *VolcTag) GetValue() OptString {
+	return s.Value
+}
+
+// SetKey sets the value of Key.
+func (s *VolcTag) SetKey(val string) {
+	s.Key = val
+}
+
+// SetValue sets the value of Value.
+func (s *VolcTag) SetValue(val OptString) {
+	s.Value = val
+}
+
+// Work 的业务载荷。.
+// Ref: #/components/schemas/WorkData
+type WorkData struct {
+	// 业务对象 ID，例如 session ID。.
+	ID string `json:"id"`
+	// 业务载荷类型，例如 `session`。.
+	Type string `json:"type"`
+}
+
+// GetID returns the value of ID.
+func (s *WorkData) GetID() string {
+	return s.ID
+}
+
+// GetType returns the value of Type.
+func (s *WorkData) GetType() string {
+	return s.Type
+}
+
+// SetID sets the value of ID.
+func (s *WorkData) SetID(val string) {
+	s.ID = val
+}
+
+// SetType sets the value of Type.
+func (s *WorkData) SetType(val string) {
+	s.Type = val
+}
+
+// Worker queue 中的一条 work。.
+// Ref: #/components/schemas/WorkItem
+type WorkItem struct {
+	// Work ID。.
+	ID string `json:"id"`
+	// Work ack 时间，RFC 3339。.
+	AcknowledgedAt OptString `json:"acknowledged_at"`
+	// Work 创建时间，RFC 3339。.
+	CreatedAt string `json:"created_at"`
+	// 业务载荷。.
+	Data WorkData `json:"data"`
+	// Environment ID。.
+	EnvironmentID string `json:"environment_id"`
+	// 最近 heartbeat 时间，RFC 3339。.
+	LatestHeartbeatAt OptString `json:"latest_heartbeat_at"`
+	// Work 标签。.
+	Tags []VolcTag `json:"tags"`
+	// Work secret；仅 poll 时返回，ack / stop 响应会抹掉。.
+	Secret OptString `json:"secret"`
+	// Work 开始时间，RFC 3339。.
+	StartedAt OptString `json:"started_at"`
+	// Work 生命周期状态。.
+	State WorkState `json:"state"`
+	// 控制面请求停止的时间，RFC 3339。.
+	StopRequestedAt OptString `json:"stop_requested_at"`
+	// Work 停止时间，RFC 3339。.
+	StoppedAt OptString `json:"stopped_at"`
+	// 对象类型，固定为 `work`。.
+	Type WorkItemType `json:"type"`
+}
+
+// GetID returns the value of ID.
+func (s *WorkItem) GetID() string {
+	return s.ID
+}
+
+// GetAcknowledgedAt returns the value of AcknowledgedAt.
+func (s *WorkItem) GetAcknowledgedAt() OptString {
+	return s.AcknowledgedAt
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *WorkItem) GetCreatedAt() string {
+	return s.CreatedAt
+}
+
+// GetData returns the value of Data.
+func (s *WorkItem) GetData() WorkData {
+	return s.Data
+}
+
+// GetEnvironmentID returns the value of EnvironmentID.
+func (s *WorkItem) GetEnvironmentID() string {
+	return s.EnvironmentID
+}
+
+// GetLatestHeartbeatAt returns the value of LatestHeartbeatAt.
+func (s *WorkItem) GetLatestHeartbeatAt() OptString {
+	return s.LatestHeartbeatAt
+}
+
+// GetTags returns the value of Tags.
+func (s *WorkItem) GetTags() []VolcTag {
+	return s.Tags
+}
+
+// GetSecret returns the value of Secret.
+func (s *WorkItem) GetSecret() OptString {
+	return s.Secret
+}
+
+// GetStartedAt returns the value of StartedAt.
+func (s *WorkItem) GetStartedAt() OptString {
+	return s.StartedAt
+}
+
+// GetState returns the value of State.
+func (s *WorkItem) GetState() WorkState {
+	return s.State
+}
+
+// GetStopRequestedAt returns the value of StopRequestedAt.
+func (s *WorkItem) GetStopRequestedAt() OptString {
+	return s.StopRequestedAt
+}
+
+// GetStoppedAt returns the value of StoppedAt.
+func (s *WorkItem) GetStoppedAt() OptString {
+	return s.StoppedAt
+}
+
+// GetType returns the value of Type.
+func (s *WorkItem) GetType() WorkItemType {
+	return s.Type
+}
+
+// SetID sets the value of ID.
+func (s *WorkItem) SetID(val string) {
+	s.ID = val
+}
+
+// SetAcknowledgedAt sets the value of AcknowledgedAt.
+func (s *WorkItem) SetAcknowledgedAt(val OptString) {
+	s.AcknowledgedAt = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *WorkItem) SetCreatedAt(val string) {
+	s.CreatedAt = val
+}
+
+// SetData sets the value of Data.
+func (s *WorkItem) SetData(val WorkData) {
+	s.Data = val
+}
+
+// SetEnvironmentID sets the value of EnvironmentID.
+func (s *WorkItem) SetEnvironmentID(val string) {
+	s.EnvironmentID = val
+}
+
+// SetLatestHeartbeatAt sets the value of LatestHeartbeatAt.
+func (s *WorkItem) SetLatestHeartbeatAt(val OptString) {
+	s.LatestHeartbeatAt = val
+}
+
+// SetTags sets the value of Tags.
+func (s *WorkItem) SetTags(val []VolcTag) {
+	s.Tags = val
+}
+
+// SetSecret sets the value of Secret.
+func (s *WorkItem) SetSecret(val OptString) {
+	s.Secret = val
+}
+
+// SetStartedAt sets the value of StartedAt.
+func (s *WorkItem) SetStartedAt(val OptString) {
+	s.StartedAt = val
+}
+
+// SetState sets the value of State.
+func (s *WorkItem) SetState(val WorkState) {
+	s.State = val
+}
+
+// SetStopRequestedAt sets the value of StopRequestedAt.
+func (s *WorkItem) SetStopRequestedAt(val OptString) {
+	s.StopRequestedAt = val
+}
+
+// SetStoppedAt sets the value of StoppedAt.
+func (s *WorkItem) SetStoppedAt(val OptString) {
+	s.StoppedAt = val
+}
+
+// SetType sets the value of Type.
+func (s *WorkItem) SetType(val WorkItemType) {
+	s.Type = val
+}
+
+// 对象类型，固定为 `work`。.
+type WorkItemType string
+
+const (
+	WorkItemTypeWork WorkItemType = "work"
+)
+
+// AllValues returns all WorkItemType values.
+func (WorkItemType) AllValues() []WorkItemType {
+	return []WorkItemType{
+		WorkItemTypeWork,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s WorkItemType) MarshalText() ([]byte, error) {
+	switch s {
+	case WorkItemTypeWork:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *WorkItemType) UnmarshalText(data []byte) error {
+	switch WorkItemType(data) {
+	case WorkItemTypeWork:
+		*s = WorkItemTypeWork
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Work 生命周期状态。.
+// Ref: #/components/schemas/WorkState
+type WorkState string
+
+const (
+	WorkStateQueued   WorkState = "queued"
+	WorkStateStarting WorkState = "starting"
+	WorkStateActive   WorkState = "active"
+	WorkStateStopping WorkState = "stopping"
+	WorkStateStopped  WorkState = "stopped"
+)
+
+// AllValues returns all WorkState values.
+func (WorkState) AllValues() []WorkState {
+	return []WorkState{
+		WorkStateQueued,
+		WorkStateStarting,
+		WorkStateActive,
+		WorkStateStopping,
+		WorkStateStopped,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s WorkState) MarshalText() ([]byte, error) {
+	switch s {
+	case WorkStateQueued:
+		return []byte(s), nil
+	case WorkStateStarting:
+		return []byte(s), nil
+	case WorkStateActive:
+		return []byte(s), nil
+	case WorkStateStopping:
+		return []byte(s), nil
+	case WorkStateStopped:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *WorkState) UnmarshalText(data []byte) error {
+	switch WorkState(data) {
+	case WorkStateQueued:
+		*s = WorkStateQueued
+		return nil
+	case WorkStateStarting:
+		*s = WorkStateStarting
+		return nil
+	case WorkStateActive:
+		*s = WorkStateActive
+		return nil
+	case WorkStateStopping:
+		*s = WorkStateStopping
+		return nil
+	case WorkStateStopped:
+		*s = WorkStateStopped
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }

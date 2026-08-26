@@ -108,6 +108,14 @@ func URLQuerySessionEventsList(req *SessionEventsListEventsParams) (url.Values, 
 	return apiquery.Marshal(req)
 }
 
+// URLQuerySessionEventsStream encodes SessionEventsStreamEventsParams.
+func URLQuerySessionEventsStream(req *SessionEventsStreamEventsParams) (url.Values, error) {
+	if req == nil {
+		return url.Values{}, nil
+	}
+	return apiquery.Marshal(req)
+}
+
 // URLQuerySessionThreadsList encodes SessionThreadsListParams.
 func URLQuerySessionThreadsList(req *SessionThreadsListParams) (url.Values, error) {
 	if req == nil {
@@ -118,6 +126,14 @@ func URLQuerySessionThreadsList(req *SessionThreadsListParams) (url.Values, erro
 
 // URLQuerySessionThreadEventsList encodes SessionThreadsListEventsParams.
 func URLQuerySessionThreadEventsList(req *SessionThreadsListEventsParams) (url.Values, error) {
+	if req == nil {
+		return url.Values{}, nil
+	}
+	return apiquery.Marshal(req)
+}
+
+// URLQuerySessionThreadEventsStream encodes SessionThreadsStreamEventsParams.
+func URLQuerySessionThreadEventsStream(req *SessionThreadsStreamEventsParams) (url.Values, error) {
 	if req == nil {
 		return url.Values{}, nil
 	}
