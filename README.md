@@ -294,3 +294,8 @@ ARK_API_KEY=your-key go run examples/volc/responses/basic/main.go
 
 - Go 1.20 or later
 - A Volcengine or BytePlus ModelArk API key
+
+## Third-party notices
+
+See [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for third-party
+attribution notices.

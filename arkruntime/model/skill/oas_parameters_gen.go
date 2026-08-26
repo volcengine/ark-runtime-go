@@ -5,6 +5,12 @@
 
 package skill
 
+// SkillVersionContentDownloadParams is parameters of SkillVersionContent_download operation.
+type SkillVersionContentDownloadParams struct {
+	SkillId string
+	Version string
+}
+
 // SkillsRetrieveParams is parameters of Skills_retrieve operation.
 type SkillsRetrieveParams struct {
 	SkillId string

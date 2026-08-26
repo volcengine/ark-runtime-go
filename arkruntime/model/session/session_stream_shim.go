@@ -254,10 +254,11 @@ type ManagedAgentsAgentThinkingEvent struct {
 // `Input` is the tool's argument object (schema per tool).
 type ManagedAgentsAgentToolUseEvent struct {
 	sessionEventBase
-	SessionThreadID string          `json:"session_thread_id,omitempty"`
-	ToolUseID       string          `json:"tool_use_id"`
-	Name            string          `json:"name"`
-	Input           json.RawMessage `json:"input,omitempty"`
+	SessionThreadID     string          `json:"session_thread_id,omitempty"`
+	ToolUseID           string          `json:"tool_use_id"`
+	Name                string          `json:"name"`
+	Input               json.RawMessage `json:"input,omitempty"`
+	EvaluatedPermission string          `json:"evaluated_permission,omitempty"`
 }
 
 // ManagedAgentsAgentToolResultEvent — the tool's result (post
@@ -269,6 +270,16 @@ type ManagedAgentsAgentToolResultEvent struct {
 	ToolUseID       string                            `json:"tool_use_id"`
 	Content         []ManagedAgentsOutputContentBlock `json:"content,omitempty"`
 	IsError         bool                              `json:"is_error,omitempty"`
+}
+
+// ManagedAgentsAgentCustomToolUseEvent — the agent invoked a user-defined
+// custom tool handled by the self-hosted worker.
+type ManagedAgentsAgentCustomToolUseEvent struct {
+	sessionEventBase
+	SessionThreadID string          `json:"session_thread_id,omitempty"`
+	CustomToolUseID string          `json:"custom_tool_use_id,omitempty"`
+	Name            string          `json:"name"`
+	Input           json.RawMessage `json:"input,omitempty"`
 }
 
 // ManagedAgentsAgentMCPToolUseEvent — the agent invoked an MCP tool
@@ -430,6 +441,8 @@ func decodeSessionEvent(raw []byte) ManagedAgentsSessionEvent {
 		out = &ManagedAgentsAgentToolUseEvent{}
 	case "agent.tool_result":
 		out = &ManagedAgentsAgentToolResultEvent{}
+	case "agent.custom_tool_use":
+		out = &ManagedAgentsAgentCustomToolUseEvent{}
 	case "agent.mcp_tool_use":
 		out = &ManagedAgentsAgentMCPToolUseEvent{}
 	case "agent.mcp_tool_result":

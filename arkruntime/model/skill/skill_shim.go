@@ -32,16 +32,25 @@ type UploadForm struct {
 
 	// DisplayTitle is the optional user-visible title for this skill.
 	DisplayTitle string
+
+	// ProtectionEnabled sets the optional skill protection flag.
+	ProtectionEnabled *bool
 }
 
-// MarshalMultipart writes DisplayTitle as a form part and appends the
-// zip File as the `files` binary part.
+// MarshalMultipart writes metadata form parts and appends the zip File as the
+// `files` binary part.
 func (u *UploadForm) MarshalMultipart() (data []byte, contentType string, err error) {
 	buf := bytes.NewBuffer(nil)
 	writer := multipart.NewWriter(buf)
 
 	if u.DisplayTitle != "" {
 		if err = writer.WriteField("display_title", u.DisplayTitle); err != nil {
+			_ = writer.Close()
+			return nil, "", err
+		}
+	}
+	if u.ProtectionEnabled != nil {
+		if err = writer.WriteField("protection_enabled", boolString(*u.ProtectionEnabled)); err != nil {
 			_ = writer.Close()
 			return nil, "", err
 		}
@@ -81,3 +90,10 @@ var errNilFile = errNilFileValue{}
 type errNilFileValue struct{}
 
 func (errNilFileValue) Error() string { return "missing required file part" }
+
+func boolString(v bool) string {
+	if v {
+		return "true"
+	}
+	return "false"
+}

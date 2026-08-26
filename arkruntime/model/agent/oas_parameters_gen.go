@@ -11,6 +11,10 @@ type AgentsListParams struct {
 	Limit OptInt32 `json:",omitempty,omitzero" query:"limit"`
 	// 数字页码，从 1 开始；首页可留空。.
 	Page OptString `json:",omitempty,omitzero" query:"page"`
+	// 按名称过滤。.
+	Name OptString `json:",omitempty,omitzero" query:"name"`
+	// 按展示名过滤。.
+	DisplayName OptString `json:",omitempty,omitzero" query:"display_name"`
 	// 创建时间下界（RFC 3339）。.
 	CreatedAtGte OptString `json:",omitempty,omitzero" query:"created_at_gte"`
 	// 创建时间上界（RFC 3339）。.

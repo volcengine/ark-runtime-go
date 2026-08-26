@@ -5,6 +5,41 @@
 
 package environment
 
+// EnvironmentWorkAckParams is parameters of EnvironmentWork_ack operation.
+type EnvironmentWorkAckParams struct {
+	EnvironmentId string
+	WorkId        string
+	// Worker 实例 ID，用于控制面记录 work 归属和排障。.
+	ArkWorkerID OptString `json:",omitempty,omitzero"`
+}
+
+// EnvironmentWorkHeartbeatParams is parameters of EnvironmentWork_heartbeat operation.
+type EnvironmentWorkHeartbeatParams struct {
+	EnvironmentId string
+	WorkId        string
+	// 期望刷新后的 TTL 秒数。.
+	DesiredTTLSeconds OptInt64 `json:",omitempty,omitzero" query:"desired_ttl_seconds"`
+	// Worker 上一次看到的 last_heartbeat，用于并发校验。.
+	ExpectedLastHeartbeat OptString `json:",omitempty,omitzero" query:"expected_last_heartbeat"`
+}
+
+// EnvironmentWorkPollParams is parameters of EnvironmentWork_poll operation.
+type EnvironmentWorkPollParams struct {
+	EnvironmentId string
+	// 长轮询阻塞时长，单位毫秒。.
+	BlockMs OptInt64 `json:",omitempty,omitzero" query:"block_ms"`
+	// 允许控制面回收超过指定时长未 heartbeat 的 work，单位毫秒。.
+	ReclaimOlderThanMs OptInt64 `json:",omitempty,omitzero" query:"reclaim_older_than_ms"`
+	// Worker 实例 ID，用于控制面记录 work 归属和排障。.
+	ArkWorkerID OptString `json:",omitempty,omitzero"`
+}
+
+// EnvironmentWorkStopParams is parameters of EnvironmentWork_stop operation.
+type EnvironmentWorkStopParams struct {
+	EnvironmentId string
+	WorkId        string
+}
+
 // EnvironmentsListParams is parameters of Environments_list operation.
 type EnvironmentsListParams struct {
 	// 下一页 cursor（opaque）。从上一次响应的 `next_page` 中取。

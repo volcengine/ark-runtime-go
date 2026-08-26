@@ -110,6 +110,12 @@ func (s *Agent) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.DisplayName.Set {
+			e.FieldStart("display_name")
+			s.DisplayName.Encode(e)
+		}
+	}
+	{
 		e.FieldStart("created_at")
 		e.Str(s.CreatedAt)
 	}
@@ -119,7 +125,7 @@ func (s *Agent) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfAgent = [15]string{
+var jsonFieldsNameOfAgent = [16]string{
 	0:  "id",
 	1:  "type",
 	2:  "name",
@@ -133,8 +139,9 @@ var jsonFieldsNameOfAgent = [15]string{
 	10: "multiagent",
 	11: "metadata",
 	12: "tags",
-	13: "created_at",
-	14: "updated_at",
+	13: "display_name",
+	14: "created_at",
+	15: "updated_at",
 }
 
 // Decode decodes Agent from json.
@@ -310,8 +317,18 @@ func (s *Agent) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"tags\"")
 			}
+		case "display_name":
+			if err := func() error {
+				s.DisplayName.Reset()
+				if err := s.DisplayName.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"display_name\"")
+			}
 		case "created_at":
-			requiredBitSet[1] |= 1 << 5
+			requiredBitSet[1] |= 1 << 6
 			if err := func() error {
 				v, err := d.Str()
 				s.CreatedAt = string(v)
@@ -323,7 +340,7 @@ func (s *Agent) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"created_at\"")
 			}
 		case "updated_at":
-			requiredBitSet[1] |= 1 << 6
+			requiredBitSet[1] |= 1 << 7
 			if err := func() error {
 				v, err := d.Str()
 				s.UpdatedAt = string(v)
@@ -345,7 +362,7 @@ func (s *Agent) Decode(d *jx.Decoder) error {
 	var failures []validate.FieldError
 	for i, mask := range [2]uint8{
 		0b00010111,
-		0b01100000,
+		0b11000000,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -472,12 +489,80 @@ func (s *AgentRef) encodeFields(e *jx.Encoder) {
 			s.Version.Encode(e)
 		}
 	}
+	{
+		if s.Name.Set {
+			e.FieldStart("name")
+			s.Name.Encode(e)
+		}
+	}
+	{
+		if s.Description.Set {
+			e.FieldStart("description")
+			s.Description.Encode(e)
+		}
+	}
+	{
+		if s.Model.Set {
+			e.FieldStart("model")
+			s.Model.Encode(e)
+		}
+	}
+	{
+		if s.System.Set {
+			e.FieldStart("system")
+			s.System.Encode(e)
+		}
+	}
+	{
+		if s.Tools != nil {
+			e.FieldStart("tools")
+			e.ArrStart()
+			for _, elem := range s.Tools {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		if s.McpServers != nil {
+			e.FieldStart("mcp_servers")
+			e.ArrStart()
+			for _, elem := range s.McpServers {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		if s.Skills != nil {
+			e.FieldStart("skills")
+			e.ArrStart()
+			for _, elem := range s.Skills {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		if s.DisplayName.Set {
+			e.FieldStart("display_name")
+			s.DisplayName.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfAgentRef = [3]string{
-	0: "type",
-	1: "id",
-	2: "version",
+var jsonFieldsNameOfAgentRef = [11]string{
+	0:  "type",
+	1:  "id",
+	2:  "version",
+	3:  "name",
+	4:  "description",
+	5:  "model",
+	6:  "system",
+	7:  "tools",
+	8:  "mcp_servers",
+	9:  "skills",
+	10: "display_name",
 }
 
 // Decode decodes AgentRef from json.
@@ -485,7 +570,7 @@ func (s *AgentRef) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode AgentRef to nil")
 	}
-	var requiredBitSet [1]uint8
+	var requiredBitSet [2]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
@@ -519,6 +604,107 @@ func (s *AgentRef) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
 			}
+		case "name":
+			if err := func() error {
+				s.Name.Reset()
+				if err := s.Name.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "description":
+			if err := func() error {
+				s.Description.Reset()
+				if err := s.Description.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"description\"")
+			}
+		case "model":
+			if err := func() error {
+				s.Model.Reset()
+				if err := s.Model.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"model\"")
+			}
+		case "system":
+			if err := func() error {
+				s.System.Reset()
+				if err := s.System.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"system\"")
+			}
+		case "tools":
+			if err := func() error {
+				s.Tools = make([]ToolItem, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem ToolItem
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Tools = append(s.Tools, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"tools\"")
+			}
+		case "mcp_servers":
+			if err := func() error {
+				s.McpServers = make([]MCPServer, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem MCPServer
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.McpServers = append(s.McpServers, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"mcp_servers\"")
+			}
+		case "skills":
+			if err := func() error {
+				s.Skills = make([]AgentSkillRef, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem AgentSkillRef
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Skills = append(s.Skills, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"skills\"")
+			}
+		case "display_name":
+			if err := func() error {
+				s.DisplayName.Reset()
+				if err := s.DisplayName.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"display_name\"")
+			}
 		default:
 			return d.Skip()
 		}
@@ -528,8 +714,9 @@ func (s *AgentRef) Decode(d *jx.Decoder) error {
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
-	for i, mask := range [1]uint8{
+	for i, mask := range [2]uint8{
 		0b00000001,
+		0b00000000,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -640,12 +827,19 @@ func (s *AgentSkillRef) encodeFields(e *jx.Encoder) {
 			s.Version.Encode(e)
 		}
 	}
+	{
+		if s.UseLatest.Set {
+			e.FieldStart("use_latest")
+			s.UseLatest.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfAgentSkillRef = [3]string{
+var jsonFieldsNameOfAgentSkillRef = [4]string{
 	0: "type",
 	1: "skill_id",
 	2: "version",
+	3: "use_latest",
 }
 
 // Decode decodes AgentSkillRef from json.
@@ -686,6 +880,16 @@ func (s *AgentSkillRef) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"version\"")
+			}
+		case "use_latest":
+			if err := func() error {
+				s.UseLatest.Reset()
+				if err := s.UseLatest.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"use_latest\"")
 			}
 		default:
 			return d.Skip()
@@ -805,6 +1009,12 @@ func (s *CreateAgentRequest) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.DisplayName.Set {
+			e.FieldStart("display_name")
+			s.DisplayName.Encode(e)
+		}
+	}
+	{
 		if s.System.Set {
 			e.FieldStart("system")
 			s.System.Encode(e)
@@ -864,17 +1074,18 @@ func (s *CreateAgentRequest) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfCreateAgentRequest = [10]string{
-	0: "name",
-	1: "model",
-	2: "description",
-	3: "system",
-	4: "mcp_servers",
-	5: "tools",
-	6: "skills",
-	7: "multiagent",
-	8: "metadata",
-	9: "tags",
+var jsonFieldsNameOfCreateAgentRequest = [11]string{
+	0:  "name",
+	1:  "model",
+	2:  "description",
+	3:  "display_name",
+	4:  "system",
+	5:  "mcp_servers",
+	6:  "tools",
+	7:  "skills",
+	8:  "multiagent",
+	9:  "metadata",
+	10: "tags",
 }
 
 // Decode decodes CreateAgentRequest from json.
@@ -917,6 +1128,16 @@ func (s *CreateAgentRequest) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"description\"")
+			}
+		case "display_name":
+			if err := func() error {
+				s.DisplayName.Reset()
+				if err := s.DisplayName.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"display_name\"")
 			}
 		case "system":
 			if err := func() error {
@@ -1125,6 +1346,174 @@ func (s CreateAgentRequestMetadata) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *CreateAgentRequestMetadata) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *CustomToolInputSchema) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *CustomToolInputSchema) encodeFields(e *jx.Encoder) {
+	{
+		if s.Type.Set {
+			e.FieldStart("type")
+			s.Type.Encode(e)
+		}
+	}
+	{
+		if s.Properties.Set {
+			e.FieldStart("properties")
+			s.Properties.Encode(e)
+		}
+	}
+	{
+		if s.Required != nil {
+			e.FieldStart("required")
+			e.ArrStart()
+			for _, elem := range s.Required {
+				e.Str(elem)
+			}
+			e.ArrEnd()
+		}
+	}
+}
+
+var jsonFieldsNameOfCustomToolInputSchema = [3]string{
+	0: "type",
+	1: "properties",
+	2: "required",
+}
+
+// Decode decodes CustomToolInputSchema from json.
+func (s *CustomToolInputSchema) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode CustomToolInputSchema to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "type":
+			if err := func() error {
+				s.Type.Reset()
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "properties":
+			if err := func() error {
+				s.Properties.Reset()
+				if err := s.Properties.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"properties\"")
+			}
+		case "required":
+			if err := func() error {
+				s.Required = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.Required = append(s.Required, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"required\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode CustomToolInputSchema")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *CustomToolInputSchema) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *CustomToolInputSchema) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s CustomToolInputSchemaProperties) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields implements json.Marshaler.
+func (s CustomToolInputSchemaProperties) encodeFields(e *jx.Encoder) {
+	for k, elem := range s {
+		e.FieldStart(k)
+
+		if len(elem) != 0 {
+			e.Raw(elem)
+		}
+	}
+}
+
+// Decode decodes CustomToolInputSchemaProperties from json.
+func (s *CustomToolInputSchemaProperties) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode CustomToolInputSchemaProperties to nil")
+	}
+	m := s.init()
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		var elem jx.Raw
+		if err := func() error {
+			v, err := d.RawAppend(nil)
+			elem = jx.Raw(v)
+			if err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return errors.Wrapf(err, "decode field %q", k)
+		}
+		m[string(k)] = elem
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode CustomToolInputSchemaProperties")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s CustomToolInputSchemaProperties) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *CustomToolInputSchemaProperties) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -1550,11 +1939,50 @@ func (s *ModelConfig) encodeFields(e *jx.Encoder) {
 			s.Speed.Encode(e)
 		}
 	}
+	{
+		if s.TokenLimits.Set {
+			e.FieldStart("token_limits")
+			s.TokenLimits.Encode(e)
+		}
+	}
+	{
+		if s.InputModalities != nil {
+			e.FieldStart("input_modalities")
+			e.ArrStart()
+			for _, elem := range s.InputModalities {
+				e.Str(elem)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		if s.Provider.Set {
+			e.FieldStart("provider")
+			s.Provider.Encode(e)
+		}
+	}
+	{
+		if s.Thinking.Set {
+			e.FieldStart("thinking")
+			s.Thinking.Encode(e)
+		}
+	}
+	{
+		if s.ReasoningEffort.Set {
+			e.FieldStart("reasoning_effort")
+			s.ReasoningEffort.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfModelConfig = [2]string{
+var jsonFieldsNameOfModelConfig = [7]string{
 	0: "id",
 	1: "speed",
+	2: "token_limits",
+	3: "input_modalities",
+	4: "provider",
+	5: "thinking",
+	6: "reasoning_effort",
 }
 
 // Decode decodes ModelConfig from json.
@@ -1587,6 +2015,65 @@ func (s *ModelConfig) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"speed\"")
+			}
+		case "token_limits":
+			if err := func() error {
+				s.TokenLimits.Reset()
+				if err := s.TokenLimits.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"token_limits\"")
+			}
+		case "input_modalities":
+			if err := func() error {
+				s.InputModalities = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.InputModalities = append(s.InputModalities, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"input_modalities\"")
+			}
+		case "provider":
+			if err := func() error {
+				s.Provider.Reset()
+				if err := s.Provider.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"provider\"")
+			}
+		case "thinking":
+			if err := func() error {
+				s.Thinking.Reset()
+				if err := s.Thinking.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"thinking\"")
+			}
+		case "reasoning_effort":
+			if err := func() error {
+				s.ReasoningEffort.Reset()
+				if err := s.ReasoningEffort.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"reasoning_effort\"")
 			}
 		default:
 			return d.Skip()
@@ -1946,6 +2433,73 @@ func (s *OptCreateAgentRequestMetadata) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes CustomToolInputSchema as json.
+func (o OptCustomToolInputSchema) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes CustomToolInputSchema from json.
+func (o *OptCustomToolInputSchema) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptCustomToolInputSchema to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptCustomToolInputSchema) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptCustomToolInputSchema) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes CustomToolInputSchemaProperties as json.
+func (o OptCustomToolInputSchemaProperties) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes CustomToolInputSchemaProperties from json.
+func (o *OptCustomToolInputSchemaProperties) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptCustomToolInputSchemaProperties to nil")
+	}
+	o.Set = true
+	o.Value = make(CustomToolInputSchemaProperties)
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptCustomToolInputSchemaProperties) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptCustomToolInputSchemaProperties) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes int32 as json.
 func (o OptInt32) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -2179,6 +2733,39 @@ func (s OptString) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptString) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes TokenLimits as json.
+func (o OptTokenLimits) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes TokenLimits from json.
+func (o *OptTokenLimits) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptTokenLimits to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptTokenLimits) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptTokenLimits) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -2535,6 +3122,103 @@ func (s *Tag) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *Tag) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *TokenLimits) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *TokenLimits) encodeFields(e *jx.Encoder) {
+	{
+		if s.ContextWindow.Set {
+			e.FieldStart("context_window")
+			s.ContextWindow.Encode(e)
+		}
+	}
+	{
+		if s.MaxInputTokenLength.Set {
+			e.FieldStart("max_input_token_length")
+			s.MaxInputTokenLength.Encode(e)
+		}
+	}
+	{
+		if s.MaxOutputTokenLength.Set {
+			e.FieldStart("max_output_token_length")
+			s.MaxOutputTokenLength.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfTokenLimits = [3]string{
+	0: "context_window",
+	1: "max_input_token_length",
+	2: "max_output_token_length",
+}
+
+// Decode decodes TokenLimits from json.
+func (s *TokenLimits) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode TokenLimits to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "context_window":
+			if err := func() error {
+				s.ContextWindow.Reset()
+				if err := s.ContextWindow.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"context_window\"")
+			}
+		case "max_input_token_length":
+			if err := func() error {
+				s.MaxInputTokenLength.Reset()
+				if err := s.MaxInputTokenLength.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"max_input_token_length\"")
+			}
+		case "max_output_token_length":
+			if err := func() error {
+				s.MaxOutputTokenLength.Reset()
+				if err := s.MaxOutputTokenLength.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"max_output_token_length\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode TokenLimits")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *TokenLimits) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *TokenLimits) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -2978,6 +3662,12 @@ func (s *UpdateAgentRequest) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.DisplayName.Set {
+			e.FieldStart("display_name")
+			s.DisplayName.Encode(e)
+		}
+	}
+	{
 		if s.Model.Set {
 			e.FieldStart("model")
 			s.Model.Encode(e)
@@ -3037,19 +3727,31 @@ func (s *UpdateAgentRequest) encodeFields(e *jx.Encoder) {
 			s.Metadata.Encode(e)
 		}
 	}
+	{
+		if s.Tags != nil {
+			e.FieldStart("tags")
+			e.ArrStart()
+			for _, elem := range s.Tags {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
 }
 
-var jsonFieldsNameOfUpdateAgentRequest = [10]string{
-	0: "version",
-	1: "name",
-	2: "model",
-	3: "description",
-	4: "system",
-	5: "mcp_servers",
-	6: "tools",
-	7: "skills",
-	8: "multiagent",
-	9: "metadata",
+var jsonFieldsNameOfUpdateAgentRequest = [12]string{
+	0:  "version",
+	1:  "name",
+	2:  "display_name",
+	3:  "model",
+	4:  "description",
+	5:  "system",
+	6:  "mcp_servers",
+	7:  "tools",
+	8:  "skills",
+	9:  "multiagent",
+	10: "metadata",
+	11: "tags",
 }
 
 // Decode decodes UpdateAgentRequest from json.
@@ -3082,6 +3784,16 @@ func (s *UpdateAgentRequest) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "display_name":
+			if err := func() error {
+				s.DisplayName.Reset()
+				if err := s.DisplayName.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"display_name\"")
 			}
 		case "model":
 			if err := func() error {
@@ -3183,6 +3895,23 @@ func (s *UpdateAgentRequest) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"metadata\"")
+			}
+		case "tags":
+			if err := func() error {
+				s.Tags = make([]Tag, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem Tag
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Tags = append(s.Tags, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"tags\"")
 			}
 		default:
 			return d.Skip()

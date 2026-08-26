@@ -7,6 +7,7 @@ package agent
 
 import (
 	"github.com/go-faster/errors"
+	"github.com/go-faster/jx"
 )
 
 // ARK Managed Agents 控制面核心资源
@@ -39,6 +40,8 @@ type Agent struct {
 	Metadata OptAgentMetadata `json:"metadata"`
 	// 资源标签。.
 	Tags []Tag `json:"tags"`
+	// 展示名。.
+	DisplayName OptString `json:"display_name"`
 	// RFC 3339 时间。.
 	CreatedAt string `json:"created_at"`
 	// RFC 3339 时间。.
@@ -108,6 +111,11 @@ func (s *Agent) GetMetadata() OptAgentMetadata {
 // GetTags returns the value of Tags.
 func (s *Agent) GetTags() []Tag {
 	return s.Tags
+}
+
+// GetDisplayName returns the value of DisplayName.
+func (s *Agent) GetDisplayName() OptString {
+	return s.DisplayName
 }
 
 // GetCreatedAt returns the value of CreatedAt.
@@ -185,6 +193,11 @@ func (s *Agent) SetTags(val []Tag) {
 	s.Tags = val
 }
 
+// SetDisplayName sets the value of DisplayName.
+func (s *Agent) SetDisplayName(val OptString) {
+	s.DisplayName = val
+}
+
 // SetCreatedAt sets the value of CreatedAt.
 func (s *Agent) SetCreatedAt(val string) {
 	s.CreatedAt = val
@@ -216,6 +229,22 @@ type AgentRef struct {
 	ID OptString `json:"id"`
 	// 被引用 Agent 的版本号。.
 	Version OptInt32 `json:"version"`
+	// Session 响应中冻结的成员 Agent 名称。.
+	Name OptString `json:"name"`
+	// Session 响应中冻结的成员 Agent 描述。.
+	Description OptString `json:"description"`
+	// Session 响应中冻结的成员 Agent 模型配置。.
+	Model OptModelConfig `json:"model"`
+	// Session 响应中冻结的成员 Agent system prompt。.
+	System OptString `json:"system"`
+	// Session 响应中冻结的成员 Agent 工具配置。.
+	Tools []ToolItem `json:"tools"`
+	// Session 响应中冻结的成员 Agent MCP servers。.
+	McpServers []MCPServer `json:"mcp_servers"`
+	// Session 响应中冻结的成员 Agent skills。.
+	Skills []AgentSkillRef `json:"skills"`
+	// Session 响应中冻结的成员 Agent 展示名。.
+	DisplayName OptString `json:"display_name"`
 }
 
 // GetType returns the value of Type.
@@ -233,6 +262,46 @@ func (s *AgentRef) GetVersion() OptInt32 {
 	return s.Version
 }
 
+// GetName returns the value of Name.
+func (s *AgentRef) GetName() OptString {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *AgentRef) GetDescription() OptString {
+	return s.Description
+}
+
+// GetModel returns the value of Model.
+func (s *AgentRef) GetModel() OptModelConfig {
+	return s.Model
+}
+
+// GetSystem returns the value of System.
+func (s *AgentRef) GetSystem() OptString {
+	return s.System
+}
+
+// GetTools returns the value of Tools.
+func (s *AgentRef) GetTools() []ToolItem {
+	return s.Tools
+}
+
+// GetMcpServers returns the value of McpServers.
+func (s *AgentRef) GetMcpServers() []MCPServer {
+	return s.McpServers
+}
+
+// GetSkills returns the value of Skills.
+func (s *AgentRef) GetSkills() []AgentSkillRef {
+	return s.Skills
+}
+
+// GetDisplayName returns the value of DisplayName.
+func (s *AgentRef) GetDisplayName() OptString {
+	return s.DisplayName
+}
+
 // SetType sets the value of Type.
 func (s *AgentRef) SetType(val AgentRefType) {
 	s.Type = val
@@ -246,6 +315,46 @@ func (s *AgentRef) SetID(val OptString) {
 // SetVersion sets the value of Version.
 func (s *AgentRef) SetVersion(val OptInt32) {
 	s.Version = val
+}
+
+// SetName sets the value of Name.
+func (s *AgentRef) SetName(val OptString) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *AgentRef) SetDescription(val OptString) {
+	s.Description = val
+}
+
+// SetModel sets the value of Model.
+func (s *AgentRef) SetModel(val OptModelConfig) {
+	s.Model = val
+}
+
+// SetSystem sets the value of System.
+func (s *AgentRef) SetSystem(val OptString) {
+	s.System = val
+}
+
+// SetTools sets the value of Tools.
+func (s *AgentRef) SetTools(val []ToolItem) {
+	s.Tools = val
+}
+
+// SetMcpServers sets the value of McpServers.
+func (s *AgentRef) SetMcpServers(val []MCPServer) {
+	s.McpServers = val
+}
+
+// SetSkills sets the value of Skills.
+func (s *AgentRef) SetSkills(val []AgentSkillRef) {
+	s.Skills = val
+}
+
+// SetDisplayName sets the value of DisplayName.
+func (s *AgentRef) SetDisplayName(val OptString) {
+	s.DisplayName = val
 }
 
 // 多 Agent 引用类型。.
@@ -300,6 +409,8 @@ type AgentSkillRef struct {
 	SkillID OptString `json:"skill_id"`
 	// Skill 版本号，可选；不传走最新。.
 	Version OptString `json:"version"`
+	// Session 快照中标识创建时用户选择的是使用最新版本。.
+	UseLatest OptBool `json:"use_latest"`
 }
 
 // GetType returns the value of Type.
@@ -317,6 +428,11 @@ func (s *AgentSkillRef) GetVersion() OptString {
 	return s.Version
 }
 
+// GetUseLatest returns the value of UseLatest.
+func (s *AgentSkillRef) GetUseLatest() OptBool {
+	return s.UseLatest
+}
+
 // SetType sets the value of Type.
 func (s *AgentSkillRef) SetType(val SkillRefType) {
 	s.Type = val
@@ -330,6 +446,11 @@ func (s *AgentSkillRef) SetSkillID(val OptString) {
 // SetVersion sets the value of Version.
 func (s *AgentSkillRef) SetVersion(val OptString) {
 	s.Version = val
+}
+
+// SetUseLatest sets the value of UseLatest.
+func (s *AgentSkillRef) SetUseLatest(val OptBool) {
+	s.UseLatest = val
 }
 
 // 固定 `"agent"`。.
@@ -376,6 +497,8 @@ type CreateAgentRequest struct {
 	Model ModelConfig `json:"model"`
 	// 描述信息。.
 	Description OptString `json:"description"`
+	// 展示名。.
+	DisplayName OptString `json:"display_name"`
 	// System prompt。.
 	System OptString `json:"system"`
 	// MCP 服务器列表。.
@@ -405,6 +528,11 @@ func (s *CreateAgentRequest) GetModel() ModelConfig {
 // GetDescription returns the value of Description.
 func (s *CreateAgentRequest) GetDescription() OptString {
 	return s.Description
+}
+
+// GetDisplayName returns the value of DisplayName.
+func (s *CreateAgentRequest) GetDisplayName() OptString {
+	return s.DisplayName
 }
 
 // GetSystem returns the value of System.
@@ -457,6 +585,11 @@ func (s *CreateAgentRequest) SetDescription(val OptString) {
 	s.Description = val
 }
 
+// SetDisplayName sets the value of DisplayName.
+func (s *CreateAgentRequest) SetDisplayName(val OptString) {
+	s.DisplayName = val
+}
+
 // SetSystem sets the value of System.
 func (s *CreateAgentRequest) SetSystem(val OptString) {
 	s.System = val
@@ -499,6 +632,59 @@ func (s *CreateAgentRequestMetadata) init() CreateAgentRequestMetadata {
 	m := *s
 	if m == nil {
 		m = map[string]string{}
+		*s = m
+	}
+	return m
+}
+
+// Custom tool 的输入 JSON Schema。.
+// Ref: #/components/schemas/CustomToolInputSchema
+type CustomToolInputSchema struct {
+	// JSON Schema 顶层类型；缺省按 `"object"` 处理。.
+	Type OptString `json:"type"`
+	// JSON Schema properties 对象。.
+	Properties OptCustomToolInputSchemaProperties `json:"properties"`
+	// 必填属性名列表。.
+	Required []string `json:"required"`
+}
+
+// GetType returns the value of Type.
+func (s *CustomToolInputSchema) GetType() OptString {
+	return s.Type
+}
+
+// GetProperties returns the value of Properties.
+func (s *CustomToolInputSchema) GetProperties() OptCustomToolInputSchemaProperties {
+	return s.Properties
+}
+
+// GetRequired returns the value of Required.
+func (s *CustomToolInputSchema) GetRequired() []string {
+	return s.Required
+}
+
+// SetType sets the value of Type.
+func (s *CustomToolInputSchema) SetType(val OptString) {
+	s.Type = val
+}
+
+// SetProperties sets the value of Properties.
+func (s *CustomToolInputSchema) SetProperties(val OptCustomToolInputSchemaProperties) {
+	s.Properties = val
+}
+
+// SetRequired sets the value of Required.
+func (s *CustomToolInputSchema) SetRequired(val []string) {
+	s.Required = val
+}
+
+// JSON Schema properties 对象。.
+type CustomToolInputSchemaProperties map[string]jx.Raw
+
+func (s *CustomToolInputSchemaProperties) init() CustomToolInputSchemaProperties {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
 		*s = m
 	}
 	return m
@@ -646,6 +832,16 @@ type ModelConfig struct {
 	ID string `json:"id"`
 	// 速度档位。空字符串走默认（并非所有模型都支持 `fast`）。.
 	Speed OptModelSpeed `json:"speed"`
+	// 模型 token 限制快照。.
+	TokenLimits OptTokenLimits `json:"token_limits"`
+	// 底模支持的输入模态列表。.
+	InputModalities []string `json:"input_modalities"`
+	// 模型提供方。.
+	Provider OptString `json:"provider"`
+	// Thinking 配置。.
+	Thinking OptString `json:"thinking"`
+	// 推理努力程度。.
+	ReasoningEffort OptString `json:"reasoning_effort"`
 }
 
 // GetID returns the value of ID.
@@ -658,6 +854,31 @@ func (s *ModelConfig) GetSpeed() OptModelSpeed {
 	return s.Speed
 }
 
+// GetTokenLimits returns the value of TokenLimits.
+func (s *ModelConfig) GetTokenLimits() OptTokenLimits {
+	return s.TokenLimits
+}
+
+// GetInputModalities returns the value of InputModalities.
+func (s *ModelConfig) GetInputModalities() []string {
+	return s.InputModalities
+}
+
+// GetProvider returns the value of Provider.
+func (s *ModelConfig) GetProvider() OptString {
+	return s.Provider
+}
+
+// GetThinking returns the value of Thinking.
+func (s *ModelConfig) GetThinking() OptString {
+	return s.Thinking
+}
+
+// GetReasoningEffort returns the value of ReasoningEffort.
+func (s *ModelConfig) GetReasoningEffort() OptString {
+	return s.ReasoningEffort
+}
+
 // SetID sets the value of ID.
 func (s *ModelConfig) SetID(val string) {
 	s.ID = val
@@ -666,6 +887,31 @@ func (s *ModelConfig) SetID(val string) {
 // SetSpeed sets the value of Speed.
 func (s *ModelConfig) SetSpeed(val OptModelSpeed) {
 	s.Speed = val
+}
+
+// SetTokenLimits sets the value of TokenLimits.
+func (s *ModelConfig) SetTokenLimits(val OptTokenLimits) {
+	s.TokenLimits = val
+}
+
+// SetInputModalities sets the value of InputModalities.
+func (s *ModelConfig) SetInputModalities(val []string) {
+	s.InputModalities = val
+}
+
+// SetProvider sets the value of Provider.
+func (s *ModelConfig) SetProvider(val OptString) {
+	s.Provider = val
+}
+
+// SetThinking sets the value of Thinking.
+func (s *ModelConfig) SetThinking(val OptString) {
+	s.Thinking = val
+}
+
+// SetReasoningEffort sets the value of ReasoningEffort.
+func (s *ModelConfig) SetReasoningEffort(val OptString) {
+	s.ReasoningEffort = val
 }
 
 // 模型速度档位。空字符串走默认。.
@@ -909,6 +1155,98 @@ func (o OptCreateAgentRequestMetadata) Get() (v CreateAgentRequestMetadata, ok b
 
 // Or returns value if set, or given parameter if does not.
 func (o OptCreateAgentRequestMetadata) Or(d CreateAgentRequestMetadata) CreateAgentRequestMetadata {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptCustomToolInputSchema returns new OptCustomToolInputSchema with value set to v.
+func NewOptCustomToolInputSchema(v CustomToolInputSchema) OptCustomToolInputSchema {
+	return OptCustomToolInputSchema{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptCustomToolInputSchema is optional CustomToolInputSchema.
+type OptCustomToolInputSchema struct {
+	Value CustomToolInputSchema
+	Set   bool
+}
+
+// IsSet returns true if OptCustomToolInputSchema was set.
+func (o OptCustomToolInputSchema) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptCustomToolInputSchema) Reset() {
+	var v CustomToolInputSchema
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptCustomToolInputSchema) SetTo(v CustomToolInputSchema) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptCustomToolInputSchema) Get() (v CustomToolInputSchema, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptCustomToolInputSchema) Or(d CustomToolInputSchema) CustomToolInputSchema {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptCustomToolInputSchemaProperties returns new OptCustomToolInputSchemaProperties with value set to v.
+func NewOptCustomToolInputSchemaProperties(v CustomToolInputSchemaProperties) OptCustomToolInputSchemaProperties {
+	return OptCustomToolInputSchemaProperties{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptCustomToolInputSchemaProperties is optional CustomToolInputSchemaProperties.
+type OptCustomToolInputSchemaProperties struct {
+	Value CustomToolInputSchemaProperties
+	Set   bool
+}
+
+// IsSet returns true if OptCustomToolInputSchemaProperties was set.
+func (o OptCustomToolInputSchemaProperties) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptCustomToolInputSchemaProperties) Reset() {
+	var v CustomToolInputSchemaProperties
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptCustomToolInputSchemaProperties) SetTo(v CustomToolInputSchemaProperties) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptCustomToolInputSchemaProperties) Get() (v CustomToolInputSchemaProperties, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptCustomToolInputSchemaProperties) Or(d CustomToolInputSchemaProperties) CustomToolInputSchemaProperties {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -1237,6 +1575,52 @@ func (o OptString) Or(d string) string {
 	return d
 }
 
+// NewOptTokenLimits returns new OptTokenLimits with value set to v.
+func NewOptTokenLimits(v TokenLimits) OptTokenLimits {
+	return OptTokenLimits{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptTokenLimits is optional TokenLimits.
+type OptTokenLimits struct {
+	Value TokenLimits
+	Set   bool
+}
+
+// IsSet returns true if OptTokenLimits was set.
+func (o OptTokenLimits) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptTokenLimits) Reset() {
+	var v TokenLimits
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptTokenLimits) SetTo(v TokenLimits) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptTokenLimits) Get() (v TokenLimits, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptTokenLimits) Or(d TokenLimits) TokenLimits {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptToolDefaultConfig returns new OptToolDefaultConfig with value set to v.
 func NewOptToolDefaultConfig(v ToolDefaultConfig) OptToolDefaultConfig {
 	return OptToolDefaultConfig{
@@ -1468,6 +1852,47 @@ func (s *Tag) SetValue(val OptString) {
 	s.Value = val
 }
 
+// 模型上下文与输入输出 token 限制。.
+// Ref: #/components/schemas/TokenLimits
+type TokenLimits struct {
+	// 模型上下文窗口。.
+	ContextWindow OptInt64 `json:"context_window"`
+	// 最大输入 token 长度。.
+	MaxInputTokenLength OptInt64 `json:"max_input_token_length"`
+	// 最大输出 token 长度。.
+	MaxOutputTokenLength OptInt64 `json:"max_output_token_length"`
+}
+
+// GetContextWindow returns the value of ContextWindow.
+func (s *TokenLimits) GetContextWindow() OptInt64 {
+	return s.ContextWindow
+}
+
+// GetMaxInputTokenLength returns the value of MaxInputTokenLength.
+func (s *TokenLimits) GetMaxInputTokenLength() OptInt64 {
+	return s.MaxInputTokenLength
+}
+
+// GetMaxOutputTokenLength returns the value of MaxOutputTokenLength.
+func (s *TokenLimits) GetMaxOutputTokenLength() OptInt64 {
+	return s.MaxOutputTokenLength
+}
+
+// SetContextWindow sets the value of ContextWindow.
+func (s *TokenLimits) SetContextWindow(val OptInt64) {
+	s.ContextWindow = val
+}
+
+// SetMaxInputTokenLength sets the value of MaxInputTokenLength.
+func (s *TokenLimits) SetMaxInputTokenLength(val OptInt64) {
+	s.MaxInputTokenLength = val
+}
+
+// SetMaxOutputTokenLength sets the value of MaxOutputTokenLength.
+func (s *TokenLimits) SetMaxOutputTokenLength(val OptInt64) {
+	s.MaxOutputTokenLength = val
+}
+
 // Toolset 类型工具的单条配置项。.
 // Ref: #/components/schemas/ToolConfig
 type ToolConfig struct {
@@ -1542,6 +1967,7 @@ func (s *ToolDefaultConfig) SetPermissionPolicy(val OptPermissionPolicy) {
 // - `agent_toolset_<date>`：内置工具集（当前默认 `agent_toolset_20260701`；
 // 存量 `agent_toolset_20260401` 仍兼容）
 // - `mcp_toolset`：来自 `mcp_servers[]` 的工具集
+// - `evolution`：自演进类工具
 // - `custom`：客户端执行的自定义工具
 // 所有变体字段合并在一个 model 里，未使用的字段留空即可（proto oneof
 // 风格；wire 上就是同一个 JSON 对象按 `type` 决定语义）。.
@@ -1559,9 +1985,8 @@ type ToolItem struct {
 	Name OptString `json:"name"`
 	// `custom` 专用；1–1024 字符。.
 	Description OptString `json:"description"`
-	// `custom` 专用；承载 JSON Schema 的字符串形态
-	// （wire 上是 JSON-encoded string，非 nested object）。.
-	InputSchema OptString `json:"input_schema"`
+	// `custom` 专用；承载 JSON Schema 对象。.
+	InputSchema OptCustomToolInputSchema `json:"input_schema"`
 }
 
 // GetType returns the value of Type.
@@ -1595,7 +2020,7 @@ func (s *ToolItem) GetDescription() OptString {
 }
 
 // GetInputSchema returns the value of InputSchema.
-func (s *ToolItem) GetInputSchema() OptString {
+func (s *ToolItem) GetInputSchema() OptCustomToolInputSchema {
 	return s.InputSchema
 }
 
@@ -1630,7 +2055,7 @@ func (s *ToolItem) SetDescription(val OptString) {
 }
 
 // SetInputSchema sets the value of InputSchema.
-func (s *ToolItem) SetInputSchema(val OptString) {
+func (s *ToolItem) SetInputSchema(val OptCustomToolInputSchema) {
 	s.InputSchema = val
 }
 
@@ -1647,6 +2072,8 @@ type UpdateAgentRequest struct {
 	Version int32 `json:"version"`
 	// 人类可读名称。.
 	Name OptString `json:"name"`
+	// 展示名。.
+	DisplayName OptString `json:"display_name"`
 	// 模型配置。.
 	Model OptModelConfig `json:"model"`
 	// 描述信息。.
@@ -1663,6 +2090,8 @@ type UpdateAgentRequest struct {
 	Multiagent OptMultiagentConfig `json:"multiagent"`
 	// 用户自定义键值对元数据（patch）。.
 	Metadata OptUpdateAgentRequestMetadata `json:"metadata"`
+	// 资源标签（整体替换）。.
+	Tags []Tag `json:"tags"`
 }
 
 // GetVersion returns the value of Version.
@@ -1673,6 +2102,11 @@ func (s *UpdateAgentRequest) GetVersion() int32 {
 // GetName returns the value of Name.
 func (s *UpdateAgentRequest) GetName() OptString {
 	return s.Name
+}
+
+// GetDisplayName returns the value of DisplayName.
+func (s *UpdateAgentRequest) GetDisplayName() OptString {
+	return s.DisplayName
 }
 
 // GetModel returns the value of Model.
@@ -1715,6 +2149,11 @@ func (s *UpdateAgentRequest) GetMetadata() OptUpdateAgentRequestMetadata {
 	return s.Metadata
 }
 
+// GetTags returns the value of Tags.
+func (s *UpdateAgentRequest) GetTags() []Tag {
+	return s.Tags
+}
+
 // SetVersion sets the value of Version.
 func (s *UpdateAgentRequest) SetVersion(val int32) {
 	s.Version = val
@@ -1723,6 +2162,11 @@ func (s *UpdateAgentRequest) SetVersion(val int32) {
 // SetName sets the value of Name.
 func (s *UpdateAgentRequest) SetName(val OptString) {
 	s.Name = val
+}
+
+// SetDisplayName sets the value of DisplayName.
+func (s *UpdateAgentRequest) SetDisplayName(val OptString) {
+	s.DisplayName = val
 }
 
 // SetModel sets the value of Model.
@@ -1763,6 +2207,11 @@ func (s *UpdateAgentRequest) SetMultiagent(val OptMultiagentConfig) {
 // SetMetadata sets the value of Metadata.
 func (s *UpdateAgentRequest) SetMetadata(val OptUpdateAgentRequestMetadata) {
 	s.Metadata = val
+}
+
+// SetTags sets the value of Tags.
+func (s *UpdateAgentRequest) SetTags(val []Tag) {
+	s.Tags = val
 }
 
 // 用户自定义键值对元数据（patch）。.

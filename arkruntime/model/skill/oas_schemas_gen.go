@@ -13,6 +13,8 @@ import (
 type CreateSkillRequest struct {
 	// Skill 展示名。.
 	DisplayTitle OptString `json:"display_title" form:"display_title"`
+	// 是否启用 Skill 内容保护。.
+	ProtectionEnabled OptBool `json:"protection_enabled" form:"protection_enabled"`
 }
 
 // GetDisplayTitle returns the value of DisplayTitle.
@@ -20,9 +22,65 @@ func (s *CreateSkillRequest) GetDisplayTitle() OptString {
 	return s.DisplayTitle
 }
 
+// GetProtectionEnabled returns the value of ProtectionEnabled.
+func (s *CreateSkillRequest) GetProtectionEnabled() OptBool {
+	return s.ProtectionEnabled
+}
+
 // SetDisplayTitle sets the value of DisplayTitle.
 func (s *CreateSkillRequest) SetDisplayTitle(val OptString) {
 	s.DisplayTitle = val
+}
+
+// SetProtectionEnabled sets the value of ProtectionEnabled.
+func (s *CreateSkillRequest) SetProtectionEnabled(val OptBool) {
+	s.ProtectionEnabled = val
+}
+
+// NewOptBool returns new OptBool with value set to v.
+func NewOptBool(v bool) OptBool {
+	return OptBool{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptBool is optional bool.
+type OptBool struct {
+	Value bool
+	Set   bool
+}
+
+// IsSet returns true if OptBool was set.
+func (o OptBool) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptBool) Reset() {
+	var v bool
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptBool) SetTo(v bool) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptBool) Get() (v bool, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptBool) Or(d bool) bool {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
 }
 
 // NewOptString returns new OptString with value set to v.
@@ -87,8 +145,16 @@ type Skill struct {
 	Description OptString `json:"description"`
 	// 最新版本号。.
 	LatestVersion string `json:"latest_version"`
-	// 人类可读名称。.
-	Name string `json:"name"`
+	// Skill 展示名。.
+	DisplayTitle string `json:"display_title"`
+	// Skill 来源，例如 `custom` / `skill_hub` / `ark`。.
+	Source string `json:"source"`
+	// 更新时间（Unix 秒）。.
+	UpdatedAt int64 `json:"updated_at"`
+	// SKILL.md 中解析出的 name。.
+	Name OptString `json:"name"`
+	// 是否启用内容保护。.
+	ProtectionEnabled OptBool `json:"protection_enabled"`
 }
 
 // GetID returns the value of ID.
@@ -116,9 +182,29 @@ func (s *Skill) GetLatestVersion() string {
 	return s.LatestVersion
 }
 
+// GetDisplayTitle returns the value of DisplayTitle.
+func (s *Skill) GetDisplayTitle() string {
+	return s.DisplayTitle
+}
+
+// GetSource returns the value of Source.
+func (s *Skill) GetSource() string {
+	return s.Source
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *Skill) GetUpdatedAt() int64 {
+	return s.UpdatedAt
+}
+
 // GetName returns the value of Name.
-func (s *Skill) GetName() string {
+func (s *Skill) GetName() OptString {
 	return s.Name
+}
+
+// GetProtectionEnabled returns the value of ProtectionEnabled.
+func (s *Skill) GetProtectionEnabled() OptBool {
+	return s.ProtectionEnabled
 }
 
 // SetID sets the value of ID.
@@ -146,9 +232,29 @@ func (s *Skill) SetLatestVersion(val string) {
 	s.LatestVersion = val
 }
 
+// SetDisplayTitle sets the value of DisplayTitle.
+func (s *Skill) SetDisplayTitle(val string) {
+	s.DisplayTitle = val
+}
+
+// SetSource sets the value of Source.
+func (s *Skill) SetSource(val string) {
+	s.Source = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *Skill) SetUpdatedAt(val int64) {
+	s.UpdatedAt = val
+}
+
 // SetName sets the value of Name.
-func (s *Skill) SetName(val string) {
+func (s *Skill) SetName(val OptString) {
 	s.Name = val
+}
+
+// SetProtectionEnabled sets the value of ProtectionEnabled.
+func (s *Skill) SetProtectionEnabled(val OptBool) {
+	s.ProtectionEnabled = val
 }
 
 // 固定 `"skill"`。.
@@ -184,4 +290,19 @@ func (s *SkillObject) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
+}
+
+// SkillVersionContentDownloadFound is response for SkillVersionContentDownload operation.
+type SkillVersionContentDownloadFound struct {
+	Location string
+}
+
+// GetLocation returns the value of Location.
+func (s *SkillVersionContentDownloadFound) GetLocation() string {
+	return s.Location
+}
+
+// SetLocation sets the value of Location.
+func (s *SkillVersionContentDownloadFound) SetLocation(val string) {
+	s.Location = val
 }

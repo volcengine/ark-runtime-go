@@ -29,10 +29,17 @@ func (s *CreateSkillRequest) encodeFields(e *jx.Encoder) {
 			s.DisplayTitle.Encode(e)
 		}
 	}
+	{
+		if s.ProtectionEnabled.Set {
+			e.FieldStart("protection_enabled")
+			s.ProtectionEnabled.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfCreateSkillRequest = [1]string{
+var jsonFieldsNameOfCreateSkillRequest = [2]string{
 	0: "display_title",
+	1: "protection_enabled",
 }
 
 // Decode decodes CreateSkillRequest from json.
@@ -52,6 +59,16 @@ func (s *CreateSkillRequest) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"display_title\"")
+			}
+		case "protection_enabled":
+			if err := func() error {
+				s.ProtectionEnabled.Reset()
+				if err := s.ProtectionEnabled.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"protection_enabled\"")
 			}
 		default:
 			return d.Skip()
@@ -73,6 +90,41 @@ func (s *CreateSkillRequest) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *CreateSkillRequest) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes bool as json.
+func (o OptBool) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	e.Bool(bool(o.Value))
+}
+
+// Decode decodes bool from json.
+func (o *OptBool) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptBool to nil")
+	}
+	o.Set = true
+	v, err := d.Bool()
+	if err != nil {
+		return err
+	}
+	o.Value = bool(v)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptBool) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptBool) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -144,18 +196,42 @@ func (s *Skill) encodeFields(e *jx.Encoder) {
 		e.Str(s.LatestVersion)
 	}
 	{
-		e.FieldStart("name")
-		e.Str(s.Name)
+		e.FieldStart("display_title")
+		e.Str(s.DisplayTitle)
+	}
+	{
+		e.FieldStart("source")
+		e.Str(s.Source)
+	}
+	{
+		e.FieldStart("updated_at")
+		e.Int64(s.UpdatedAt)
+	}
+	{
+		if s.Name.Set {
+			e.FieldStart("name")
+			s.Name.Encode(e)
+		}
+	}
+	{
+		if s.ProtectionEnabled.Set {
+			e.FieldStart("protection_enabled")
+			s.ProtectionEnabled.Encode(e)
+		}
 	}
 }
 
-var jsonFieldsNameOfSkill = [6]string{
+var jsonFieldsNameOfSkill = [10]string{
 	0: "id",
 	1: "object",
 	2: "created_at",
 	3: "description",
 	4: "latest_version",
-	5: "name",
+	5: "display_title",
+	6: "source",
+	7: "updated_at",
+	8: "name",
+	9: "protection_enabled",
 }
 
 // Decode decodes Skill from json.
@@ -163,7 +239,7 @@ func (s *Skill) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode Skill to nil")
 	}
-	var requiredBitSet [1]uint8
+	var requiredBitSet [2]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
@@ -223,17 +299,61 @@ func (s *Skill) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"latest_version\"")
 			}
-		case "name":
+		case "display_title":
 			requiredBitSet[0] |= 1 << 5
 			if err := func() error {
 				v, err := d.Str()
-				s.Name = string(v)
+				s.DisplayTitle = string(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
+				return errors.Wrap(err, "decode field \"display_title\"")
+			}
+		case "source":
+			requiredBitSet[0] |= 1 << 6
+			if err := func() error {
+				v, err := d.Str()
+				s.Source = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"source\"")
+			}
+		case "updated_at":
+			requiredBitSet[0] |= 1 << 7
+			if err := func() error {
+				v, err := d.Int64()
+				s.UpdatedAt = int64(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"updated_at\"")
+			}
+		case "name":
+			if err := func() error {
+				s.Name.Reset()
+				if err := s.Name.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
 				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "protection_enabled":
+			if err := func() error {
+				s.ProtectionEnabled.Reset()
+				if err := s.ProtectionEnabled.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"protection_enabled\"")
 			}
 		default:
 			return d.Skip()
@@ -244,8 +364,9 @@ func (s *Skill) Decode(d *jx.Decoder) error {
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
-	for i, mask := range [1]uint8{
-		0b00110111,
+	for i, mask := range [2]uint8{
+		0b11110111,
+		0b00000000,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
