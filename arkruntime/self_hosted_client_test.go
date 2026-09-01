@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/volcengine/ark-runtime-go/arkruntime/model/environment"
 	"github.com/volcengine/ark-runtime-go/arkruntime/model/session"
@@ -138,6 +139,59 @@ func TestEnvironmentWorkRequests(t *testing.T) {
 	}
 	if strings.Join(seen, "\n") != strings.Join(want, "\n") {
 		t.Fatalf("requests = %v, want %v", seen, want)
+	}
+}
+
+func TestSessionStreamsIgnoreHTTPClientTimeout(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.WriteHeader(http.StatusOK)
+		if flusher, ok := w.(http.Flusher); ok {
+			flusher.Flush()
+		}
+		time.Sleep(80 * time.Millisecond)
+		_, _ = io.WriteString(w, "data: {\"type\":\"session.status_idle\"}\n\n")
+	}))
+	defer server.Close()
+
+	client := NewClientWithApiKey(
+		"test-api-key",
+		WithBaseUrl(server.URL),
+		WithHTTPClient(&http.Client{Timeout: 20 * time.Millisecond}),
+	)
+	tests := []struct {
+		name string
+		open func(context.Context) (*session.StreamDecoder, error)
+	}{
+		{
+			name: "session",
+			open: func(ctx context.Context) (*session.StreamDecoder, error) {
+				return client.StreamSessionEvents(ctx, "sess-1")
+			},
+		},
+		{
+			name: "thread",
+			open: func(ctx context.Context) (*session.StreamDecoder, error) {
+				return client.StreamSessionThreadEvents(ctx, "sess-1", "thread-1")
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			decoder, err := test.open(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer decoder.Close() //nolint:errcheck // test cleanup
+			if !decoder.Next() {
+				t.Fatalf("stream ended before delayed event: %v", decoder.Err())
+			}
+			if decoder.Event().Type != "session.status_idle" {
+				t.Fatalf("event type = %q", decoder.Event().Type)
+			}
+		})
 	}
 }
 

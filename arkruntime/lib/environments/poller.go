@@ -34,10 +34,14 @@ type WorkPollerOptions struct {
 	BlockMS            int
 	ReclaimOlderThanMS int
 	Drain              bool
-	Logger             *log.Logger
+	// AutoStop 控制 Poller 是否在下一次 Next 或 Close 时停止上一条 work。
+	// 未设置时默认开启；当调用方自行管理 work 生命周期时应显式关闭。
+	AutoStop environment.OptBool
+	Logger   *log.Logger
 }
 
 // WorkPoller 负责从 environment work queue 里 poll 并 ack work。
+// WorkPoller 不支持并发调用，所有方法必须由同一个 goroutine 顺序执行。
 type WorkPoller struct {
 	ctx         context.Context
 	api         selfhosted.API
@@ -49,6 +53,7 @@ type WorkPoller struct {
 	failures    int
 	discards    int
 	closed      bool
+	autoStop    bool
 }
 
 // NewWorkPoller 创建 work poller。
@@ -58,10 +63,11 @@ func NewWorkPoller(ctx context.Context, api selfhosted.API, opts WorkPollerOptio
 		opts.WorkerID = defaultWorkerID()
 	}
 	p := &WorkPoller{
-		ctx:    ctx,
-		api:    api,
-		opts:   opts,
-		logger: logger.With("component", "work-poller", "environment_id", opts.EnvironmentID),
+		ctx:      ctx,
+		api:      api,
+		opts:     opts,
+		logger:   logger.With("component", "work-poller", "environment_id", opts.EnvironmentID),
+		autoStop: opts.AutoStop.Or(true),
 	}
 	if opts.EnvironmentID == "" {
 		p.err = errors.New("environments: EnvironmentID is required")
@@ -148,7 +154,9 @@ func (p *WorkPoller) Next() bool {
 			continue
 		}
 		p.current = item
-		p.pendingStop = p.makeStopClosure(*item)
+		if p.autoStop {
+			p.pendingStop = p.makeStopClosure(*item)
+		}
 		p.discards = 0
 		p.logger.Info("claimed work", "work_id", item.ID, "session_id", item.SessionIDValue())
 		return true
@@ -165,7 +173,7 @@ func (p *WorkPoller) Err() error {
 	return p.err
 }
 
-// Close 停止 poller，并对最后 yield 的 work 发送 StopWork。
+// Close 停止 poller；AutoStop 开启时对最后 yield 的 work 发送 StopWork。
 func (p *WorkPoller) Close() error {
 	if p.closed {
 		return nil

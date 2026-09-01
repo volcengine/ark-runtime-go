@@ -41,6 +41,7 @@ type Client struct {
 	mandatoryRefreshTimeout int
 
 	batchHTTPClient      *http.Client
+	sessionStreamClient  *http.Client
 	modelBreakerProvider *utils.ModelBreakerProvider
 }
 
@@ -60,6 +61,15 @@ func (c *Client) HTTPClient() *http.Client {
 		return http.DefaultClient
 	}
 	return c.config.HTTPClient
+}
+
+func newSessionStreamClient(client *http.Client) *http.Client {
+	if client == nil {
+		client = http.DefaultClient
+	}
+	streamClient := *client
+	streamClient.Timeout = 0
+	return &streamClient
 }
 
 // NewVolcClient constructs a client targeting the Volcengine cloud
@@ -131,6 +141,7 @@ func newClientWithConfig(config clientConfig) *Client {
 		advisoryRefreshTimeout:  model.DefaultAdvisoryRefreshTimeout,
 		mandatoryRefreshTimeout: model.DefaultMandatoryRefreshTimeout,
 		batchHTTPClient:         newBatchHTTPClient(config.batchMaxParallel),
+		sessionStreamClient:     newSessionStreamClient(config.HTTPClient),
 		modelBreakerProvider:    utils.NewModelBreakerProvider(),
 	}
 }

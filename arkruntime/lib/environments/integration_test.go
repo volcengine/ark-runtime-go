@@ -4,6 +4,7 @@ package environments
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"strings"
@@ -12,6 +13,8 @@ import (
 	"time"
 
 	selfhosted "github.com/volcengine/ark-runtime-go/arkruntime/selfhosted"
+	"github.com/volcengine/ark-runtime-go/arkruntime/tools/agenttoolset"
+	"github.com/volcengine/ark-runtime-go/arkruntime/toolset"
 )
 
 type fakeEnvironmentWorkerAPI struct {
@@ -27,6 +30,15 @@ type fakeEnvironmentWorkerAPI struct {
 	heartbeat  func(context.Context, selfhosted.HeartbeatWorkRequest) (*selfhosted.HeartbeatResponse, error)
 	getSession func(context.Context, selfhosted.GetSessionRequest) (*selfhosted.Session, error)
 	onStop     func()
+}
+
+type blockingWorkerTool struct{}
+
+func (*blockingWorkerTool) Name() string { return "blocking" }
+
+func (*blockingWorkerTool) Execute(ctx context.Context, _ json.RawMessage) toolset.Result {
+	<-ctx.Done()
+	return toolset.ErrorResult(ctx.Err().Error())
 }
 
 func (f *fakeEnvironmentWorkerAPI) PollWork(context.Context, selfhosted.PollWorkRequest) (*selfhosted.WorkItem, error) {
@@ -131,14 +143,11 @@ func TestEnvironmentWorkerRunHandlesPolledWorkInProcess(t *testing.T) {
 
 	api.mu.Lock()
 	defer api.mu.Unlock()
-	if api.ackCount != 1 || api.stopCount != 2 {
+	if api.ackCount != 1 || api.stopCount != 1 {
 		t.Fatalf("ack_count=%d stop_count=%d", api.ackCount, api.stopCount)
 	}
 	if force, ok := api.stops[0].Force.Get(); !ok || !force {
 		t.Fatalf("worker stop should be force=true: %+v", api.stops[0])
-	}
-	if _, ok := api.stops[1].Force.Get(); ok {
-		t.Fatalf("poller release stop should be force=false: %+v", api.stops[1])
 	}
 	if len(api.sent) != 1 {
 		t.Fatalf("sent events = %+v", api.sent)
@@ -151,6 +160,105 @@ func TestEnvironmentWorkerRunHandlesPolledWorkInProcess(t *testing.T) {
 		t.Fatalf("result is_error = %v", result.IsError)
 	}
 	if len(result.Content) != 1 || !strings.Contains(result.Content[0].Text, "local-e2e") {
+		t.Fatalf("result content = %+v", result.Content)
+	}
+}
+
+func TestEnvironmentWorkerForwardsToolTimeout(t *testing.T) {
+	maxIdle := 10 * time.Millisecond
+	toolTimeout := 20 * time.Millisecond
+	tool := &blockingWorkerTool{}
+	api := &fakeEnvironmentWorkerAPI{
+		events: []selfhosted.Event{
+			{
+				ID:              "toolu_timeout",
+				Type:            selfhosted.EventTypeAgentCustomToolUse,
+				Name:            tool.Name(),
+				ToolUseID:       "call_timeout",
+				Input:           selfhosted.RawJSON(`{}`),
+				SessionThreadID: "thread_timeout",
+			},
+			{
+				ID:         "evt_idle",
+				Type:       selfhosted.EventTypeSessionStatusIdle,
+				StopReason: &selfhosted.SessionStopReason{Type: selfhosted.SessionStopReasonEndTurn},
+			},
+		},
+	}
+	worker := NewEnvironmentWorker(api, EnvironmentWorkerOptions{
+		EnvironmentID: "env_timeout",
+		Workdir:       t.TempDir(),
+		MaxIdle:       &maxIdle,
+		ToolTimeout:   toolTimeout,
+		CustomTools:   map[string]toolset.Tool{tool.Name(): tool},
+	})
+	if err := worker.HandleItem(context.Background(), HandleItemOptions{
+		WorkID:        "work_timeout",
+		EnvironmentID: "env_timeout",
+		SessionID:     "sess_timeout",
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	api.mu.Lock()
+	defer api.mu.Unlock()
+	if len(api.sent) != 1 {
+		t.Fatalf("sent events = %+v", api.sent)
+	}
+	result := api.sent[0]
+	if result.IsError == nil || !*result.IsError {
+		t.Fatalf("result is_error = %v", result.IsError)
+	}
+	if len(result.Content) != 1 || !strings.Contains(result.Content[0].Text, "tool execution timed out after 20ms") {
+		t.Fatalf("result content = %+v", result.Content)
+	}
+}
+
+func TestEnvironmentWorkerForwardsToolTimeoutToDefaultTools(t *testing.T) {
+	maxIdle := 10 * time.Millisecond
+	api := &fakeEnvironmentWorkerAPI{
+		events: []selfhosted.Event{
+			{
+				ID:                  "toolu_default_timeout",
+				Type:                selfhosted.EventTypeAgentToolUse,
+				Name:                "bash",
+				Input:               selfhosted.RawJSON(`{"command":"sleep 0.1; printf timeout-forwarded"}`),
+				EvaluatedPermission: selfhosted.PermissionAllow,
+			},
+			{
+				ID:         "evt_idle",
+				Type:       selfhosted.EventTypeSessionStatusIdle,
+				StopReason: &selfhosted.SessionStopReason{Type: selfhosted.SessionStopReasonEndTurn},
+			},
+		},
+	}
+	worker := NewEnvironmentWorker(api, EnvironmentWorkerOptions{
+		EnvironmentID: "env_default_timeout",
+		Workdir:       t.TempDir(),
+		MaxIdle:       &maxIdle,
+		ToolTimeout:   2 * time.Second,
+		ToolContext: &agenttoolset.AgentToolContext{
+			ToolTimeout: 20 * time.Millisecond,
+		},
+	})
+	if err := worker.HandleItem(context.Background(), HandleItemOptions{
+		WorkID:        "work_default_timeout",
+		EnvironmentID: "env_default_timeout",
+		SessionID:     "sess_default_timeout",
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	api.mu.Lock()
+	defer api.mu.Unlock()
+	if len(api.sent) != 1 {
+		t.Fatalf("sent events = %+v", api.sent)
+	}
+	result := api.sent[0]
+	if result.IsError == nil || *result.IsError {
+		t.Fatalf("result is_error = %v", result.IsError)
+	}
+	if len(result.Content) != 1 || !strings.Contains(result.Content[0].Text, "timeout-forwarded") {
 		t.Fatalf("result content = %+v", result.Content)
 	}
 }

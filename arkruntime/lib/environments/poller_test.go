@@ -108,6 +108,30 @@ func TestWorkPollerAcksAndStopsOnClose(t *testing.T) {
 	}
 }
 
+func TestWorkPollerAutoStopDisabledDoesNotStop(t *testing.T) {
+	api := &fakePollerAPI{
+		pollItem: newTestWorkItem(testWorkID, "env_1", testSessionID),
+	}
+	poller := NewWorkPoller(context.Background(), api, WorkPollerOptions{
+		EnvironmentID: "env_1",
+		WorkerID:      "worker_1",
+		Drain:         true,
+		AutoStop:      environment.NewOptBool(false),
+	})
+	if !poller.Next() {
+		t.Fatalf("Next returned false: %v", poller.Err())
+	}
+	if poller.Next() {
+		t.Fatal("Next should return false after the queue is drained")
+	}
+	if err := poller.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if api.ackCount != 1 || api.stopCount != 0 {
+		t.Fatalf("ack_count=%d stop_count=%d", api.ackCount, api.stopCount)
+	}
+}
+
 func TestWorkPollerStopsPreviousBeforeNext(t *testing.T) {
 	api := &fakePollerAPI{
 		pollItem: newTestWorkItem(testWorkID, "env_1", testSessionID),
