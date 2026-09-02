@@ -225,7 +225,7 @@ func (c *Client) StreamSessionEventsWithParams(
 	if reqErr != nil {
 		return nil, reqErr
 	}
-	resp, err := c.config.HTTPClient.Do(req)
+	resp, err := c.sessionStreamClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -403,7 +403,7 @@ func (c *Client) StreamSessionThreadEventsWithParams(
 	if reqErr != nil {
 		return nil, reqErr
 	}
-	resp, err := c.config.HTTPClient.Do(req)
+	resp, err := c.sessionStreamClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

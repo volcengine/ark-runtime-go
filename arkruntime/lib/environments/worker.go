@@ -39,6 +39,8 @@ type EnvironmentWorkerOptions struct {
 	ToolsFunc func(env *agenttoolset.AgentToolContext) (*agenttoolset.Set, error)
 	// MaxIdle 是 session 在 end_turn idle 后继续等待事件的时间，nil 使用默认值。
 	MaxIdle *time.Duration
+	// ToolTimeout 限制单次工具执行时间，非正值使用 SessionToolRunner 默认值。
+	ToolTimeout time.Duration
 	// CustomTools 是按名称注册的自定义工具。
 	CustomTools map[string]agenttoolset.Tool
 	// Logger 接收 worker 生命周期日志，nil 使用 log.Default。
@@ -89,6 +91,7 @@ func (w *EnvironmentWorker) Run(ctx context.Context) error {
 	poller := NewWorkPoller(ctx, w.api, WorkPollerOptions{
 		EnvironmentID: environmentID,
 		WorkerID:      w.opts.WorkerID,
+		AutoStop:      environment.NewOptBool(false),
 		Logger:        w.opts.Logger,
 	})
 	defer func() { _ = poller.Close() }()
@@ -213,6 +216,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work claimedWork, us
 		CustomTools: w.opts.CustomTools,
 		ResultStore: store,
 		MaxIdle:     w.opts.MaxIdle,
+		ToolTimeout: w.effectiveToolTimeout(),
 		Logger:      w.opts.Logger,
 	})
 	defer func() { _ = runner.Close() }()
@@ -260,6 +264,9 @@ func (w *EnvironmentWorker) toolContext(workdir string) *agenttoolset.AgentToolC
 	if w.opts.UnrestrictedPaths {
 		base.UnrestrictedPaths = true
 	}
+	if timeout := w.effectiveToolTimeout(); timeout > 0 {
+		base.ToolTimeout = timeout
+	}
 	if base.Env != nil {
 		env := make(map[string]string, len(base.Env))
 		for k, v := range base.Env {
@@ -268,6 +275,16 @@ func (w *EnvironmentWorker) toolContext(workdir string) *agenttoolset.AgentToolC
 		base.Env = env
 	}
 	return &base
+}
+
+func (w *EnvironmentWorker) effectiveToolTimeout() time.Duration {
+	if w.opts.ToolTimeout > 0 {
+		return w.opts.ToolTimeout
+	}
+	if w.opts.ToolContext != nil && w.opts.ToolContext.ToolTimeout > 0 {
+		return w.opts.ToolContext.ToolTimeout
+	}
+	return 0
 }
 
 func (w *EnvironmentWorker) workdirFor(sessionID string, useWorkdirAsSession bool) (string, error) {
