@@ -35,14 +35,48 @@ type fileToolResultRecord struct {
 
 // NewFileToolResultStore 在 workdir 下创建 tool result 持久化 store。
 func NewFileToolResultStore(workdir string) (*FileToolResultStore, error) {
+	return newFileToolResultStore(workdir, "")
+}
+
+// NewSessionFileToolResultStore 在 workdir 下创建按 session 隔离的 tool result 持久化 store。
+func NewSessionFileToolResultStore(workdir, sessionID string) (*FileToolResultStore, error) {
+	if sessionID == "" {
+		return nil, errors.New("session id must not be empty")
+	}
+	return newFileToolResultStore(workdir, toolResultStoreSessionDir(sessionID))
+}
+
+func newFileToolResultStore(workdir, sessionDir string) (*FileToolResultStore, error) {
 	if workdir == "" {
 		return nil, errors.New("workdir must not be empty")
 	}
-	dir := filepath.Join(workdir, ".ma_self_host_worker", "tool_ledger")
+	dir := filepath.Join(workdir, ".ma_self_hosted_worker", "tool_ledger")
+	if sessionDir != "" {
+		dir = filepath.Join(dir, sessionDir)
+	}
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, fmt.Errorf("create tool result store: %w", err)
 	}
 	return &FileToolResultStore{dir: dir}, nil
+}
+
+func toolResultStoreSessionDir(sessionID string) string {
+	if sessionID != "." && sessionID != ".." {
+		safe := true
+		for _, c := range sessionID {
+			if c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' ||
+				c == '.' || c == '_' || c == '-' {
+				continue
+			}
+			safe = false
+			break
+		}
+		if safe {
+			return sessionID
+		}
+	}
+	sum := sha256.Sum256([]byte(sessionID))
+	return "session-" + hex.EncodeToString(sum[:])
 }
 
 // Recover 恢复未回写的 tool result 和已经完成回写的 tool_use。
