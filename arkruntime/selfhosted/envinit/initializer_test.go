@@ -101,6 +101,19 @@ func TestSetupInstallsZipSkill(t *testing.T) {
 	if string(got) != "hello" {
 		t.Fatalf("skill = %q", got)
 	}
+	retained := filepath.Join(root, "skills", "retained")
+	if err := os.MkdirAll(retained, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := init.Cleanup(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(root, "skills", "demo")); !os.IsNotExist(err) {
+		t.Fatalf("installed skill should be removed, err=%v", err)
+	}
+	if _, err := os.Stat(retained); err != nil {
+		t.Fatalf("unmanaged skills entry should remain: %v", err)
+	}
 }
 
 func TestReplaceSkillDirRollsBackWhenCommitFails(t *testing.T) {

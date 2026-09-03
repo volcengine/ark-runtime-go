@@ -4,6 +4,19 @@ package environments
 
 import "testing"
 
+func TestEnvironmentWorkerUsesConfiguredWorkdir(t *testing.T) {
+	root := t.TempDir()
+	worker := NewEnvironmentWorker(nil, EnvironmentWorkerOptions{Workdir: root})
+
+	got, err := worker.workdir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != root {
+		t.Fatalf("workdir = %q, want %q", got, root)
+	}
+}
+
 func TestHandleItemOptionsBuildsClaimedWork(t *testing.T) {
 	got, err := claimedWorkFromOptions(HandleItemOptions{
 		WorkID:            testWorkID,

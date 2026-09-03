@@ -27,7 +27,7 @@ type EnvironmentWorkerOptions struct {
 	EnvironmentID string
 	// WorkerID 是上报给控制面的 worker 标识，空值时自动生成。
 	WorkerID string
-	// Workdir 是每个 session 工作目录的根目录，空值时使用进程当前目录。
+	// Workdir 是 session 工具使用的工作目录，空值时使用进程当前目录。
 	Workdir string
 	// UnrestrictedPaths 控制文件工具是否允许访问 Workdir 之外的路径。
 	UnrestrictedPaths bool
@@ -115,7 +115,7 @@ func (w *EnvironmentWorker) runClaimedWork(ctx context.Context, item selfhosted.
 		logger.Warn("handle work failed", "work_id", item.ID, "err", err)
 		return
 	}
-	if err := w.handleItem(ctx, work, false); err != nil &&
+	if err := w.handleItem(ctx, work); err != nil &&
 		!isBenignWorkerExit(err) {
 		logger.Warn("handle work failed", "work_id", work.ID, "session_id", work.SessionID, "err", err)
 	}
@@ -138,18 +138,18 @@ func (w *EnvironmentWorker) HandleItem(ctx context.Context, opts HandleItemOptio
 	if err != nil {
 		return err
 	}
-	if err := w.handleItem(ctx, work, true); err != nil &&
+	if err := w.handleItem(ctx, work); err != nil &&
 		!isBenignWorkerExit(err) {
 		return err
 	}
 	return nil
 }
 
-func (w *EnvironmentWorker) handleItem(ctx context.Context, work claimedWork, useWorkdirAsSession bool) (err error) {
+func (w *EnvironmentWorker) handleItem(ctx context.Context, work claimedWork) (err error) {
 	if w.api == nil {
 		return errors.New("environments: API is required")
 	}
-	workdir, err := w.workdirFor(work.SessionID, useWorkdirAsSession)
+	workdir, err := w.workdir()
 	if err != nil {
 		return err
 	}
@@ -196,7 +196,13 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work claimedWork, us
 	initOpts := toolEnv.InitOptions()
 	initOpts.Workdir = workdir
 	initOpts.Logger = w.opts.Logger
-	if err := envinit.New(api, initOpts).Setup(workCtx, session); err != nil {
+	initializer := envinit.New(api, initOpts)
+	defer func() {
+		if cleanupErr := initializer.Cleanup(); cleanupErr != nil {
+			logger.Warn("cleanup session skills failed", "err", cleanupErr)
+		}
+	}()
+	if err := initializer.Setup(workCtx, session); err != nil {
 		return fmt.Errorf("setup session environment: %w", err)
 	}
 	tools, owned, err := w.toolsFor(toolEnv)
@@ -206,7 +212,7 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work claimedWork, us
 	if owned {
 		defer func() { _ = tools.Close() }()
 	}
-	store, err := selfhosted.NewFileToolResultStore(workdir)
+	store, err := selfhosted.NewSessionFileToolResultStore(workdir, work.SessionID)
 	if err != nil {
 		return fmt.Errorf("create tool result store: %w", err)
 	}
@@ -287,19 +293,12 @@ func (w *EnvironmentWorker) effectiveToolTimeout() time.Duration {
 	return 0
 }
 
-func (w *EnvironmentWorker) workdirFor(sessionID string, useWorkdirAsSession bool) (string, error) {
+func (w *EnvironmentWorker) workdir() (string, error) {
 	root := w.opts.Workdir
 	if root == "" {
 		root = "."
 	}
-	absRoot, err := filepath.Abs(root)
-	if err != nil {
-		return "", err
-	}
-	if useWorkdirAsSession {
-		return absRoot, nil
-	}
-	return sessionWorkdir(absRoot, sessionID)
+	return filepath.Abs(root)
 }
 
 func (w *EnvironmentWorker) stopItem(api selfhosted.API, work claimedWork) error {

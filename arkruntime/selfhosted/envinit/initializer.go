@@ -39,9 +39,10 @@ type Options struct {
 
 // Initializer 执行 workdir 与 skills 初始化。
 type Initializer struct {
-	api    selfhosted.API
-	opts   Options
-	logger *selfhostedlog.Logger
+	api                selfhosted.API
+	opts               Options
+	logger             *selfhostedlog.Logger
+	installedSkillDirs []string
 }
 
 // New 创建环境初始化器。
@@ -81,6 +82,18 @@ func (i *Initializer) Setup(ctx context.Context, session *selfhosted.Session) er
 		}
 	}
 	return nil
+}
+
+// Cleanup 删除本次初始化成功安装的 skill 目录。
+func (i *Initializer) Cleanup() error {
+	var errs []error
+	for _, dir := range i.installedSkillDirs {
+		if err := os.RemoveAll(dir); err != nil {
+			errs = append(errs, fmt.Errorf("remove installed skill %s: %w", dir, err))
+		}
+	}
+	i.installedSkillDirs = nil
+	return errors.Join(errs...)
 }
 
 func (i *Initializer) installSkill(ctx context.Context, sessionID string, skill selfhosted.SkillRef) error {
@@ -133,6 +146,7 @@ func (i *Initializer) installSkill(ctx context.Context, sessionID string, skill 
 	if err != nil {
 		return fmt.Errorf("commit skill %s: %w", name, err)
 	}
+	i.installedSkillDirs = append(i.installedSkillDirs, target)
 	committed = true
 	if source != tmp {
 		_ = os.RemoveAll(tmp)
