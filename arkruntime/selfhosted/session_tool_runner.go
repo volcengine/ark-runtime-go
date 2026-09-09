@@ -1080,6 +1080,9 @@ func runnerContentBlocks(blocks []toolset.ContentBlock) []ContentBlock {
 			Text:      block.Text,
 			MediaType: block.MediaType,
 			Data:      block.Data,
+			Source:    block.Source,
+			Title:     block.Title,
+			Context:   block.Context,
 		})
 	}
 	return out

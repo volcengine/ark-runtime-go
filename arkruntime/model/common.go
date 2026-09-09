@@ -13,6 +13,9 @@ const (
 	ClientRequestHeader = "X-Client-Request-Id"
 	ServerRequestHeader = "X-Request-Id"
 	RetryAfterHeader    = "Retry-After"
+	RetryAfterMSHeader  = "Retry-After-Ms"
+	RetryCountHeader    = "X-Stainless-Retry-Count"
+	ShouldRetryHeader   = "X-Should-Retry"
 
 	DefaultMandatoryRefreshTimeout = 10 * 60          // 10 min
 	DefaultAdvisoryRefreshTimeout  = 30 * 60          // 30 min
@@ -23,6 +26,7 @@ const (
 
 	ErrorRetryBaseDelay = 500 * time.Millisecond
 	ErrorRetryMaxDelay  = 8 * time.Second
+	MaxServerRetryDelay = 60 * time.Second
 )
 
 type PromptTokensDetail struct {

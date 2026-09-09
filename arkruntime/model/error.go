@@ -7,22 +7,25 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 )
 
 type APIError struct {
-	Code           string  `json:"code,omitempty"`
-	Message        string  `json:"message"`
-	Param          *string `json:"param,omitempty"`
-	Type           string  `json:"type"`
-	HTTPStatusCode int     `json:"-"`
-	RequestId      string  `json:"request_id"`
+	Code           string      `json:"code,omitempty"`
+	Message        string      `json:"message"`
+	Param          *string     `json:"param,omitempty"`
+	Type           string      `json:"type"`
+	HTTPStatusCode int         `json:"-"`
+	RequestId      string      `json:"request_id"`
+	ResponseHeader http.Header `json:"-"`
 }
 
 // RequestError provides information about generic request errors.
 type RequestError struct {
 	HTTPStatusCode int
 	Err            error
-	RequestId      string `json:"request_id"`
+	RequestId      string      `json:"request_id"`
+	ResponseHeader http.Header `json:"-"`
 }
 
 func NewRequestError(httpStatusCode int, rawErr error, requestID string) *RequestError {
@@ -48,6 +51,20 @@ func (e *RequestError) Error() string {
 
 func (e *RequestError) Unwrap() error {
 	return e.Err
+}
+
+func (e *APIError) GetHeader() http.Header {
+	if e == nil {
+		return nil
+	}
+	return e.ResponseHeader
+}
+
+func (e *RequestError) GetHeader() http.Header {
+	if e == nil {
+		return nil
+	}
+	return e.ResponseHeader
 }
 
 var (

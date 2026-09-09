@@ -14,6 +14,8 @@ type RetryPolicy struct {
 	MaxAttempts    int
 	InitialBackoff time.Duration
 	MaxBackoff     time.Duration
+	MaxRetryAfter  time.Duration
+	RetryAfter     func(error) (time.Duration, bool)
 }
 
 func Retry(ctx context.Context,
@@ -22,9 +24,29 @@ func Retry(ctx context.Context,
 	doFunc func() error, overRetryLimitError error,
 	isNeedRetryError func(error) bool,
 ) error {
+	return retry(ctx, rp, isNeedRetry, func(_ int) error {
+		return doFunc()
+	}, overRetryLimitError, isNeedRetryError)
+}
+
+func RetryWithAttempt(ctx context.Context,
+	rp RetryPolicy,
+	isNeedRetry func() bool,
+	doFunc func(int) error, overRetryLimitError error,
+	isNeedRetryError func(error) bool,
+) error {
+	return retry(ctx, rp, isNeedRetry, doFunc, overRetryLimitError, isNeedRetryError)
+}
+
+func retry(ctx context.Context,
+	rp RetryPolicy,
+	isNeedRetry func() bool,
+	doFunc func(int) error, overRetryLimitError error,
+	isNeedRetryError func(error) bool,
+) error {
 	var err error
 	for numRetriesSincePushback := 0; numRetriesSincePushback <= rp.MaxAttempts; numRetriesSincePushback++ {
-		err = doFunc()
+		err = doFunc(numRetriesSincePushback)
 
 		// no error: just return on this try
 		if err == nil {
@@ -45,10 +67,7 @@ func Retry(ctx context.Context,
 		if numRetriesSincePushback == rp.MaxAttempts {
 			break
 		}
-		nbRetries := numRetriesSincePushback + 1
-		sleepSeconds := math.Min(rp.InitialBackoff.Seconds()*math.Pow(2.0, float64(nbRetries)), rp.MaxBackoff.Seconds())
-		jitter := 1.0 - 0.25*rand.Float64()
-		dur := time.Duration(sleepSeconds*jitter) * time.Second
+		dur := retryDelay(rp, numRetriesSincePushback, err)
 
 		t := time.NewTimer(dur)
 		select {
@@ -64,4 +83,25 @@ func Retry(ctx context.Context,
 		return err
 	}
 	return overRetryLimitError
+}
+
+func retryDelay(rp RetryPolicy, retryCount int, err error) time.Duration {
+	if rp.RetryAfter != nil {
+		if delay, ok := rp.RetryAfter(err); ok {
+			maxRetryAfter := rp.MaxRetryAfter
+			if maxRetryAfter <= 0 {
+				maxRetryAfter = 60 * time.Second
+			}
+			if delay > 0 && delay <= maxRetryAfter {
+				return delay
+			}
+		}
+	}
+
+	delay := time.Duration(float64(rp.InitialBackoff) * math.Pow(2.0, float64(retryCount)))
+	if delay > rp.MaxBackoff {
+		delay = rp.MaxBackoff
+	}
+	jitter := 1.0 - 0.25*rand.Float64()
+	return time.Duration(float64(delay) * jitter)
 }
