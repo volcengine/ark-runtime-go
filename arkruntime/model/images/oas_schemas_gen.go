@@ -9,6 +9,49 @@ import (
 	"github.com/go-faster/errors"
 )
 
+// Background of the generated image.
+// Ref: #/components/schemas/Background
+type Background string
+
+const (
+	BackgroundOpaque      Background = "opaque"
+	BackgroundTransparent Background = "transparent"
+)
+
+// AllValues returns all Background values.
+func (Background) AllValues() []Background {
+	return []Background{
+		BackgroundOpaque,
+		BackgroundTransparent,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s Background) MarshalText() ([]byte, error) {
+	switch s {
+	case BackgroundOpaque:
+		return []byte(s), nil
+	case BackgroundTransparent:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *Background) UnmarshalText(data []byte) error {
+	switch Background(data) {
+	case BackgroundOpaque:
+		*s = BackgroundOpaque
+		return nil
+	case BackgroundTransparent:
+		*s = BackgroundTransparent
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // A layer's region in the base image, ordered as
 // `[left, top, right, bottom]`.
 // Ref: #/components/schemas/BoundingBox
@@ -43,10 +86,11 @@ func (s *BoundingBox) SetNormalized(val []int32) {
 type CreateImageGenerationRequest struct {
 	// The model identifier to use.
 	Model string `json:"model"`
-	// Text prompt describing the desired image.
-	Prompt string `json:"prompt"`
-	// Reference / edit images. Each entry is a URL or a `data:` URI.
-	Image []string `json:"image"`
+	// Text prompt describing the desired image. Required for standard generation; may be omitted for
+	// automatic layer decomposition when `layer_decomposition=true`.
+	Prompt OptString `json:"prompt"`
+	// Reference / edit images, as a single URL or `data:` URI, or an array of them.
+	Image OptCreateImageGenerationRequestImage `json:"image"`
 	// Stream partial images as they are generated (server-sent events).
 	Stream OptBool `json:"stream"`
 	// How generated image bytes are returned. Defaults to `url`.
@@ -72,6 +116,9 @@ type CreateImageGenerationRequest struct {
 	Tools []Tool `json:"tools"`
 	// Container/codec for the generated image bytes.
 	OutputFormat OptOutputFormat `json:"output_format"`
+	// Output background. Defaults to `opaque`. `transparent` requires exactly one PNG reference image
+	// with an alpha channel and PNG output.
+	Background OptBackground `json:"background"`
 	// Decompose one reference image into a base image and independently
 	// composable layers. Supported models return layer metadata in `data`.
 	LayerDecomposition OptBool `json:"layer_decomposition"`
@@ -83,12 +130,12 @@ func (s *CreateImageGenerationRequest) GetModel() string {
 }
 
 // GetPrompt returns the value of Prompt.
-func (s *CreateImageGenerationRequest) GetPrompt() string {
+func (s *CreateImageGenerationRequest) GetPrompt() OptString {
 	return s.Prompt
 }
 
 // GetImage returns the value of Image.
-func (s *CreateImageGenerationRequest) GetImage() []string {
+func (s *CreateImageGenerationRequest) GetImage() OptCreateImageGenerationRequestImage {
 	return s.Image
 }
 
@@ -152,6 +199,11 @@ func (s *CreateImageGenerationRequest) GetOutputFormat() OptOutputFormat {
 	return s.OutputFormat
 }
 
+// GetBackground returns the value of Background.
+func (s *CreateImageGenerationRequest) GetBackground() OptBackground {
+	return s.Background
+}
+
 // GetLayerDecomposition returns the value of LayerDecomposition.
 func (s *CreateImageGenerationRequest) GetLayerDecomposition() OptBool {
 	return s.LayerDecomposition
@@ -163,12 +215,12 @@ func (s *CreateImageGenerationRequest) SetModel(val string) {
 }
 
 // SetPrompt sets the value of Prompt.
-func (s *CreateImageGenerationRequest) SetPrompt(val string) {
+func (s *CreateImageGenerationRequest) SetPrompt(val OptString) {
 	s.Prompt = val
 }
 
 // SetImage sets the value of Image.
-func (s *CreateImageGenerationRequest) SetImage(val []string) {
+func (s *CreateImageGenerationRequest) SetImage(val OptCreateImageGenerationRequestImage) {
 	s.Image = val
 }
 
@@ -232,9 +284,83 @@ func (s *CreateImageGenerationRequest) SetOutputFormat(val OptOutputFormat) {
 	s.OutputFormat = val
 }
 
+// SetBackground sets the value of Background.
+func (s *CreateImageGenerationRequest) SetBackground(val OptBackground) {
+	s.Background = val
+}
+
 // SetLayerDecomposition sets the value of LayerDecomposition.
 func (s *CreateImageGenerationRequest) SetLayerDecomposition(val OptBool) {
 	s.LayerDecomposition = val
+}
+
+// Reference / edit images, as a single URL or `data:` URI, or an array of them.
+// CreateImageGenerationRequestImage represents sum type.
+type CreateImageGenerationRequestImage struct {
+	Type        CreateImageGenerationRequestImageType // switch on this field
+	String      string
+	StringArray []string
+}
+
+// CreateImageGenerationRequestImageType is oneOf type of CreateImageGenerationRequestImage.
+type CreateImageGenerationRequestImageType string
+
+// Possible values for CreateImageGenerationRequestImageType.
+const (
+	StringCreateImageGenerationRequestImage      CreateImageGenerationRequestImageType = "string"
+	StringArrayCreateImageGenerationRequestImage CreateImageGenerationRequestImageType = "[]string"
+)
+
+// IsString reports whether CreateImageGenerationRequestImage is string.
+func (s CreateImageGenerationRequestImage) IsString() bool {
+	return s.Type == StringCreateImageGenerationRequestImage
+}
+
+// IsStringArray reports whether CreateImageGenerationRequestImage is []string.
+func (s CreateImageGenerationRequestImage) IsStringArray() bool {
+	return s.Type == StringArrayCreateImageGenerationRequestImage
+}
+
+// SetString sets CreateImageGenerationRequestImage to string.
+func (s *CreateImageGenerationRequestImage) SetString(v string) {
+	s.Type = StringCreateImageGenerationRequestImage
+	s.String = v
+}
+
+// GetString returns string and true boolean if CreateImageGenerationRequestImage is string.
+func (s CreateImageGenerationRequestImage) GetString() (v string, ok bool) {
+	if !s.IsString() {
+		return v, false
+	}
+	return s.String, true
+}
+
+// NewStringCreateImageGenerationRequestImage returns new CreateImageGenerationRequestImage from string.
+func NewStringCreateImageGenerationRequestImage(v string) CreateImageGenerationRequestImage {
+	var s CreateImageGenerationRequestImage
+	s.SetString(v)
+	return s
+}
+
+// SetStringArray sets CreateImageGenerationRequestImage to []string.
+func (s *CreateImageGenerationRequestImage) SetStringArray(v []string) {
+	s.Type = StringArrayCreateImageGenerationRequestImage
+	s.StringArray = v
+}
+
+// GetStringArray returns []string and true boolean if CreateImageGenerationRequestImage is []string.
+func (s CreateImageGenerationRequestImage) GetStringArray() (v []string, ok bool) {
+	if !s.IsStringArray() {
+		return v, false
+	}
+	return s.StringArray, true
+}
+
+// NewStringArrayCreateImageGenerationRequestImage returns new CreateImageGenerationRequestImage from []string.
+func NewStringArrayCreateImageGenerationRequestImage(v []string) CreateImageGenerationRequestImage {
+	var s CreateImageGenerationRequestImage
+	s.SetStringArray(v)
+	return s
 }
 
 // One generated image. Exactly one of `url` / `b64_json` is set, depending on the request
@@ -643,6 +769,52 @@ func (s *ImageGenerationStreamEventType) UnmarshalText(data []byte) error {
 	}
 }
 
+// NewOptBackground returns new OptBackground with value set to v.
+func NewOptBackground(v Background) OptBackground {
+	return OptBackground{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptBackground is optional Background.
+type OptBackground struct {
+	Value Background
+	Set   bool
+}
+
+// IsSet returns true if OptBackground was set.
+func (o OptBackground) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptBackground) Reset() {
+	var v Background
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptBackground) SetTo(v Background) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptBackground) Get() (v Background, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptBackground) Or(d Background) Background {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptBool returns new OptBool with value set to v.
 func NewOptBool(v bool) OptBool {
 	return OptBool{
@@ -729,6 +901,52 @@ func (o OptBoundingBox) Get() (v BoundingBox, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptBoundingBox) Or(d BoundingBox) BoundingBox {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptCreateImageGenerationRequestImage returns new OptCreateImageGenerationRequestImage with value set to v.
+func NewOptCreateImageGenerationRequestImage(v CreateImageGenerationRequestImage) OptCreateImageGenerationRequestImage {
+	return OptCreateImageGenerationRequestImage{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptCreateImageGenerationRequestImage is optional CreateImageGenerationRequestImage.
+type OptCreateImageGenerationRequestImage struct {
+	Value CreateImageGenerationRequestImage
+	Set   bool
+}
+
+// IsSet returns true if OptCreateImageGenerationRequestImage was set.
+func (o OptCreateImageGenerationRequestImage) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptCreateImageGenerationRequestImage) Reset() {
+	var v CreateImageGenerationRequestImage
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptCreateImageGenerationRequestImage) SetTo(v CreateImageGenerationRequestImage) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptCreateImageGenerationRequestImage) Get() (v CreateImageGenerationRequestImage, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptCreateImageGenerationRequestImage) Or(d CreateImageGenerationRequestImage) CreateImageGenerationRequestImage {
 	if v, ok := o.Get(); ok {
 		return v
 	}

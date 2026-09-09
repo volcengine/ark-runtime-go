@@ -27,7 +27,7 @@ func main() {
 	fmt.Println("----- [Seedream] generate images (response format: url) -----")
 	req := &images.CreateImageGenerationRequest{
 		Model:          seedreamModel,
-		Prompt:         "龙与地下城女骑士背景是起伏的平原，目光从镜头转向平原",
+		Prompt:         images.NewOptString("龙与地下城女骑士背景是起伏的平原，目光从镜头转向平原"),
 		ResponseFormat: images.NewOptResponseFormat(images.ResponseFormatURL),
 		Seed:           images.NewOptInt64(1234567890),
 		Watermark:      images.NewOptBool(true),

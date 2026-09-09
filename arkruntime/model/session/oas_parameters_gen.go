@@ -95,6 +95,11 @@ type SessionThreadsStreamEventsParams struct {
 	EventDeltas []string `json:",omitempty" query:"event_deltas,repeat"`
 }
 
+// SessionUpgradesCreateParams is parameters of SessionUpgrades_create operation.
+type SessionUpgradesCreateParams struct {
+	SessionId string
+}
+
 // SessionsListParams is parameters of Sessions_list operation.
 type SessionsListParams struct {
 	// 按 agent_id 精确过滤。.
