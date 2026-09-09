@@ -14,6 +14,46 @@ import (
 	"github.com/volcengine/ark-runtime-go/arkruntime/internal/validate"
 )
 
+// Encode encodes Background as json.
+func (s Background) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes Background from json.
+func (s *Background) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode Background to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch Background(v) {
+	case BackgroundOpaque:
+		*s = BackgroundOpaque
+	case BackgroundTransparent:
+		*s = BackgroundTransparent
+	default:
+		*s = Background(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s Background) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *Background) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode implements json.Marshaler.
 func (s *BoundingBox) Encode(e *jx.Encoder) {
 	e.ObjStart()
@@ -134,17 +174,15 @@ func (s *CreateImageGenerationRequest) encodeFields(e *jx.Encoder) {
 		e.Str(s.Model)
 	}
 	{
-		e.FieldStart("prompt")
-		e.Str(s.Prompt)
+		if s.Prompt.Set {
+			e.FieldStart("prompt")
+			s.Prompt.Encode(e)
+		}
 	}
 	{
-		if s.Image != nil {
+		if s.Image.Set {
 			e.FieldStart("image")
-			e.ArrStart()
-			for _, elem := range s.Image {
-				e.Str(elem)
-			}
-			e.ArrEnd()
+			s.Image.Encode(e)
 		}
 	}
 	{
@@ -224,6 +262,12 @@ func (s *CreateImageGenerationRequest) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.Background.Set {
+			e.FieldStart("background")
+			s.Background.Encode(e)
+		}
+	}
+	{
 		if s.LayerDecomposition.Set {
 			e.FieldStart("layer_decomposition")
 			s.LayerDecomposition.Encode(e)
@@ -231,7 +275,7 @@ func (s *CreateImageGenerationRequest) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfCreateImageGenerationRequest = [16]string{
+var jsonFieldsNameOfCreateImageGenerationRequest = [17]string{
 	0:  "model",
 	1:  "prompt",
 	2:  "image",
@@ -247,7 +291,8 @@ var jsonFieldsNameOfCreateImageGenerationRequest = [16]string{
 	12: "optimize_prompt_options",
 	13: "tools",
 	14: "output_format",
-	15: "layer_decomposition",
+	15: "background",
+	16: "layer_decomposition",
 }
 
 // Decode decodes CreateImageGenerationRequest from json.
@@ -255,7 +300,7 @@ func (s *CreateImageGenerationRequest) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode CreateImageGenerationRequest to nil")
 	}
-	var requiredBitSet [2]uint8
+	var requiredBitSet [3]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
@@ -272,11 +317,9 @@ func (s *CreateImageGenerationRequest) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"model\"")
 			}
 		case "prompt":
-			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
-				v, err := d.Str()
-				s.Prompt = string(v)
-				if err != nil {
+				s.Prompt.Reset()
+				if err := s.Prompt.Decode(d); err != nil {
 					return err
 				}
 				return nil
@@ -285,17 +328,8 @@ func (s *CreateImageGenerationRequest) Decode(d *jx.Decoder) error {
 			}
 		case "image":
 			if err := func() error {
-				s.Image = make([]string, 0)
-				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem string
-					v, err := d.Str()
-					elem = string(v)
-					if err != nil {
-						return err
-					}
-					s.Image = append(s.Image, elem)
-					return nil
-				}); err != nil {
+				s.Image.Reset()
+				if err := s.Image.Decode(d); err != nil {
 					return err
 				}
 				return nil
@@ -429,6 +463,16 @@ func (s *CreateImageGenerationRequest) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"output_format\"")
 			}
+		case "background":
+			if err := func() error {
+				s.Background.Reset()
+				if err := s.Background.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"background\"")
+			}
 		case "layer_decomposition":
 			if err := func() error {
 				s.LayerDecomposition.Reset()
@@ -448,8 +492,9 @@ func (s *CreateImageGenerationRequest) Decode(d *jx.Decoder) error {
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
-	for i, mask := range [2]uint8{
-		0b00000011,
+	for i, mask := range [3]uint8{
+		0b00000001,
+		0b00000000,
 		0b00000000,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
@@ -492,6 +537,68 @@ func (s *CreateImageGenerationRequest) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *CreateImageGenerationRequest) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes CreateImageGenerationRequestImage as json.
+func (s CreateImageGenerationRequestImage) Encode(e *jx.Encoder) {
+	switch s.Type {
+	case StringCreateImageGenerationRequestImage:
+		e.Str(s.String)
+	case StringArrayCreateImageGenerationRequestImage:
+		e.ArrStart()
+		for _, elem := range s.StringArray {
+			e.Str(elem)
+		}
+		e.ArrEnd()
+	}
+}
+
+// Decode decodes CreateImageGenerationRequestImage from json.
+func (s *CreateImageGenerationRequestImage) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode CreateImageGenerationRequestImage to nil")
+	}
+	// Sum type type_discriminator.
+	switch t := d.Next(); t {
+	case jx.Array:
+		s.StringArray = make([]string, 0)
+		if err := d.Arr(func(d *jx.Decoder) error {
+			var elem string
+			v, err := d.Str()
+			elem = string(v)
+			if err != nil {
+				return err
+			}
+			s.StringArray = append(s.StringArray, elem)
+			return nil
+		}); err != nil {
+			return err
+		}
+		s.Type = StringArrayCreateImageGenerationRequestImage
+	case jx.String:
+		v, err := d.Str()
+		s.String = string(v)
+		if err != nil {
+			return err
+		}
+		s.Type = StringCreateImageGenerationRequestImage
+	default:
+		return errors.Errorf("unexpected json type %q", t)
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s CreateImageGenerationRequestImage) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *CreateImageGenerationRequestImage) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -1312,6 +1419,39 @@ func (s *ImageGenerationStreamEventType) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes Background as json.
+func (o OptBackground) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	e.Str(string(o.Value))
+}
+
+// Decode decodes Background from json.
+func (o *OptBackground) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptBackground to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptBackground) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptBackground) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes bool as json.
 func (o OptBool) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -1376,6 +1516,39 @@ func (s OptBoundingBox) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptBoundingBox) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes CreateImageGenerationRequestImage as json.
+func (o OptCreateImageGenerationRequestImage) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes CreateImageGenerationRequestImage from json.
+func (o *OptCreateImageGenerationRequestImage) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptCreateImageGenerationRequestImage to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptCreateImageGenerationRequestImage) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptCreateImageGenerationRequestImage) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

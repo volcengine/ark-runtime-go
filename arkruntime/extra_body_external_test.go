@@ -36,7 +36,7 @@ func TestWithExtraBodyIsUsableByExternalCallers(t *testing.T) {
 	)
 	request := &images.CreateImageGenerationRequest{
 		Model:  "typed-model",
-		Prompt: "test prompt",
+		Prompt: images.NewOptString("test prompt"),
 	}
 
 	_, err := client.GenerateImages(

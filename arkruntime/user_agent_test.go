@@ -40,7 +40,7 @@ func TestRequestUserAgent(t *testing.T) {
 			defer server.Close()
 			client := arkruntime.NewClientWithApiKey("test-key",
 				arkruntime.WithBaseUrl(server.URL), arkruntime.WithRetryTimes(0))
-			request := &images.CreateImageGenerationRequest{Model: "test-model", Prompt: "test"}
+			request := &images.CreateImageGenerationRequest{Model: "test-model", Prompt: images.NewOptString("test")}
 			if test.custom {
 				_, err = client.GenerateImages(context.Background(), request,
 					arkruntime.WithCustomHeader("User-Agent", test.value))

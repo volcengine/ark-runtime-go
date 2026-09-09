@@ -248,6 +248,222 @@ func (s *AgentRefToolsItem) init() AgentRefToolsItem {
 	return m
 }
 
+// Session upgrade 的目标 Agent 运行配置。
+// `id` 必须等于当前 Session 的 Agent ID —— upgrade 不支持换绑到另一个
+// Agent，不一致返回 403 `AgentMismatch`。
+// 数组字段（`tools` / `mcp_servers` / `skills`）是**整组替换**语义：省略
+// 表示保留原值，显式传 `[]` 表示清空。两者在 wire 上必须可区分，SDK 不能
+// 把空数组优化成省略字段。.
+// Ref: #/components/schemas/AgentWithUpgrades
+type AgentWithUpgrades struct {
+	// 固定 `"agent_with_upgrades"`。.
+	Type AgentWithUpgradesType `json:"type"`
+	// Agent ID；必须与当前 Session 的 Agent ID 一致。.
+	ID string `json:"id"`
+	// 目标 Agent 版本号。
+	// 省略或传 `0` 表示**不锁版本、沿用 Session 当前的 Agent 快照**（注意与创建
+	// 期不同：这里不是"走最新版"）。传正整数则以该版本的 payload 为基线物化
+	// ——`system` / `tools` / `mcp_servers` / `skills` / `multiagent` / `model`
+	// 整组跟着版本走，本次请求里的同名字段再叠加其上；版本不存在返回
+	// 404。
+	// 传负数返回 400。.
+	Version OptInt32 `json:"version"`
+	// 模型运行参数升级。.
+	Model OptModelUpgrades `json:"model"`
+	// System prompt。.
+	System OptString `json:"system"`
+	// 工具配置（整组替换）。.
+	Tools []AgentWithUpgradesToolsItem `json:"tools"`
+	// MCP server 配置（整组替换）。.
+	McpServers []AgentWithUpgradesMcpServersItem `json:"mcp_servers"`
+	// Skill 配置（整组替换）。.
+	Skills []AgentWithUpgradesSkillsItem `json:"skills"`
+	// 多 Agent 配置。.
+	Multiagent OptAgentWithUpgradesMultiagent `json:"multiagent"`
+	// Agent 展示名。.
+	DisplayName OptString `json:"display_name"`
+}
+
+// GetType returns the value of Type.
+func (s *AgentWithUpgrades) GetType() AgentWithUpgradesType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *AgentWithUpgrades) GetID() string {
+	return s.ID
+}
+
+// GetVersion returns the value of Version.
+func (s *AgentWithUpgrades) GetVersion() OptInt32 {
+	return s.Version
+}
+
+// GetModel returns the value of Model.
+func (s *AgentWithUpgrades) GetModel() OptModelUpgrades {
+	return s.Model
+}
+
+// GetSystem returns the value of System.
+func (s *AgentWithUpgrades) GetSystem() OptString {
+	return s.System
+}
+
+// GetTools returns the value of Tools.
+func (s *AgentWithUpgrades) GetTools() []AgentWithUpgradesToolsItem {
+	return s.Tools
+}
+
+// GetMcpServers returns the value of McpServers.
+func (s *AgentWithUpgrades) GetMcpServers() []AgentWithUpgradesMcpServersItem {
+	return s.McpServers
+}
+
+// GetSkills returns the value of Skills.
+func (s *AgentWithUpgrades) GetSkills() []AgentWithUpgradesSkillsItem {
+	return s.Skills
+}
+
+// GetMultiagent returns the value of Multiagent.
+func (s *AgentWithUpgrades) GetMultiagent() OptAgentWithUpgradesMultiagent {
+	return s.Multiagent
+}
+
+// GetDisplayName returns the value of DisplayName.
+func (s *AgentWithUpgrades) GetDisplayName() OptString {
+	return s.DisplayName
+}
+
+// SetType sets the value of Type.
+func (s *AgentWithUpgrades) SetType(val AgentWithUpgradesType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *AgentWithUpgrades) SetID(val string) {
+	s.ID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *AgentWithUpgrades) SetVersion(val OptInt32) {
+	s.Version = val
+}
+
+// SetModel sets the value of Model.
+func (s *AgentWithUpgrades) SetModel(val OptModelUpgrades) {
+	s.Model = val
+}
+
+// SetSystem sets the value of System.
+func (s *AgentWithUpgrades) SetSystem(val OptString) {
+	s.System = val
+}
+
+// SetTools sets the value of Tools.
+func (s *AgentWithUpgrades) SetTools(val []AgentWithUpgradesToolsItem) {
+	s.Tools = val
+}
+
+// SetMcpServers sets the value of McpServers.
+func (s *AgentWithUpgrades) SetMcpServers(val []AgentWithUpgradesMcpServersItem) {
+	s.McpServers = val
+}
+
+// SetSkills sets the value of Skills.
+func (s *AgentWithUpgrades) SetSkills(val []AgentWithUpgradesSkillsItem) {
+	s.Skills = val
+}
+
+// SetMultiagent sets the value of Multiagent.
+func (s *AgentWithUpgrades) SetMultiagent(val OptAgentWithUpgradesMultiagent) {
+	s.Multiagent = val
+}
+
+// SetDisplayName sets the value of DisplayName.
+func (s *AgentWithUpgrades) SetDisplayName(val OptString) {
+	s.DisplayName = val
+}
+
+type AgentWithUpgradesMcpServersItem map[string]jx.Raw
+
+func (s *AgentWithUpgradesMcpServersItem) init() AgentWithUpgradesMcpServersItem {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+// 多 Agent 配置。.
+type AgentWithUpgradesMultiagent map[string]jx.Raw
+
+func (s *AgentWithUpgradesMultiagent) init() AgentWithUpgradesMultiagent {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type AgentWithUpgradesSkillsItem map[string]jx.Raw
+
+func (s *AgentWithUpgradesSkillsItem) init() AgentWithUpgradesSkillsItem {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type AgentWithUpgradesToolsItem map[string]jx.Raw
+
+func (s *AgentWithUpgradesToolsItem) init() AgentWithUpgradesToolsItem {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+// 固定 `"agent_with_upgrades"`。.
+type AgentWithUpgradesType string
+
+const (
+	AgentWithUpgradesTypeAgentWithUpgrades AgentWithUpgradesType = "agent_with_upgrades"
+)
+
+// AllValues returns all AgentWithUpgradesType values.
+func (AgentWithUpgradesType) AllValues() []AgentWithUpgradesType {
+	return []AgentWithUpgradesType{
+		AgentWithUpgradesTypeAgentWithUpgrades,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AgentWithUpgradesType) MarshalText() ([]byte, error) {
+	switch s {
+	case AgentWithUpgradesTypeAgentWithUpgrades:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AgentWithUpgradesType) UnmarshalText(data []byte) error {
+	switch AgentWithUpgradesType(data) {
+	case AgentWithUpgradesTypeAgentWithUpgrades:
+		*s = AgentWithUpgradesTypeAgentWithUpgrades
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // 直接以 base64 携带的文档数据。.
 // Ref: #/components/schemas/Base64DocumentSource
 type Base64DocumentSource struct {
@@ -491,6 +707,72 @@ func (s *CreateSessionResourceRequestType) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
+}
+
+// 发起一次已有 Session 的运行配置升级。
+// `agent` / `environment` / `vault_ids` 至少提供一个作为升级目标，全部省略
+// 返回 400 `MissingUpgradeTarget`（只传 `initial_events` 不算升级目标）。
+// Session 必须处于 `idle` 且上一轮 turn 以 `end_turn` 收尾，否则返回 403
+// `SessionNotIdle` / `SessionNotEndTurn`；同一 Session 上一次升级尚未收敛时
+// 返回 403 `UpgradeInProgress`。.
+// Ref: #/components/schemas/CreateSessionUpgradeRequest
+type CreateSessionUpgradeRequest struct {
+	// 目标 Agent 运行配置。.
+	Agent OptAgentWithUpgrades `json:"agent"`
+	// 目标 Environment 运行配置。.
+	Environment OptEnvironmentWithUpgrades `json:"environment"`
+	// Session 绑定的 Vault 列表。
+	// 只能用来**刷新已绑定 Vault 的内容**，不能改变绑定集合：传入集合必须与
+	// 当前 Session 的 `vault_ids` 相等（忽略顺序与重复），否则返回 403
+	// `VaultMismatch`。显式传 `[]` 表示声明空集，仅当当前 Session 本身没有
+	// Vault 绑定时通过 —— 因此省略与 `[]` 在 wire 上必须可区分，SDK 不能把
+	// 空数组优化成省略字段。.
+	VaultIds []string `json:"vault_ids"`
+	// 配置切换收敛后由服务端补投的事件。当前只接受**恰好一个** `user.message`
+	// 事件，且 content 为单个 text block、内容是 `/compact` 命令 XML；不满足
+	// 返回 400 `InvalidInitialEvents` / `InvalidCompactCommand`。省略或传 `[]`
+	// 表示本次不投递事件。.
+	InitialEvents []ManagedAgentsEventParams `json:"initial_events"`
+}
+
+// GetAgent returns the value of Agent.
+func (s *CreateSessionUpgradeRequest) GetAgent() OptAgentWithUpgrades {
+	return s.Agent
+}
+
+// GetEnvironment returns the value of Environment.
+func (s *CreateSessionUpgradeRequest) GetEnvironment() OptEnvironmentWithUpgrades {
+	return s.Environment
+}
+
+// GetVaultIds returns the value of VaultIds.
+func (s *CreateSessionUpgradeRequest) GetVaultIds() []string {
+	return s.VaultIds
+}
+
+// GetInitialEvents returns the value of InitialEvents.
+func (s *CreateSessionUpgradeRequest) GetInitialEvents() []ManagedAgentsEventParams {
+	return s.InitialEvents
+}
+
+// SetAgent sets the value of Agent.
+func (s *CreateSessionUpgradeRequest) SetAgent(val OptAgentWithUpgrades) {
+	s.Agent = val
+}
+
+// SetEnvironment sets the value of Environment.
+func (s *CreateSessionUpgradeRequest) SetEnvironment(val OptEnvironmentWithUpgrades) {
+	s.Environment = val
+}
+
+// SetVaultIds sets the value of VaultIds.
+func (s *CreateSessionUpgradeRequest) SetVaultIds(val []string) {
+	s.VaultIds = val
+}
+
+// SetInitialEvents sets the value of InitialEvents.
+func (s *CreateSessionUpgradeRequest) SetInitialEvents(val []ManagedAgentsEventParams) {
+	s.InitialEvents = val
 }
 
 // Delete Session 响应体。.
@@ -1028,6 +1310,91 @@ func (s *EnvironmentWithOverridesType) UnmarshalText(data []byte) error {
 	switch EnvironmentWithOverridesType(data) {
 	case EnvironmentWithOverridesTypeEnvironmentWithOverrides:
 		*s = EnvironmentWithOverridesTypeEnvironmentWithOverrides
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Session upgrade 的目标 Environment 运行配置。
+// `id` 必须等于当前 Session 的 Environment ID —— upgrade 不支持换绑到另一个
+// Environment，不一致返回 403 `EnvironmentMismatch`；`config.type` 也必须与
+// 当前 Session 的环境类型一致（不支持 cloud ↔ self_hosted 互切），不一致
+// 返回 403 `EnvironmentTypeMismatch`。
+// cloud 环境开放 `networking` / `packages` / `env` / `setup_script` 升级，
+// 在当前 Sandbox 上原地生效，不更换 Sandbox 实例。self_hosted 沙箱由用户
+// 自建，除 `config.type` 外不接受任何运行时字段（这类 Session 仍可升级
+// agent 并投递 `initial_events`）；`tos` 一律拒绝，返回 400
+// `TosUpgradeNotSupported`。.
+// Ref: #/components/schemas/EnvironmentWithUpgrades
+type EnvironmentWithUpgrades struct {
+	// 固定 `"environment_with_upgrades"`。.
+	Type EnvironmentWithUpgradesType `json:"type"`
+	// Environment ID；必须与当前 Session 的 Environment ID 一致。.
+	ID string `json:"id"`
+	// 运行时配置升级。.
+	Config OptEnvironmentConfigOverride `json:"config"`
+}
+
+// GetType returns the value of Type.
+func (s *EnvironmentWithUpgrades) GetType() EnvironmentWithUpgradesType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *EnvironmentWithUpgrades) GetID() string {
+	return s.ID
+}
+
+// GetConfig returns the value of Config.
+func (s *EnvironmentWithUpgrades) GetConfig() OptEnvironmentConfigOverride {
+	return s.Config
+}
+
+// SetType sets the value of Type.
+func (s *EnvironmentWithUpgrades) SetType(val EnvironmentWithUpgradesType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *EnvironmentWithUpgrades) SetID(val string) {
+	s.ID = val
+}
+
+// SetConfig sets the value of Config.
+func (s *EnvironmentWithUpgrades) SetConfig(val OptEnvironmentConfigOverride) {
+	s.Config = val
+}
+
+// 固定 `"environment_with_upgrades"`。.
+type EnvironmentWithUpgradesType string
+
+const (
+	EnvironmentWithUpgradesTypeEnvironmentWithUpgrades EnvironmentWithUpgradesType = "environment_with_upgrades"
+)
+
+// AllValues returns all EnvironmentWithUpgradesType values.
+func (EnvironmentWithUpgradesType) AllValues() []EnvironmentWithUpgradesType {
+	return []EnvironmentWithUpgradesType{
+		EnvironmentWithUpgradesTypeEnvironmentWithUpgrades,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s EnvironmentWithUpgradesType) MarshalText() ([]byte, error) {
+	switch s {
+	case EnvironmentWithUpgradesTypeEnvironmentWithUpgrades:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *EnvironmentWithUpgradesType) UnmarshalText(data []byte) error {
+	switch EnvironmentWithUpgradesType(data) {
+	case EnvironmentWithUpgradesTypeEnvironmentWithUpgrades:
+		*s = EnvironmentWithUpgradesTypeEnvironmentWithUpgrades
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -2517,15 +2884,27 @@ func (s *ManagedAgentsUserToolResultEventParams) SetSessionThreadID(val OptStrin
 	s.SessionThreadID = val
 }
 
-// Session 创建时允许临时覆写的模型运行参数。.
+// Session 创建时允许临时覆写的模型运行参数。
+// 内部字段省略表示继承 base Agent 的对应值。.
 // Ref: #/components/schemas/ModelOverrides
 type ModelOverrides struct {
+	// 模型 semantic 覆写，形如 `"doubao-seed-2-0-pro-260215"`；服务端按最右
+	// 侧一个 `-` 拆成 (name, version) 冻结进本 Session 的 Agent 快照，不回写
+	// base Agent。解析失败返回 400，模型未开通返回 403 `ModelNotOpen`。.
+	ID OptString `json:"id"`
 	// 模型速度档位。.
 	Speed OptString `json:"speed"`
 	// Thinking 配置。.
 	Thinking OptString `json:"thinking"`
 	// 推理努力程度。.
 	ReasoningEffort OptString `json:"reasoning_effort"`
+	// 服务档位。.
+	ServiceTier OptString `json:"service_tier"`
+}
+
+// GetID returns the value of ID.
+func (s *ModelOverrides) GetID() OptString {
+	return s.ID
 }
 
 // GetSpeed returns the value of Speed.
@@ -2543,6 +2922,16 @@ func (s *ModelOverrides) GetReasoningEffort() OptString {
 	return s.ReasoningEffort
 }
 
+// GetServiceTier returns the value of ServiceTier.
+func (s *ModelOverrides) GetServiceTier() OptString {
+	return s.ServiceTier
+}
+
+// SetID sets the value of ID.
+func (s *ModelOverrides) SetID(val OptString) {
+	s.ID = val
+}
+
 // SetSpeed sets the value of Speed.
 func (s *ModelOverrides) SetSpeed(val OptString) {
 	s.Speed = val
@@ -2556,6 +2945,87 @@ func (s *ModelOverrides) SetThinking(val OptString) {
 // SetReasoningEffort sets the value of ReasoningEffort.
 func (s *ModelOverrides) SetReasoningEffort(val OptString) {
 	s.ReasoningEffort = val
+}
+
+// SetServiceTier sets the value of ServiceTier.
+func (s *ModelOverrides) SetServiceTier(val OptString) {
+	s.ServiceTier = val
+}
+
+// Session upgrade 中允许调整的模型配置子集。
+// 与创建期的 `ModelOverrides` 的差别在于 `id`：upgrade 允许改模型身份，
+// 服务端把它解析成完整 provider / protocol / endpoint 后冻结进 Session 的
+// Agent 快照。.
+// Ref: #/components/schemas/ModelUpgrades
+type ModelUpgrades struct {
+	// 目标模型标识，形如 `"doubao-seed-2-0-pro-260215"`。
+	// 与创建期 `ModelOverrides.id` 的**解析路径不同**：此处服务端拿它当
+	// endpoint 反查元数据来得到 (name, version)，而不是按字符串拆分。因此
+	// endpoint 不存在 / 已关闭 / 元信息缺失均返回 400；显式传空串也返回 400
+	// （upgrade 不支持卸载底模）。模型未开通返回 403 `ModelNotOpen`；底模不支持
+	// 作为 Agent 使用返回 400。
+	// 换 `id` 时 `speed` / `thinking` / `reasoning_effort` / `service_tier` 会按
+	// **新**底模重新校验取值：本次未显式提供的，沿用升级前的值参与校验，落在新
+	// 底模白名单外返回 400。.
+	ID OptString `json:"id"`
+	// 模型速度档位。.
+	Speed OptString `json:"speed"`
+	// Thinking 配置。.
+	Thinking OptString `json:"thinking"`
+	// 推理努力程度。.
+	ReasoningEffort OptString `json:"reasoning_effort"`
+	// 服务档位。.
+	ServiceTier OptString `json:"service_tier"`
+}
+
+// GetID returns the value of ID.
+func (s *ModelUpgrades) GetID() OptString {
+	return s.ID
+}
+
+// GetSpeed returns the value of Speed.
+func (s *ModelUpgrades) GetSpeed() OptString {
+	return s.Speed
+}
+
+// GetThinking returns the value of Thinking.
+func (s *ModelUpgrades) GetThinking() OptString {
+	return s.Thinking
+}
+
+// GetReasoningEffort returns the value of ReasoningEffort.
+func (s *ModelUpgrades) GetReasoningEffort() OptString {
+	return s.ReasoningEffort
+}
+
+// GetServiceTier returns the value of ServiceTier.
+func (s *ModelUpgrades) GetServiceTier() OptString {
+	return s.ServiceTier
+}
+
+// SetID sets the value of ID.
+func (s *ModelUpgrades) SetID(val OptString) {
+	s.ID = val
+}
+
+// SetSpeed sets the value of Speed.
+func (s *ModelUpgrades) SetSpeed(val OptString) {
+	s.Speed = val
+}
+
+// SetThinking sets the value of Thinking.
+func (s *ModelUpgrades) SetThinking(val OptString) {
+	s.Thinking = val
+}
+
+// SetReasoningEffort sets the value of ReasoningEffort.
+func (s *ModelUpgrades) SetReasoningEffort(val OptString) {
+	s.ReasoningEffort = val
+}
+
+// SetServiceTier sets the value of ServiceTier.
+func (s *ModelUpgrades) SetServiceTier(val OptString) {
+	s.ServiceTier = val
 }
 
 // NewOptAgentRefMultiagent returns new OptAgentRefMultiagent with value set to v.
@@ -2598,6 +3068,98 @@ func (o OptAgentRefMultiagent) Get() (v AgentRefMultiagent, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptAgentRefMultiagent) Or(d AgentRefMultiagent) AgentRefMultiagent {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptAgentWithUpgrades returns new OptAgentWithUpgrades with value set to v.
+func NewOptAgentWithUpgrades(v AgentWithUpgrades) OptAgentWithUpgrades {
+	return OptAgentWithUpgrades{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAgentWithUpgrades is optional AgentWithUpgrades.
+type OptAgentWithUpgrades struct {
+	Value AgentWithUpgrades
+	Set   bool
+}
+
+// IsSet returns true if OptAgentWithUpgrades was set.
+func (o OptAgentWithUpgrades) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAgentWithUpgrades) Reset() {
+	var v AgentWithUpgrades
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAgentWithUpgrades) SetTo(v AgentWithUpgrades) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAgentWithUpgrades) Get() (v AgentWithUpgrades, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAgentWithUpgrades) Or(d AgentWithUpgrades) AgentWithUpgrades {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptAgentWithUpgradesMultiagent returns new OptAgentWithUpgradesMultiagent with value set to v.
+func NewOptAgentWithUpgradesMultiagent(v AgentWithUpgradesMultiagent) OptAgentWithUpgradesMultiagent {
+	return OptAgentWithUpgradesMultiagent{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAgentWithUpgradesMultiagent is optional AgentWithUpgradesMultiagent.
+type OptAgentWithUpgradesMultiagent struct {
+	Value AgentWithUpgradesMultiagent
+	Set   bool
+}
+
+// IsSet returns true if OptAgentWithUpgradesMultiagent was set.
+func (o OptAgentWithUpgradesMultiagent) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAgentWithUpgradesMultiagent) Reset() {
+	var v AgentWithUpgradesMultiagent
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAgentWithUpgradesMultiagent) SetTo(v AgentWithUpgradesMultiagent) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAgentWithUpgradesMultiagent) Get() (v AgentWithUpgradesMultiagent, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAgentWithUpgradesMultiagent) Or(d AgentWithUpgradesMultiagent) AgentWithUpgradesMultiagent {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -3018,6 +3580,52 @@ func (o OptEnvironmentWithOverrides) Or(d EnvironmentWithOverrides) EnvironmentW
 	return d
 }
 
+// NewOptEnvironmentWithUpgrades returns new OptEnvironmentWithUpgrades with value set to v.
+func NewOptEnvironmentWithUpgrades(v EnvironmentWithUpgrades) OptEnvironmentWithUpgrades {
+	return OptEnvironmentWithUpgrades{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptEnvironmentWithUpgrades is optional EnvironmentWithUpgrades.
+type OptEnvironmentWithUpgrades struct {
+	Value EnvironmentWithUpgrades
+	Set   bool
+}
+
+// IsSet returns true if OptEnvironmentWithUpgrades was set.
+func (o OptEnvironmentWithUpgrades) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptEnvironmentWithUpgrades) Reset() {
+	var v EnvironmentWithUpgrades
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptEnvironmentWithUpgrades) SetTo(v EnvironmentWithUpgrades) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptEnvironmentWithUpgrades) Get() (v EnvironmentWithUpgrades, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptEnvironmentWithUpgrades) Or(d EnvironmentWithUpgrades) EnvironmentWithUpgrades {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptInt32 returns new OptInt32 with value set to v.
 func NewOptInt32(v int32) OptInt32 {
 	return OptInt32{
@@ -3196,6 +3804,52 @@ func (o OptModelOverrides) Get() (v ModelOverrides, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptModelOverrides) Or(d ModelOverrides) ModelOverrides {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptModelUpgrades returns new OptModelUpgrades with value set to v.
+func NewOptModelUpgrades(v ModelUpgrades) OptModelUpgrades {
+	return OptModelUpgrades{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptModelUpgrades is optional ModelUpgrades.
+type OptModelUpgrades struct {
+	Value ModelUpgrades
+	Set   bool
+}
+
+// IsSet returns true if OptModelUpgrades was set.
+func (o OptModelUpgrades) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptModelUpgrades) Reset() {
+	var v ModelUpgrades
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptModelUpgrades) SetTo(v ModelUpgrades) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptModelUpgrades) Get() (v ModelUpgrades, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptModelUpgrades) Or(d ModelUpgrades) ModelUpgrades {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -4224,6 +4878,9 @@ const (
 	SessionStatusRunning      SessionStatus = "running"
 	SessionStatusTerminated   SessionStatus = "terminated"
 	SessionStatusRescheduling SessionStatus = "rescheduling"
+	SessionStatusInitializing SessionStatus = "initializing"
+	SessionStatusFailed       SessionStatus = "failed"
+	SessionStatusUpgrading    SessionStatus = "upgrading"
 )
 
 // AllValues returns all SessionStatus values.
@@ -4233,6 +4890,9 @@ func (SessionStatus) AllValues() []SessionStatus {
 		SessionStatusRunning,
 		SessionStatusTerminated,
 		SessionStatusRescheduling,
+		SessionStatusInitializing,
+		SessionStatusFailed,
+		SessionStatusUpgrading,
 	}
 }
 
@@ -4246,6 +4906,12 @@ func (s SessionStatus) MarshalText() ([]byte, error) {
 	case SessionStatusTerminated:
 		return []byte(s), nil
 	case SessionStatusRescheduling:
+		return []byte(s), nil
+	case SessionStatusInitializing:
+		return []byte(s), nil
+	case SessionStatusFailed:
+		return []byte(s), nil
+	case SessionStatusUpgrading:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -4266,6 +4932,15 @@ func (s *SessionStatus) UnmarshalText(data []byte) error {
 		return nil
 	case SessionStatusRescheduling:
 		*s = SessionStatusRescheduling
+		return nil
+	case SessionStatusInitializing:
+		*s = SessionStatusInitializing
+		return nil
+	case SessionStatusFailed:
+		*s = SessionStatusFailed
+		return nil
+	case SessionStatusUpgrading:
+		*s = SessionStatusUpgrading
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
