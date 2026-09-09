@@ -25,6 +25,7 @@ import (
 	"github.com/volcengine/volcengine-go-sdk/volcengine/session"
 	"github.com/volcengine/volcengine-go-sdk/volcengine/volcengineerr"
 
+	sdk "github.com/volcengine/ark-runtime-go"
 	"github.com/volcengine/ark-runtime-go/arkruntime/model"
 	"github.com/volcengine/ark-runtime-go/arkruntime/utils"
 )
@@ -285,6 +286,7 @@ func (c *Client) newRequest(ctx context.Context, method, url, _, resourceId stri
 		header: make(http.Header),
 	}
 	args.query = make(map[string][]string)
+	args.header.Set("User-Agent", "ark-runtime-go/"+sdk.Version())
 
 	requestID := utils.GenRequestId()
 	args.header.Set(model.ClientRequestHeader, requestID)
