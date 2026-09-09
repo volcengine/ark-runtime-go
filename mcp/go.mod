@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	github.com/modelcontextprotocol/go-sdk v1.3.1
-	github.com/volcengine/ark-runtime-go v0.6.0
+	github.com/volcengine/ark-runtime-go v0.7.0
 )
 
 require (
