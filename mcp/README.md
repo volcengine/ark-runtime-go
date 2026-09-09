@@ -51,7 +51,7 @@ a separate Go module so the main Ark Runtime SDK keeps its Go 1.20 baseline.
 Install the adapter with the same release version as the core SDK:
 
 ```bash
-go get github.com/volcengine/ark-runtime-go/mcp@v0.6.0
+go get github.com/volcengine/ark-runtime-go/mcp@v0.7.0
 ```
 
 Each core `vMAJOR.MINOR.0` release also publishes the matching
