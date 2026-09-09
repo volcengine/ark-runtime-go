@@ -20,3 +20,5 @@ The paired multimodal and sparse embedding examples default to `doubao-embedding
 MCP is available in both clouds and its examples explicitly send `ark-beta-mcp: true`. Other built-in tools are CN-only: Web Search sends `ark-beta-web-search: true`, and Doubao App sends `ark-beta-doubao-app: true`.
 
 The [`self_hosted_worker/`](./self_hosted_worker) example runs a local Managed Agents worker for an existing self-hosted environment. It requires `MA_ENVIRONMENT_ID`; the client defaults to `https://ark.cn-beijing.volces.com/api/v3`.
+
+The [`self_hosted_mcp_worker/`](./self_hosted_mcp_worker) example discovers tools from a local MCP server, prints their schemas as Agent custom tool declarations for manual configuration, and executes calls through a self-hosted worker. It is an isolated Go 1.23 module so MCP dependencies do not change the core SDK or the other examples.

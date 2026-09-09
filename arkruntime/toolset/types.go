@@ -17,6 +17,9 @@ type ContentBlock struct {
 	Text      string `json:"text,omitempty"`
 	MediaType string `json:"media_type,omitempty"`
 	Data      []byte `json:"data,omitempty"`
+	Source    any    `json:"source,omitempty"`
+	Title     string `json:"title,omitempty"`
+	Context   string `json:"context,omitempty"`
 }
 
 // Result 是一次工具执行结果。

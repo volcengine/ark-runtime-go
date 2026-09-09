@@ -349,6 +349,24 @@ type ContentBlock struct {
 	Text      string `json:"text,omitempty"`
 	MediaType string `json:"media_type,omitempty"`
 	Data      []byte `json:"data,omitempty"`
+	Source    any    `json:"source,omitempty"`
+	Title     string `json:"title,omitempty"`
+	Context   string `json:"context,omitempty"`
+}
+
+// MarshalJSON 在文本块中保留必需的空 text 字段。
+func (b ContentBlock) MarshalJSON() ([]byte, error) {
+	type contentBlockAlias ContentBlock
+	if b.Type != "text" || b.Text != "" {
+		return json.Marshal(contentBlockAlias(b))
+	}
+	return json.Marshal(struct {
+		contentBlockAlias
+		Text string `json:"text"`
+	}{
+		contentBlockAlias: contentBlockAlias(b),
+		Text:              b.Text,
+	})
 }
 
 // RawJSON 保存未解释的 JSON 对象，兼容 wire 上以字符串承载 raw JSON。

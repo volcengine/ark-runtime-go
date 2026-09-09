@@ -166,19 +166,16 @@ func (c *Client) doControlPlaneRequest(
 	v model.Response,
 	setters ...requestOption,
 ) error {
-	return utils.Retry(
+	return utils.RetryWithAttempt(
 		ctx,
-		utils.RetryPolicy{
-			MaxAttempts:    c.config.RetryTimes,
-			InitialBackoff: model.ErrorRetryBaseDelay,
-			MaxBackoff:     model.ErrorRetryMaxDelay,
-		},
+		defaultRetryPolicy(c.config.RetryTimes),
 		func() bool { return true },
-		func() error {
+		func(retryCount int) error {
 			req, reqErr := c.newRequest(ctx, method, u, "", "", setters...)
 			if reqErr != nil {
 				return reqErr
 			}
+			setRetryCountHeader(req, retryCount)
 			return c.sendControlPlaneRequest(req, v)
 		},
 		nil,

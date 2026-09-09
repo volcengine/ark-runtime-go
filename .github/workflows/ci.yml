@@ -21,6 +21,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  minimum-go-build:
+    name: Build on Go 1.20
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.20.x"
+          cache: true
+
+      - name: Build core SDK
+        run: go build ./...
+
   go-ci:
     name: Go CI
     runs-on: ubuntu-latest
@@ -53,3 +71,26 @@ jobs:
         with:
           version: v1.64.8
           args: --timeout=5m --concurrency=8 --issues-exit-code=1
+
+  mcp-ci:
+    name: MCP adapter CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.x"
+          cache-dependency-path: mcp/go.sum
+
+      - name: Test optional MCP adapter
+        working-directory: mcp
+        run: go test ./...
+
+      - name: Build self-hosted MCP example
+        working-directory: examples/self_hosted_mcp_worker
+        run: go build ./...

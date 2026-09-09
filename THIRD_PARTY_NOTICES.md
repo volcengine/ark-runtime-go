@@ -8,8 +8,8 @@ from third-party open-source projects.
 Portions of the self-hosted worker lifecycle and local agent tool
 implementations under
 `arkruntime/selfhosted`, `arkruntime/lib/environments`, `arkruntime/toolset`,
-and `arkruntime/tools/agenttoolset` are structurally adapted from Anthropic's
-self-hosted worker SDK implementation:
+`arkruntime/tools/agenttoolset`, and `mcp` are structurally adapted from
+Anthropic's self-hosted worker SDK and client-side MCP helper implementation:
 
 https://github.com/anthropics/anthropic-sdk-go
 

@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -362,19 +363,16 @@ func (c *Client) sendRequest(client *http.Client, req *http.Request, v model.Res
 }
 
 func (c *Client) Do(ctx context.Context, method, url, resourceType, resourceId string, v model.Response, setters ...requestOption) (err error) {
-	err = utils.Retry(
+	err = utils.RetryWithAttempt(
 		ctx,
-		utils.RetryPolicy{
-			MaxAttempts:    c.config.RetryTimes,
-			InitialBackoff: model.ErrorRetryBaseDelay,
-			MaxBackoff:     model.ErrorRetryMaxDelay,
-		},
+		defaultRetryPolicy(c.config.RetryTimes),
 		func() bool { return true },
-		func() error {
+		func(retryCount int) error {
 			req, innerErr := c.newRequest(ctx, method, url, resourceType, resourceId, setters...)
 			if innerErr != nil {
 				return innerErr
 			}
+			setRetryCountHeader(req, retryCount)
 
 			return c.sendRequest(c.config.HTTPClient, req, v)
 		},
@@ -508,19 +506,16 @@ func sendCreateResponsesRequestStream(client *Client, httpClient *http.Client, r
 // ImageGenerationStreamRequestDo executes an /images/generations request
 // with stream=true and returns a gen-typed reader.
 func (c *Client) ImageGenerationStreamRequestDo(ctx context.Context, method, url, resourceId string, setters ...requestOption) (streamReader *utils.ImageGenerationStreamReader, err error) {
-	err = utils.Retry(
+	err = utils.RetryWithAttempt(
 		ctx,
-		utils.RetryPolicy{
-			MaxAttempts:    c.config.RetryTimes,
-			InitialBackoff: model.ErrorRetryBaseDelay,
-			MaxBackoff:     model.ErrorRetryMaxDelay,
-		},
+		defaultRetryPolicy(c.config.RetryTimes),
 		func() bool { return true },
-		func() error {
+		func(retryCount int) error {
 			req, innerErr := c.newRequest(ctx, method, url, resourceTypeEndpoint, resourceId, setters...)
 			if innerErr != nil {
 				return innerErr
 			}
+			setRetryCountHeader(req, retryCount)
 
 			streamReader, err = sendImageGenerationStream(c, c.config.HTTPClient, req)
 			return err
@@ -534,19 +529,16 @@ func (c *Client) ImageGenerationStreamRequestDo(ctx context.Context, method, url
 // ChatGenStreamRequestDo executes a chat-completions stream request and
 // returns a gen-typed reader.
 func (c *Client) ChatGenStreamRequestDo(ctx context.Context, method, url, resourceId string, setters ...requestOption) (streamReader *utils.ChatGenStreamReader, err error) {
-	err = utils.Retry(
+	err = utils.RetryWithAttempt(
 		ctx,
-		utils.RetryPolicy{
-			MaxAttempts:    c.config.RetryTimes,
-			InitialBackoff: model.ErrorRetryBaseDelay,
-			MaxBackoff:     model.ErrorRetryMaxDelay,
-		},
+		defaultRetryPolicy(c.config.RetryTimes),
 		func() bool { return true },
-		func() error {
+		func(retryCount int) error {
 			req, innerErr := c.newRequest(ctx, method, url, resourceTypeEndpoint, resourceId, setters...)
 			if innerErr != nil {
 				return innerErr
 			}
+			setRetryCountHeader(req, retryCount)
 
 			streamReader, err = sendChatGenStream(c, c.config.HTTPClient, req)
 			return err
@@ -560,19 +552,16 @@ func (c *Client) ChatGenStreamRequestDo(ctx context.Context, method, url, resour
 
 // ResponsesRequestStreamDo executes a request.
 func (c *Client) ResponsesRequestStreamDo(ctx context.Context, method, url, resourceType, resourceId string, setters ...requestOption) (resp *utils.ResponsesStreamReader, err error) {
-	err = utils.Retry(
+	err = utils.RetryWithAttempt(
 		ctx,
-		utils.RetryPolicy{
-			MaxAttempts:    c.config.RetryTimes,
-			InitialBackoff: model.ErrorRetryBaseDelay,
-			MaxBackoff:     model.ErrorRetryMaxDelay,
-		},
+		defaultRetryPolicy(c.config.RetryTimes),
 		func() bool { return true },
-		func() error {
+		func(retryCount int) error {
 			req, innerErr := c.newRequest(ctx, method, url, resourceType, resourceId, setters...)
 			if innerErr != nil {
 				return innerErr
 			}
+			setRetryCountHeader(req, retryCount)
 			resp, err = sendCreateResponsesRequestStream(c, c.config.HTTPClient, req)
 			return err
 		},
@@ -624,16 +613,31 @@ func isFailureStatusCode(resp *http.Response) bool {
 }
 
 func needRetryError(err error) bool {
+	if header, ok := responseHeader(err); ok {
+		switch strings.ToLower(header.Get(model.ShouldRetryHeader)) {
+		case "true":
+			return true
+		case "false":
+			return false
+		}
+	}
 	apiErr := &model.APIError{}
 	reqErr := &model.RequestError{}
 	if errors.As(err, &apiErr) {
-		return apiErr.HTTPStatusCode >= http.StatusInternalServerError || apiErr.HTTPStatusCode == http.StatusTooManyRequests
+		return isRetryableStatus(apiErr.HTTPStatusCode)
 	} else if errors.Is(err, io.EOF) {
 		return true
 	} else if errors.As(err, &reqErr) {
-		return reqErr.HTTPStatusCode >= http.StatusInternalServerError
+		return isRetryableStatus(reqErr.HTTPStatusCode)
 	}
 	return false
+}
+
+func isRetryableStatus(statusCode int) bool {
+	return statusCode == http.StatusRequestTimeout ||
+		statusCode == http.StatusConflict ||
+		statusCode == http.StatusTooManyRequests ||
+		statusCode >= http.StatusInternalServerError
 }
 
 func decodeResponse(body io.Reader, v interface{}) error {
@@ -663,19 +667,23 @@ func (c *Client) fullURL(suffix string) string {
 }
 
 func (c *Client) handleErrorResp(resp *http.Response) error {
+	// Streaming callers rely on this close. Non-streaming callers also defer
+	// Close upstream and rely on response bodies supporting idempotent Close.
+	defer resp.Body.Close() //nolint:errcheck // response body close errors are non-actionable
 	requestID := responseRequestID(resp)
 	body, readErr := io.ReadAll(resp.Body)
 	if readErr != nil {
-		return model.NewRequestError(
+		return newResponseRequestError(
 			resp.StatusCode,
 			fmt.Errorf("read error response body: %w", readErr),
 			requestID,
+			resp.Header,
 		)
 	}
 
 	var errRes model.ErrorResponse
 	if err := json.Unmarshal(body, &errRes); err == nil && errRes.Error != nil {
-		return setAPIErrorResponseMetadata(errRes.Error, resp.StatusCode, requestID)
+		return setAPIErrorResponseMetadata(errRes.Error, resp.StatusCode, requestID, resp.Header)
 	}
 
 	// Some services return the error object directly instead of wrapping it in
@@ -683,21 +691,23 @@ func (c *Client) handleErrorResp(resp *http.Response) error {
 	var apiErr model.APIError
 	if err := json.Unmarshal(body, &apiErr); err == nil &&
 		(apiErr.Message != "" || apiErr.Code != "" || apiErr.Type != "") {
-		return setAPIErrorResponseMetadata(&apiErr, resp.StatusCode, requestID)
+		return setAPIErrorResponseMetadata(&apiErr, resp.StatusCode, requestID, resp.Header)
 	}
 
 	bodyText := strings.TrimSpace(string(body))
 	if bodyText == "" {
-		return model.NewRequestError(
+		return newResponseRequestError(
 			resp.StatusCode,
 			errors.New("unexpected error response: empty body"),
 			requestID,
+			resp.Header,
 		)
 	}
-	return model.NewRequestError(
+	return newResponseRequestError(
 		resp.StatusCode,
 		fmt.Errorf("unexpected error response body: %s", bodyText),
 		requestID,
+		resp.Header,
 	)
 }
 
@@ -714,12 +724,76 @@ func responseRequestID(resp *http.Response) string {
 	return ""
 }
 
-func setAPIErrorResponseMetadata(apiErr *model.APIError, statusCode int, requestID string) error {
+func setAPIErrorResponseMetadata(apiErr *model.APIError, statusCode int, requestID string, header http.Header) error {
 	apiErr.HTTPStatusCode = statusCode
+	apiErr.ResponseHeader = header.Clone()
 	if requestID != "" {
 		apiErr.RequestId = requestID
 	}
 	return apiErr
+}
+
+func newResponseRequestError(statusCode int, err error, requestID string, header http.Header) error {
+	requestErr := model.NewRequestError(statusCode, err, requestID)
+	requestErr.ResponseHeader = header.Clone()
+	return requestErr
+}
+
+func defaultRetryPolicy(maxAttempts int) utils.RetryPolicy {
+	return utils.RetryPolicy{
+		MaxAttempts:    maxAttempts,
+		InitialBackoff: model.ErrorRetryBaseDelay,
+		MaxBackoff:     model.ErrorRetryMaxDelay,
+		MaxRetryAfter:  model.MaxServerRetryDelay,
+		RetryAfter:     retryAfter,
+	}
+}
+
+func retryAfter(err error) (time.Duration, bool) {
+	header, ok := responseHeader(err)
+	if !ok {
+		return 0, false
+	}
+	for _, retry := range []struct {
+		name string
+		unit time.Duration
+	}{
+		{name: model.RetryAfterMSHeader, unit: time.Millisecond},
+		{name: model.RetryAfterHeader, unit: time.Second},
+	} {
+		value := header.Get(retry.name)
+		if value == "" {
+			continue
+		}
+		if parsed, parseErr := strconv.ParseFloat(value, 64); parseErr == nil {
+			if math.IsNaN(parsed) || math.IsInf(parsed, 0) ||
+				parsed > float64(math.MaxInt64)/float64(retry.unit) ||
+				parsed < float64(math.MinInt64)/float64(retry.unit) {
+				continue
+			}
+			return time.Duration(parsed * float64(retry.unit)), true
+		}
+		if retry.name == model.RetryAfterHeader {
+			if retryAt, parseErr := http.ParseTime(value); parseErr == nil {
+				return time.Until(retryAt), true
+			}
+		}
+	}
+	return 0, false
+}
+
+func responseHeader(err error) (http.Header, bool) {
+	var responseErr interface{ GetHeader() http.Header }
+	if !errors.As(err, &responseErr) || responseErr == nil || responseErr.GetHeader() == nil {
+		return nil, false
+	}
+	return responseErr.GetHeader(), true
+}
+
+func setRetryCountHeader(req *http.Request, retryCount int) {
+	if req.Header.Get(model.RetryCountHeader) == "" {
+		req.Header.Set(model.RetryCountHeader, strconv.Itoa(retryCount))
+	}
 }
 
 func (c *Client) getRetryAfter(v model.Response) int64 {
