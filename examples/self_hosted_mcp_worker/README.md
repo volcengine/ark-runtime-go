@@ -1,6 +1,6 @@
 # Self-hosted MCP worker
 
-This example follows Anthropic's client-side MCP helper example at the same
+This example follows the client-side MCP helper pattern at the same
 level of abstraction: connect to an MCP server, discover its tools, convert
 them, and run an existing self-hosted Environment Worker.
 

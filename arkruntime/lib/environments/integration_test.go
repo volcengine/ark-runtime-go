@@ -492,7 +492,7 @@ func TestEnvironmentWorkerHeartbeatPrefersStopRequestedStateOverLeaseNotExtended
 	}
 }
 
-func TestEnvironmentWorkerHeartbeatUsesAnthropicDefaultTTL(t *testing.T) {
+func TestEnvironmentWorkerHeartbeatUsesDefaultTTL(t *testing.T) {
 	var got selfhosted.HeartbeatWorkRequest
 	var requestTimeout time.Duration
 	api := &fakeEnvironmentWorkerAPI{
