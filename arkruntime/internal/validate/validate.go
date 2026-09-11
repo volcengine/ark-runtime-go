@@ -17,8 +17,6 @@
 package validate
 
 import (
-	"fmt"
-	"math"
 	"strings"
 
 	"github.com/go-faster/errors"
@@ -59,22 +57,4 @@ func (e *Error) Error() string {
 		b.WriteString(")")
 	}
 	return b.String()
-}
-
-// Float is a stub for ogen's float validator. Our generated validators only
-// ever construct the zero value and call Validate; the configurable
-// min/max/multipleOf/pattern setters in ogen's full implementation are not
-// emitted by the schemas we generate. NaN and Inf are rejected to match
-// ogen's behaviour.
-type Float struct{}
-
-// Validate returns an error if v is NaN or +/-Inf.
-func (Float) Validate(v float64) error {
-	if math.IsNaN(v) {
-		return fmt.Errorf("value %f is not a number", v)
-	}
-	if math.IsInf(v, 0) {
-		return fmt.Errorf("value %f is infinite", v)
-	}
-	return nil
 }
