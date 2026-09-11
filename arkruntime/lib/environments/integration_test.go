@@ -101,6 +101,11 @@ func (f *fakeEnvironmentWorkerAPI) SendEvent(_ context.Context, req selfhosted.S
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.sent = append(f.sent, req.Event)
+	f.events = append(f.events, selfhosted.Event{
+		ID:         "evt_idle_after_result",
+		Type:       selfhosted.EventTypeSessionStatusIdle,
+		StopReason: &selfhosted.SessionStopReason{Type: selfhosted.SessionStopReasonEndTurn},
+	})
 	return nil
 }
 
@@ -124,9 +129,11 @@ func TestEnvironmentWorkerRunHandlesPolledWorkInProcess(t *testing.T) {
 				EvaluatedPermission: selfhosted.PermissionAllow,
 			},
 			{
-				ID:         "evt_idle",
-				Type:       selfhosted.EventTypeSessionStatusIdle,
-				StopReason: &selfhosted.SessionStopReason{Type: selfhosted.SessionStopReasonEndTurn},
+				ID:   "evt_idle",
+				Type: selfhosted.EventTypeSessionStatusIdle,
+				StopReason: &selfhosted.SessionStopReason{
+					Type: selfhosted.SessionStopReasonRequiresAction, EventIDs: []string{"toolu_local"},
+				},
 			},
 		},
 		onStop: cancel,
@@ -174,14 +181,15 @@ func TestEnvironmentWorkerForwardsToolTimeout(t *testing.T) {
 				ID:              "toolu_timeout",
 				Type:            selfhosted.EventTypeAgentCustomToolUse,
 				Name:            tool.Name(),
-				ToolUseID:       "call_timeout",
 				Input:           selfhosted.RawJSON(`{}`),
 				SessionThreadID: "thread_timeout",
 			},
 			{
-				ID:         "evt_idle",
-				Type:       selfhosted.EventTypeSessionStatusIdle,
-				StopReason: &selfhosted.SessionStopReason{Type: selfhosted.SessionStopReasonEndTurn},
+				ID:   "evt_idle",
+				Type: selfhosted.EventTypeSessionStatusIdle,
+				StopReason: &selfhosted.SessionStopReason{
+					Type: selfhosted.SessionStopReasonRequiresAction, EventIDs: []string{"toolu_timeout"},
+				},
 			},
 		},
 	}
@@ -226,9 +234,11 @@ func TestEnvironmentWorkerForwardsToolTimeoutToDefaultTools(t *testing.T) {
 				EvaluatedPermission: selfhosted.PermissionAllow,
 			},
 			{
-				ID:         "evt_idle",
-				Type:       selfhosted.EventTypeSessionStatusIdle,
-				StopReason: &selfhosted.SessionStopReason{Type: selfhosted.SessionStopReasonEndTurn},
+				ID:   "evt_idle",
+				Type: selfhosted.EventTypeSessionStatusIdle,
+				StopReason: &selfhosted.SessionStopReason{
+					Type: selfhosted.SessionStopReasonRequiresAction, EventIDs: []string{"toolu_default_timeout"},
+				},
 			},
 		},
 	}

@@ -69,6 +69,31 @@ type runnerFailingMarkSentStore struct {
 	markCalls int
 }
 
+type runnerRecordingStore struct {
+	discarded []string
+	marked    []string
+}
+
+func (s *runnerRecordingStore) Recover() (map[string]Event, map[string]bool, error) {
+	return nil, nil, nil
+}
+
+func (s *runnerRecordingStore) Begin(string, Event) (ToolCallStoreDecision, error) {
+	return ToolCallStoreDecision{}, nil
+}
+
+func (s *runnerRecordingStore) SaveResult(string, Event) error { return nil }
+
+func (s *runnerRecordingStore) MarkSent(callID string) error {
+	s.marked = append(s.marked, callID)
+	return nil
+}
+
+func (s *runnerRecordingStore) Discard(callID string) error {
+	s.discarded = append(s.discarded, callID)
+	return nil
+}
+
 func (s *runnerFailingMarkSentStore) Recover() (map[string]Event, map[string]bool, error) {
 	return nil, nil, nil
 }
@@ -285,5 +310,119 @@ func TestSessionToolRunnerConflictIsRetryable(t *testing.T) {
 	err := &APIError{StatusCode: http.StatusConflict, Message: "temporary conflict"}
 	if isFatal4xxStatus(err) {
 		t.Fatal("409 conflict must remain retryable")
+	}
+}
+
+func TestSessionToolRunnerFiltersRecoveredResultsAgainstCurrentBlockers(t *testing.T) {
+	tool := &runnerTestTool{}
+	api := &runnerTestAPI{}
+	store := &runnerRecordingStore{}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		ResultStore: store,
+		Logger:      log.New(io.Discard, "", 0),
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	foreign := NewUserCustomToolResultEvent("foreign-call", nil, false, "")
+	stale := NewUserCustomToolResultEvent("stale-call", nil, false, "")
+	state := &toolRunnerState{
+		runner:           runner,
+		processed:        map[string]bool{},
+		seen:             map[string]bool{},
+		answered:         map[string]bool{},
+		pendingResults:   map[string]Event{"foreign-call": foreign, "stale-call": stale},
+		recoveredResults: map[string]bool{"foreign-call": true, "stale-call": true},
+		pendingAsk:       map[string]Event{},
+		confirmations:    map[string]Event{},
+		externalTools:    map[string]Event{},
+	}
+	events := []Event{
+		{ID: "stale-call", Type: EventTypeAgentCustomToolUse, Name: tool.Name(), Input: RawJSON(`{}`)},
+		{ID: "current-call", Type: EventTypeAgentCustomToolUse, Name: tool.Name(), Input: RawJSON(`{}`)},
+		{ID: "idle", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+			Type: SessionStopReasonRequiresAction, EventIDs: []string{"current-call"},
+		}},
+	}
+
+	if err := state.processListedEvents(context.Background(), events, true); err != nil {
+		t.Fatal(err)
+	}
+	if tool.calls != 1 || len(api.sent) != 1 || api.sent[0].CustomToolUseID != "current-call" {
+		t.Fatalf("tool_calls=%d sent=%+v", tool.calls, api.sent)
+	}
+	if len(state.pendingResults) != 0 || len(state.recoveredResults) != 0 {
+		t.Fatalf("pending=%v recovered=%v", state.pendingResults, state.recoveredResults)
+	}
+	if len(store.discarded) != 2 {
+		t.Fatalf("discarded=%v", store.discarded)
+	}
+}
+
+func TestSessionToolRunnerResendsRecoveredCurrentBlockerWithoutExecuting(t *testing.T) {
+	tool := &runnerTestTool{}
+	api := &runnerTestAPI{}
+	store := &runnerRecordingStore{}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		ResultStore: store,
+		Logger:      log.New(io.Discard, "", 0),
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	result := NewUserCustomToolResultEvent("current-call", nil, false, "")
+	state := &toolRunnerState{
+		runner:           runner,
+		processed:        map[string]bool{},
+		seen:             map[string]bool{},
+		answered:         map[string]bool{},
+		pendingResults:   map[string]Event{"current-call": result},
+		recoveredResults: map[string]bool{"current-call": true},
+		pendingAsk:       map[string]Event{},
+		confirmations:    map[string]Event{},
+		externalTools:    map[string]Event{},
+	}
+
+	if err := state.processListedEvents(context.Background(), []Event{
+		{ID: "current-call", Type: EventTypeAgentCustomToolUse, Name: tool.Name(), Input: RawJSON(`{}`)},
+		{ID: "idle", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+			Type: SessionStopReasonRequiresAction, EventIDs: []string{"current-call"},
+		}},
+	}, true); err != nil {
+		t.Fatal(err)
+	}
+	if tool.calls != 0 || len(api.sent) != 1 || len(store.marked) != 1 {
+		t.Fatalf("tool_calls=%d sent=%d marked=%v", tool.calls, len(api.sent), store.marked)
+	}
+	if len(store.discarded) != 0 {
+		t.Fatalf("discarded=%v", store.discarded)
+	}
+}
+
+func TestSessionToolRunnerWaitsToValidateRecoveredResultUntilStatusArrives(t *testing.T) {
+	tool := &runnerTestTool{}
+	api := &runnerTestAPI{}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		Logger:      log.New(io.Discard, "", 0),
+	})
+	result := NewUserCustomToolResultEvent("current-call", nil, false, "")
+	state := &toolRunnerState{
+		runner:           runner,
+		processed:        map[string]bool{},
+		seen:             map[string]bool{},
+		answered:         map[string]bool{},
+		pendingResults:   map[string]Event{"current-call": result},
+		recoveredResults: map[string]bool{"current-call": true},
+		pendingAsk:       map[string]Event{},
+		confirmations:    map[string]Event{},
+		externalTools:    map[string]Event{},
+	}
+
+	if err := state.processListedEvents(context.Background(), []Event{{
+		ID: "current-call", Type: EventTypeAgentCustomToolUse, Name: tool.Name(), Input: RawJSON(`{}`),
+	}}, true); err != nil {
+		t.Fatal(err)
+	}
+	if tool.calls != 0 || len(api.sent) != 0 || !state.recoveredResults["current-call"] {
+		t.Fatalf("tool_calls=%d sent=%d recovered=%v", tool.calls, len(api.sent), state.recoveredResults)
 	}
 }
