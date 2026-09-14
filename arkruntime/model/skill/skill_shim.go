@@ -18,6 +18,12 @@ type SkillResponse struct {
 	model.HttpHeader
 }
 
+// SkillVersionResponse wraps SkillVersion so it satisfies model.Response.
+type SkillVersionResponse struct {
+	SkillVersion
+	model.HttpHeader
+}
+
 // UploadForm pairs the multipart metadata (display_title) with the binary
 // zip file part. The typespec-generated CreateSkillRequest describes the
 // wire fields; the binary `files` part is appended here at multipart build

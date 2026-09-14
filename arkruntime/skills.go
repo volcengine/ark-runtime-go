@@ -22,6 +22,11 @@ type CreateSkillOptions struct {
 	ProtectionEnabled *bool
 }
 
+// CreateSkillVersionOptions controls optional multipart metadata for CreateSkillVersion.
+type CreateSkillVersionOptions struct {
+	DisplayTitle string
+}
+
 // CreateSkill uploads a zip package as multipart/form-data and creates a Skill.
 // `fileReader` supplies the zip bytes; `displayTitle` is optional.
 func (c *Client) CreateSkill(
@@ -65,6 +70,56 @@ func (c *Client) CreateSkillWithOptions(
 		return nil, err
 	}
 	return &wrap.Skill, nil
+}
+
+// CreateSkillVersion uploads a zip package as multipart/form-data and creates a Skill version.
+// `fileReader` supplies the zip bytes; `displayTitle` is optional.
+func (c *Client) CreateSkillVersion(
+	ctx context.Context,
+	skillID string,
+	fileReader io.Reader,
+	fileName, displayTitle string,
+	setters ...requestOption,
+) (*skill.SkillVersion, error) {
+	return c.CreateSkillVersionWithOptions(ctx, skillID, fileReader, fileName, CreateSkillVersionOptions{
+		DisplayTitle: displayTitle,
+	}, setters...)
+}
+
+// CreateSkillVersionWithOptions uploads a zip package as a new version of an existing Skill.
+func (c *Client) CreateSkillVersionWithOptions(
+	ctx context.Context,
+	skillID string,
+	fileReader io.Reader,
+	fileName string,
+	options CreateSkillVersionOptions,
+	setters ...requestOption,
+) (*skill.SkillVersion, error) {
+	if skillID == "" {
+		return nil, errors.New("missing required skill_id")
+	}
+	if fileReader == nil {
+		return nil, errors.New("missing required file reader")
+	}
+	form := &skill.UploadForm{
+		File:         fileReader,
+		FileName:     fileName,
+		DisplayTitle: options.DisplayTitle,
+	}
+	body, contentType, merr := form.MarshalMultipart()
+	if merr != nil {
+		return nil, merr
+	}
+	opts := append(setters,
+		withBody(bytes.NewReader(body)),
+		withContentType(contentType),
+	)
+	u := c.fullURL(fmt.Sprintf("%s/%s/versions", skillsPrefix, skill.PathEscape(skillID)))
+	wrap := &skill.SkillVersionResponse{}
+	if err := c.Do(ctx, http.MethodPost, u, "", "", wrap, opts...); err != nil {
+		return nil, err
+	}
+	return &wrap.SkillVersion, nil
 }
 
 // GetSkill retrieves a Skill summary by ID.

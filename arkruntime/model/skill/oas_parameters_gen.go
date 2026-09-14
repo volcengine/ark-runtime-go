@@ -11,6 +11,11 @@ type SkillVersionContentDownloadParams struct {
 	Version string
 }
 
+// SkillVersionsCreateParams is parameters of SkillVersions_create operation.
+type SkillVersionsCreateParams struct {
+	SkillId string
+}
+
 // SkillsRetrieveParams is parameters of Skills_retrieve operation.
 type SkillsRetrieveParams struct {
 	SkillId string

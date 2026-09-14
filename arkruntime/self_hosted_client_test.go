@@ -294,6 +294,59 @@ func TestCreateSkillWithOptionsMultipartContract(t *testing.T) {
 	}
 }
 
+func TestCreateSkillVersionMultipartContract(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost || r.URL.Path != "/skills/skill-1/versions" {
+			http.NotFound(w, r)
+			return
+		}
+		if err := r.ParseMultipartForm(1024); err != nil {
+			t.Fatalf("ParseMultipartForm() error = %v", err)
+		}
+		if got := r.FormValue("display_title"); got != "Readiness Skill v2" {
+			t.Fatalf("display_title = %q", got)
+		}
+		if got := r.FormValue("protection_enabled"); got != "" {
+			t.Fatalf("protection_enabled = %q", got)
+		}
+		if files := r.MultipartForm.File["files"]; len(files) != 1 || files[0].Filename != "skill.zip" {
+			t.Fatalf("files = %+v", files)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"id":"skillver-2","type":"skill_version","skill_id":"skill-1","version":"2","display_title":"Readiness Skill v2","description":"ok","created_at":"2026-09-14T10:11:12Z"}`))
+	}))
+	defer server.Close()
+
+	client := NewClientWithApiKey("test-api-key", WithBaseUrl(server.URL))
+	out, err := client.CreateSkillVersion(
+		context.Background(),
+		"skill-1",
+		strings.NewReader("zip-bytes-v2"),
+		"skill.zip",
+		"Readiness Skill v2",
+	)
+	if err != nil {
+		t.Fatalf("CreateSkillVersion() error = %v", err)
+	}
+	if out == nil || out.ID != "skillver-2" || out.SkillID != "skill-1" || out.Version != "2" {
+		t.Fatalf("CreateSkillVersion() = %+v", out)
+	}
+}
+
+func TestCreateSkillVersionValidation(t *testing.T) {
+	client := NewClientWithApiKey("test-api-key", WithBaseUrl("https://example.com"))
+
+	_, err := client.CreateSkillVersion(context.Background(), "", strings.NewReader("zip-bytes"), "skill.zip", "title")
+	if err == nil || err.Error() != "missing required skill_id" {
+		t.Fatalf("CreateSkillVersion() error = %v, want missing required skill_id", err)
+	}
+
+	_, err = client.CreateSkillVersion(context.Background(), "skill-1", nil, "skill.zip", "title")
+	if err == nil || err.Error() != "missing required file reader" {
+		t.Fatalf("CreateSkillVersion() error = %v, want missing required file reader", err)
+	}
+}
+
 func TestSendSessionEventRaw(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost || r.URL.Path != "/sessions/sess-1/events" {
