@@ -135,7 +135,7 @@ func (o OptString) Or(d string) string {
 // ark-managed-agents thrift 契约保持一致。.
 // Ref: #/components/schemas/Skill
 type Skill struct {
-	// Skill ID，形如 `skill_01XJ5...`。.
+	// Skill ID，形如 `skill-...`。.
 	ID string `json:"id"`
 	// 固定 `"skill"`。.
 	Object SkillObject `json:"object"`

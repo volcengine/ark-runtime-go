@@ -62,14 +62,107 @@ func (s *ContentBlockStartContentBlock) SetOneOf(val ContentBlockStartContentBlo
 	s.OneOf = val
 }
 
+// Ref: #/components/schemas/ContentBlockStartContentBlockServerToolUse
+type ContentBlockStartContentBlockServerToolUse struct {
+	Type  ContentBlockStartContentBlockServerToolUseType     `json:"type"`
+	ID    OptString                                          `json:"id"`
+	Name  OptString                                          `json:"name"`
+	Input OptContentBlockStartContentBlockServerToolUseInput `json:"input"`
+}
+
+// GetType returns the value of Type.
+func (s *ContentBlockStartContentBlockServerToolUse) GetType() ContentBlockStartContentBlockServerToolUseType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ContentBlockStartContentBlockServerToolUse) GetID() OptString {
+	return s.ID
+}
+
+// GetName returns the value of Name.
+func (s *ContentBlockStartContentBlockServerToolUse) GetName() OptString {
+	return s.Name
+}
+
+// GetInput returns the value of Input.
+func (s *ContentBlockStartContentBlockServerToolUse) GetInput() OptContentBlockStartContentBlockServerToolUseInput {
+	return s.Input
+}
+
+// SetType sets the value of Type.
+func (s *ContentBlockStartContentBlockServerToolUse) SetType(val ContentBlockStartContentBlockServerToolUseType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ContentBlockStartContentBlockServerToolUse) SetID(val OptString) {
+	s.ID = val
+}
+
+// SetName sets the value of Name.
+func (s *ContentBlockStartContentBlockServerToolUse) SetName(val OptString) {
+	s.Name = val
+}
+
+// SetInput sets the value of Input.
+func (s *ContentBlockStartContentBlockServerToolUse) SetInput(val OptContentBlockStartContentBlockServerToolUseInput) {
+	s.Input = val
+}
+
+type ContentBlockStartContentBlockServerToolUseInput map[string]jx.Raw
+
+func (s *ContentBlockStartContentBlockServerToolUseInput) init() ContentBlockStartContentBlockServerToolUseInput {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type ContentBlockStartContentBlockServerToolUseType string
+
+const (
+	ContentBlockStartContentBlockServerToolUseTypeServerToolUse ContentBlockStartContentBlockServerToolUseType = "server_tool_use"
+)
+
+// AllValues returns all ContentBlockStartContentBlockServerToolUseType values.
+func (ContentBlockStartContentBlockServerToolUseType) AllValues() []ContentBlockStartContentBlockServerToolUseType {
+	return []ContentBlockStartContentBlockServerToolUseType{
+		ContentBlockStartContentBlockServerToolUseTypeServerToolUse,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContentBlockStartContentBlockServerToolUseType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContentBlockStartContentBlockServerToolUseTypeServerToolUse:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContentBlockStartContentBlockServerToolUseType) UnmarshalText(data []byte) error {
+	switch ContentBlockStartContentBlockServerToolUseType(data) {
+	case ContentBlockStartContentBlockServerToolUseTypeServerToolUse:
+		*s = ContentBlockStartContentBlockServerToolUseTypeServerToolUse
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // ContentBlockStartContentBlockSum represents sum type.
 type ContentBlockStartContentBlockSum struct {
-	Type                                           ContentBlockStartContentBlockSumType // switch on this field
-	MessagesResponseContentPartText                MessagesResponseContentPartText
-	MessagesResponseContentPartThinking            MessagesResponseContentPartThinking
-	MessagesResponseContentPartToolUse             MessagesResponseContentPartToolUse
-	MessagesResponseContentPartServerToolUse       MessagesResponseContentPartServerToolUse
-	MessagesResponseContentPartWebSearchToolResult MessagesResponseContentPartWebSearchToolResult
+	Type                                             ContentBlockStartContentBlockSumType // switch on this field
+	ContentBlockStartContentBlockText                ContentBlockStartContentBlockText
+	ContentBlockStartContentBlockThinking            ContentBlockStartContentBlockThinking
+	ContentBlockStartContentBlockToolUse             ContentBlockStartContentBlockToolUse
+	ContentBlockStartContentBlockServerToolUse       ContentBlockStartContentBlockServerToolUse
+	ContentBlockStartContentBlockWebSearchToolResult ContentBlockStartContentBlockWebSearchToolResult
 }
 
 // ContentBlockStartContentBlockSumType is oneOf type of ContentBlockStartContentBlockSum.
@@ -77,141 +170,437 @@ type ContentBlockStartContentBlockSumType string
 
 // Possible values for ContentBlockStartContentBlockSumType.
 const (
-	MessagesResponseContentPartTextContentBlockStartContentBlockSum                ContentBlockStartContentBlockSumType = "text"
-	MessagesResponseContentPartThinkingContentBlockStartContentBlockSum            ContentBlockStartContentBlockSumType = "thinking"
-	MessagesResponseContentPartToolUseContentBlockStartContentBlockSum             ContentBlockStartContentBlockSumType = "tool_use"
-	MessagesResponseContentPartServerToolUseContentBlockStartContentBlockSum       ContentBlockStartContentBlockSumType = "server_tool_use"
-	MessagesResponseContentPartWebSearchToolResultContentBlockStartContentBlockSum ContentBlockStartContentBlockSumType = "web_search_tool_result"
+	ContentBlockStartContentBlockTextContentBlockStartContentBlockSum                ContentBlockStartContentBlockSumType = "text"
+	ContentBlockStartContentBlockThinkingContentBlockStartContentBlockSum            ContentBlockStartContentBlockSumType = "thinking"
+	ContentBlockStartContentBlockToolUseContentBlockStartContentBlockSum             ContentBlockStartContentBlockSumType = "tool_use"
+	ContentBlockStartContentBlockServerToolUseContentBlockStartContentBlockSum       ContentBlockStartContentBlockSumType = "server_tool_use"
+	ContentBlockStartContentBlockWebSearchToolResultContentBlockStartContentBlockSum ContentBlockStartContentBlockSumType = "web_search_tool_result"
 )
 
-// IsMessagesResponseContentPartText reports whether ContentBlockStartContentBlockSum is MessagesResponseContentPartText.
-func (s ContentBlockStartContentBlockSum) IsMessagesResponseContentPartText() bool {
-	return s.Type == MessagesResponseContentPartTextContentBlockStartContentBlockSum
+// IsContentBlockStartContentBlockText reports whether ContentBlockStartContentBlockSum is ContentBlockStartContentBlockText.
+func (s ContentBlockStartContentBlockSum) IsContentBlockStartContentBlockText() bool {
+	return s.Type == ContentBlockStartContentBlockTextContentBlockStartContentBlockSum
 }
 
-// IsMessagesResponseContentPartThinking reports whether ContentBlockStartContentBlockSum is MessagesResponseContentPartThinking.
-func (s ContentBlockStartContentBlockSum) IsMessagesResponseContentPartThinking() bool {
-	return s.Type == MessagesResponseContentPartThinkingContentBlockStartContentBlockSum
+// IsContentBlockStartContentBlockThinking reports whether ContentBlockStartContentBlockSum is ContentBlockStartContentBlockThinking.
+func (s ContentBlockStartContentBlockSum) IsContentBlockStartContentBlockThinking() bool {
+	return s.Type == ContentBlockStartContentBlockThinkingContentBlockStartContentBlockSum
 }
 
-// IsMessagesResponseContentPartToolUse reports whether ContentBlockStartContentBlockSum is MessagesResponseContentPartToolUse.
-func (s ContentBlockStartContentBlockSum) IsMessagesResponseContentPartToolUse() bool {
-	return s.Type == MessagesResponseContentPartToolUseContentBlockStartContentBlockSum
+// IsContentBlockStartContentBlockToolUse reports whether ContentBlockStartContentBlockSum is ContentBlockStartContentBlockToolUse.
+func (s ContentBlockStartContentBlockSum) IsContentBlockStartContentBlockToolUse() bool {
+	return s.Type == ContentBlockStartContentBlockToolUseContentBlockStartContentBlockSum
 }
 
-// IsMessagesResponseContentPartServerToolUse reports whether ContentBlockStartContentBlockSum is MessagesResponseContentPartServerToolUse.
-func (s ContentBlockStartContentBlockSum) IsMessagesResponseContentPartServerToolUse() bool {
-	return s.Type == MessagesResponseContentPartServerToolUseContentBlockStartContentBlockSum
+// IsContentBlockStartContentBlockServerToolUse reports whether ContentBlockStartContentBlockSum is ContentBlockStartContentBlockServerToolUse.
+func (s ContentBlockStartContentBlockSum) IsContentBlockStartContentBlockServerToolUse() bool {
+	return s.Type == ContentBlockStartContentBlockServerToolUseContentBlockStartContentBlockSum
 }
 
-// IsMessagesResponseContentPartWebSearchToolResult reports whether ContentBlockStartContentBlockSum is MessagesResponseContentPartWebSearchToolResult.
-func (s ContentBlockStartContentBlockSum) IsMessagesResponseContentPartWebSearchToolResult() bool {
-	return s.Type == MessagesResponseContentPartWebSearchToolResultContentBlockStartContentBlockSum
+// IsContentBlockStartContentBlockWebSearchToolResult reports whether ContentBlockStartContentBlockSum is ContentBlockStartContentBlockWebSearchToolResult.
+func (s ContentBlockStartContentBlockSum) IsContentBlockStartContentBlockWebSearchToolResult() bool {
+	return s.Type == ContentBlockStartContentBlockWebSearchToolResultContentBlockStartContentBlockSum
 }
 
-// SetMessagesResponseContentPartText sets ContentBlockStartContentBlockSum to MessagesResponseContentPartText.
-func (s *ContentBlockStartContentBlockSum) SetMessagesResponseContentPartText(v MessagesResponseContentPartText) {
-	s.Type = MessagesResponseContentPartTextContentBlockStartContentBlockSum
-	s.MessagesResponseContentPartText = v
+// SetContentBlockStartContentBlockText sets ContentBlockStartContentBlockSum to ContentBlockStartContentBlockText.
+func (s *ContentBlockStartContentBlockSum) SetContentBlockStartContentBlockText(v ContentBlockStartContentBlockText) {
+	s.Type = ContentBlockStartContentBlockTextContentBlockStartContentBlockSum
+	s.ContentBlockStartContentBlockText = v
 }
 
-// GetMessagesResponseContentPartText returns MessagesResponseContentPartText and true boolean if ContentBlockStartContentBlockSum is MessagesResponseContentPartText.
-func (s ContentBlockStartContentBlockSum) GetMessagesResponseContentPartText() (v MessagesResponseContentPartText, ok bool) {
-	if !s.IsMessagesResponseContentPartText() {
+// GetContentBlockStartContentBlockText returns ContentBlockStartContentBlockText and true boolean if ContentBlockStartContentBlockSum is ContentBlockStartContentBlockText.
+func (s ContentBlockStartContentBlockSum) GetContentBlockStartContentBlockText() (v ContentBlockStartContentBlockText, ok bool) {
+	if !s.IsContentBlockStartContentBlockText() {
 		return v, false
 	}
-	return s.MessagesResponseContentPartText, true
+	return s.ContentBlockStartContentBlockText, true
 }
 
-// NewMessagesResponseContentPartTextContentBlockStartContentBlockSum returns new ContentBlockStartContentBlockSum from MessagesResponseContentPartText.
-func NewMessagesResponseContentPartTextContentBlockStartContentBlockSum(v MessagesResponseContentPartText) ContentBlockStartContentBlockSum {
+// NewContentBlockStartContentBlockTextContentBlockStartContentBlockSum returns new ContentBlockStartContentBlockSum from ContentBlockStartContentBlockText.
+func NewContentBlockStartContentBlockTextContentBlockStartContentBlockSum(v ContentBlockStartContentBlockText) ContentBlockStartContentBlockSum {
 	var s ContentBlockStartContentBlockSum
-	s.SetMessagesResponseContentPartText(v)
+	s.SetContentBlockStartContentBlockText(v)
 	return s
 }
 
-// SetMessagesResponseContentPartThinking sets ContentBlockStartContentBlockSum to MessagesResponseContentPartThinking.
-func (s *ContentBlockStartContentBlockSum) SetMessagesResponseContentPartThinking(v MessagesResponseContentPartThinking) {
-	s.Type = MessagesResponseContentPartThinkingContentBlockStartContentBlockSum
-	s.MessagesResponseContentPartThinking = v
+// SetContentBlockStartContentBlockThinking sets ContentBlockStartContentBlockSum to ContentBlockStartContentBlockThinking.
+func (s *ContentBlockStartContentBlockSum) SetContentBlockStartContentBlockThinking(v ContentBlockStartContentBlockThinking) {
+	s.Type = ContentBlockStartContentBlockThinkingContentBlockStartContentBlockSum
+	s.ContentBlockStartContentBlockThinking = v
 }
 
-// GetMessagesResponseContentPartThinking returns MessagesResponseContentPartThinking and true boolean if ContentBlockStartContentBlockSum is MessagesResponseContentPartThinking.
-func (s ContentBlockStartContentBlockSum) GetMessagesResponseContentPartThinking() (v MessagesResponseContentPartThinking, ok bool) {
-	if !s.IsMessagesResponseContentPartThinking() {
+// GetContentBlockStartContentBlockThinking returns ContentBlockStartContentBlockThinking and true boolean if ContentBlockStartContentBlockSum is ContentBlockStartContentBlockThinking.
+func (s ContentBlockStartContentBlockSum) GetContentBlockStartContentBlockThinking() (v ContentBlockStartContentBlockThinking, ok bool) {
+	if !s.IsContentBlockStartContentBlockThinking() {
 		return v, false
 	}
-	return s.MessagesResponseContentPartThinking, true
+	return s.ContentBlockStartContentBlockThinking, true
 }
 
-// NewMessagesResponseContentPartThinkingContentBlockStartContentBlockSum returns new ContentBlockStartContentBlockSum from MessagesResponseContentPartThinking.
-func NewMessagesResponseContentPartThinkingContentBlockStartContentBlockSum(v MessagesResponseContentPartThinking) ContentBlockStartContentBlockSum {
+// NewContentBlockStartContentBlockThinkingContentBlockStartContentBlockSum returns new ContentBlockStartContentBlockSum from ContentBlockStartContentBlockThinking.
+func NewContentBlockStartContentBlockThinkingContentBlockStartContentBlockSum(v ContentBlockStartContentBlockThinking) ContentBlockStartContentBlockSum {
 	var s ContentBlockStartContentBlockSum
-	s.SetMessagesResponseContentPartThinking(v)
+	s.SetContentBlockStartContentBlockThinking(v)
 	return s
 }
 
-// SetMessagesResponseContentPartToolUse sets ContentBlockStartContentBlockSum to MessagesResponseContentPartToolUse.
-func (s *ContentBlockStartContentBlockSum) SetMessagesResponseContentPartToolUse(v MessagesResponseContentPartToolUse) {
-	s.Type = MessagesResponseContentPartToolUseContentBlockStartContentBlockSum
-	s.MessagesResponseContentPartToolUse = v
+// SetContentBlockStartContentBlockToolUse sets ContentBlockStartContentBlockSum to ContentBlockStartContentBlockToolUse.
+func (s *ContentBlockStartContentBlockSum) SetContentBlockStartContentBlockToolUse(v ContentBlockStartContentBlockToolUse) {
+	s.Type = ContentBlockStartContentBlockToolUseContentBlockStartContentBlockSum
+	s.ContentBlockStartContentBlockToolUse = v
 }
 
-// GetMessagesResponseContentPartToolUse returns MessagesResponseContentPartToolUse and true boolean if ContentBlockStartContentBlockSum is MessagesResponseContentPartToolUse.
-func (s ContentBlockStartContentBlockSum) GetMessagesResponseContentPartToolUse() (v MessagesResponseContentPartToolUse, ok bool) {
-	if !s.IsMessagesResponseContentPartToolUse() {
+// GetContentBlockStartContentBlockToolUse returns ContentBlockStartContentBlockToolUse and true boolean if ContentBlockStartContentBlockSum is ContentBlockStartContentBlockToolUse.
+func (s ContentBlockStartContentBlockSum) GetContentBlockStartContentBlockToolUse() (v ContentBlockStartContentBlockToolUse, ok bool) {
+	if !s.IsContentBlockStartContentBlockToolUse() {
 		return v, false
 	}
-	return s.MessagesResponseContentPartToolUse, true
+	return s.ContentBlockStartContentBlockToolUse, true
 }
 
-// NewMessagesResponseContentPartToolUseContentBlockStartContentBlockSum returns new ContentBlockStartContentBlockSum from MessagesResponseContentPartToolUse.
-func NewMessagesResponseContentPartToolUseContentBlockStartContentBlockSum(v MessagesResponseContentPartToolUse) ContentBlockStartContentBlockSum {
+// NewContentBlockStartContentBlockToolUseContentBlockStartContentBlockSum returns new ContentBlockStartContentBlockSum from ContentBlockStartContentBlockToolUse.
+func NewContentBlockStartContentBlockToolUseContentBlockStartContentBlockSum(v ContentBlockStartContentBlockToolUse) ContentBlockStartContentBlockSum {
 	var s ContentBlockStartContentBlockSum
-	s.SetMessagesResponseContentPartToolUse(v)
+	s.SetContentBlockStartContentBlockToolUse(v)
 	return s
 }
 
-// SetMessagesResponseContentPartServerToolUse sets ContentBlockStartContentBlockSum to MessagesResponseContentPartServerToolUse.
-func (s *ContentBlockStartContentBlockSum) SetMessagesResponseContentPartServerToolUse(v MessagesResponseContentPartServerToolUse) {
-	s.Type = MessagesResponseContentPartServerToolUseContentBlockStartContentBlockSum
-	s.MessagesResponseContentPartServerToolUse = v
+// SetContentBlockStartContentBlockServerToolUse sets ContentBlockStartContentBlockSum to ContentBlockStartContentBlockServerToolUse.
+func (s *ContentBlockStartContentBlockSum) SetContentBlockStartContentBlockServerToolUse(v ContentBlockStartContentBlockServerToolUse) {
+	s.Type = ContentBlockStartContentBlockServerToolUseContentBlockStartContentBlockSum
+	s.ContentBlockStartContentBlockServerToolUse = v
 }
 
-// GetMessagesResponseContentPartServerToolUse returns MessagesResponseContentPartServerToolUse and true boolean if ContentBlockStartContentBlockSum is MessagesResponseContentPartServerToolUse.
-func (s ContentBlockStartContentBlockSum) GetMessagesResponseContentPartServerToolUse() (v MessagesResponseContentPartServerToolUse, ok bool) {
-	if !s.IsMessagesResponseContentPartServerToolUse() {
+// GetContentBlockStartContentBlockServerToolUse returns ContentBlockStartContentBlockServerToolUse and true boolean if ContentBlockStartContentBlockSum is ContentBlockStartContentBlockServerToolUse.
+func (s ContentBlockStartContentBlockSum) GetContentBlockStartContentBlockServerToolUse() (v ContentBlockStartContentBlockServerToolUse, ok bool) {
+	if !s.IsContentBlockStartContentBlockServerToolUse() {
 		return v, false
 	}
-	return s.MessagesResponseContentPartServerToolUse, true
+	return s.ContentBlockStartContentBlockServerToolUse, true
 }
 
-// NewMessagesResponseContentPartServerToolUseContentBlockStartContentBlockSum returns new ContentBlockStartContentBlockSum from MessagesResponseContentPartServerToolUse.
-func NewMessagesResponseContentPartServerToolUseContentBlockStartContentBlockSum(v MessagesResponseContentPartServerToolUse) ContentBlockStartContentBlockSum {
+// NewContentBlockStartContentBlockServerToolUseContentBlockStartContentBlockSum returns new ContentBlockStartContentBlockSum from ContentBlockStartContentBlockServerToolUse.
+func NewContentBlockStartContentBlockServerToolUseContentBlockStartContentBlockSum(v ContentBlockStartContentBlockServerToolUse) ContentBlockStartContentBlockSum {
 	var s ContentBlockStartContentBlockSum
-	s.SetMessagesResponseContentPartServerToolUse(v)
+	s.SetContentBlockStartContentBlockServerToolUse(v)
 	return s
 }
 
-// SetMessagesResponseContentPartWebSearchToolResult sets ContentBlockStartContentBlockSum to MessagesResponseContentPartWebSearchToolResult.
-func (s *ContentBlockStartContentBlockSum) SetMessagesResponseContentPartWebSearchToolResult(v MessagesResponseContentPartWebSearchToolResult) {
-	s.Type = MessagesResponseContentPartWebSearchToolResultContentBlockStartContentBlockSum
-	s.MessagesResponseContentPartWebSearchToolResult = v
+// SetContentBlockStartContentBlockWebSearchToolResult sets ContentBlockStartContentBlockSum to ContentBlockStartContentBlockWebSearchToolResult.
+func (s *ContentBlockStartContentBlockSum) SetContentBlockStartContentBlockWebSearchToolResult(v ContentBlockStartContentBlockWebSearchToolResult) {
+	s.Type = ContentBlockStartContentBlockWebSearchToolResultContentBlockStartContentBlockSum
+	s.ContentBlockStartContentBlockWebSearchToolResult = v
 }
 
-// GetMessagesResponseContentPartWebSearchToolResult returns MessagesResponseContentPartWebSearchToolResult and true boolean if ContentBlockStartContentBlockSum is MessagesResponseContentPartWebSearchToolResult.
-func (s ContentBlockStartContentBlockSum) GetMessagesResponseContentPartWebSearchToolResult() (v MessagesResponseContentPartWebSearchToolResult, ok bool) {
-	if !s.IsMessagesResponseContentPartWebSearchToolResult() {
+// GetContentBlockStartContentBlockWebSearchToolResult returns ContentBlockStartContentBlockWebSearchToolResult and true boolean if ContentBlockStartContentBlockSum is ContentBlockStartContentBlockWebSearchToolResult.
+func (s ContentBlockStartContentBlockSum) GetContentBlockStartContentBlockWebSearchToolResult() (v ContentBlockStartContentBlockWebSearchToolResult, ok bool) {
+	if !s.IsContentBlockStartContentBlockWebSearchToolResult() {
 		return v, false
 	}
-	return s.MessagesResponseContentPartWebSearchToolResult, true
+	return s.ContentBlockStartContentBlockWebSearchToolResult, true
 }
 
-// NewMessagesResponseContentPartWebSearchToolResultContentBlockStartContentBlockSum returns new ContentBlockStartContentBlockSum from MessagesResponseContentPartWebSearchToolResult.
-func NewMessagesResponseContentPartWebSearchToolResultContentBlockStartContentBlockSum(v MessagesResponseContentPartWebSearchToolResult) ContentBlockStartContentBlockSum {
+// NewContentBlockStartContentBlockWebSearchToolResultContentBlockStartContentBlockSum returns new ContentBlockStartContentBlockSum from ContentBlockStartContentBlockWebSearchToolResult.
+func NewContentBlockStartContentBlockWebSearchToolResultContentBlockStartContentBlockSum(v ContentBlockStartContentBlockWebSearchToolResult) ContentBlockStartContentBlockSum {
 	var s ContentBlockStartContentBlockSum
-	s.SetMessagesResponseContentPartWebSearchToolResult(v)
+	s.SetContentBlockStartContentBlockWebSearchToolResult(v)
 	return s
+}
+
+// Ref: #/components/schemas/ContentBlockStartContentBlockText
+type ContentBlockStartContentBlockText struct {
+	Type ContentBlockStartContentBlockTextType `json:"type"`
+	Text OptString                             `json:"text"`
+}
+
+// GetType returns the value of Type.
+func (s *ContentBlockStartContentBlockText) GetType() ContentBlockStartContentBlockTextType {
+	return s.Type
+}
+
+// GetText returns the value of Text.
+func (s *ContentBlockStartContentBlockText) GetText() OptString {
+	return s.Text
+}
+
+// SetType sets the value of Type.
+func (s *ContentBlockStartContentBlockText) SetType(val ContentBlockStartContentBlockTextType) {
+	s.Type = val
+}
+
+// SetText sets the value of Text.
+func (s *ContentBlockStartContentBlockText) SetText(val OptString) {
+	s.Text = val
+}
+
+type ContentBlockStartContentBlockTextType string
+
+const (
+	ContentBlockStartContentBlockTextTypeText ContentBlockStartContentBlockTextType = "text"
+)
+
+// AllValues returns all ContentBlockStartContentBlockTextType values.
+func (ContentBlockStartContentBlockTextType) AllValues() []ContentBlockStartContentBlockTextType {
+	return []ContentBlockStartContentBlockTextType{
+		ContentBlockStartContentBlockTextTypeText,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContentBlockStartContentBlockTextType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContentBlockStartContentBlockTextTypeText:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContentBlockStartContentBlockTextType) UnmarshalText(data []byte) error {
+	switch ContentBlockStartContentBlockTextType(data) {
+	case ContentBlockStartContentBlockTextTypeText:
+		*s = ContentBlockStartContentBlockTextTypeText
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/ContentBlockStartContentBlockThinking
+type ContentBlockStartContentBlockThinking struct {
+	Type     ContentBlockStartContentBlockThinkingType `json:"type"`
+	Thinking OptString                                 `json:"thinking"`
+}
+
+// GetType returns the value of Type.
+func (s *ContentBlockStartContentBlockThinking) GetType() ContentBlockStartContentBlockThinkingType {
+	return s.Type
+}
+
+// GetThinking returns the value of Thinking.
+func (s *ContentBlockStartContentBlockThinking) GetThinking() OptString {
+	return s.Thinking
+}
+
+// SetType sets the value of Type.
+func (s *ContentBlockStartContentBlockThinking) SetType(val ContentBlockStartContentBlockThinkingType) {
+	s.Type = val
+}
+
+// SetThinking sets the value of Thinking.
+func (s *ContentBlockStartContentBlockThinking) SetThinking(val OptString) {
+	s.Thinking = val
+}
+
+type ContentBlockStartContentBlockThinkingType string
+
+const (
+	ContentBlockStartContentBlockThinkingTypeThinking ContentBlockStartContentBlockThinkingType = "thinking"
+)
+
+// AllValues returns all ContentBlockStartContentBlockThinkingType values.
+func (ContentBlockStartContentBlockThinkingType) AllValues() []ContentBlockStartContentBlockThinkingType {
+	return []ContentBlockStartContentBlockThinkingType{
+		ContentBlockStartContentBlockThinkingTypeThinking,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContentBlockStartContentBlockThinkingType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContentBlockStartContentBlockThinkingTypeThinking:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContentBlockStartContentBlockThinkingType) UnmarshalText(data []byte) error {
+	switch ContentBlockStartContentBlockThinkingType(data) {
+	case ContentBlockStartContentBlockThinkingTypeThinking:
+		*s = ContentBlockStartContentBlockThinkingTypeThinking
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/ContentBlockStartContentBlockToolUse
+type ContentBlockStartContentBlockToolUse struct {
+	Type  ContentBlockStartContentBlockToolUseType     `json:"type"`
+	ID    OptString                                    `json:"id"`
+	Name  OptString                                    `json:"name"`
+	Input OptContentBlockStartContentBlockToolUseInput `json:"input"`
+}
+
+// GetType returns the value of Type.
+func (s *ContentBlockStartContentBlockToolUse) GetType() ContentBlockStartContentBlockToolUseType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ContentBlockStartContentBlockToolUse) GetID() OptString {
+	return s.ID
+}
+
+// GetName returns the value of Name.
+func (s *ContentBlockStartContentBlockToolUse) GetName() OptString {
+	return s.Name
+}
+
+// GetInput returns the value of Input.
+func (s *ContentBlockStartContentBlockToolUse) GetInput() OptContentBlockStartContentBlockToolUseInput {
+	return s.Input
+}
+
+// SetType sets the value of Type.
+func (s *ContentBlockStartContentBlockToolUse) SetType(val ContentBlockStartContentBlockToolUseType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ContentBlockStartContentBlockToolUse) SetID(val OptString) {
+	s.ID = val
+}
+
+// SetName sets the value of Name.
+func (s *ContentBlockStartContentBlockToolUse) SetName(val OptString) {
+	s.Name = val
+}
+
+// SetInput sets the value of Input.
+func (s *ContentBlockStartContentBlockToolUse) SetInput(val OptContentBlockStartContentBlockToolUseInput) {
+	s.Input = val
+}
+
+type ContentBlockStartContentBlockToolUseInput map[string]jx.Raw
+
+func (s *ContentBlockStartContentBlockToolUseInput) init() ContentBlockStartContentBlockToolUseInput {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type ContentBlockStartContentBlockToolUseType string
+
+const (
+	ContentBlockStartContentBlockToolUseTypeToolUse ContentBlockStartContentBlockToolUseType = "tool_use"
+)
+
+// AllValues returns all ContentBlockStartContentBlockToolUseType values.
+func (ContentBlockStartContentBlockToolUseType) AllValues() []ContentBlockStartContentBlockToolUseType {
+	return []ContentBlockStartContentBlockToolUseType{
+		ContentBlockStartContentBlockToolUseTypeToolUse,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContentBlockStartContentBlockToolUseType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContentBlockStartContentBlockToolUseTypeToolUse:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContentBlockStartContentBlockToolUseType) UnmarshalText(data []byte) error {
+	switch ContentBlockStartContentBlockToolUseType(data) {
+	case ContentBlockStartContentBlockToolUseTypeToolUse:
+		*s = ContentBlockStartContentBlockToolUseTypeToolUse
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// A web-search result is emitted atomically in the start event, without deltas.
+// Ref: #/components/schemas/ContentBlockStartContentBlockWebSearchToolResult
+type ContentBlockStartContentBlockWebSearchToolResult struct {
+	Type      ContentBlockStartContentBlockWebSearchToolResultType `json:"type"`
+	ToolUseID OptString                                            `json:"tool_use_id"`
+	Content   OptMessagesWebSearchToolResultContent                `json:"content"`
+	Caller    OptMessagesServerToolCaller                          `json:"caller"`
+}
+
+// GetType returns the value of Type.
+func (s *ContentBlockStartContentBlockWebSearchToolResult) GetType() ContentBlockStartContentBlockWebSearchToolResultType {
+	return s.Type
+}
+
+// GetToolUseID returns the value of ToolUseID.
+func (s *ContentBlockStartContentBlockWebSearchToolResult) GetToolUseID() OptString {
+	return s.ToolUseID
+}
+
+// GetContent returns the value of Content.
+func (s *ContentBlockStartContentBlockWebSearchToolResult) GetContent() OptMessagesWebSearchToolResultContent {
+	return s.Content
+}
+
+// GetCaller returns the value of Caller.
+func (s *ContentBlockStartContentBlockWebSearchToolResult) GetCaller() OptMessagesServerToolCaller {
+	return s.Caller
+}
+
+// SetType sets the value of Type.
+func (s *ContentBlockStartContentBlockWebSearchToolResult) SetType(val ContentBlockStartContentBlockWebSearchToolResultType) {
+	s.Type = val
+}
+
+// SetToolUseID sets the value of ToolUseID.
+func (s *ContentBlockStartContentBlockWebSearchToolResult) SetToolUseID(val OptString) {
+	s.ToolUseID = val
+}
+
+// SetContent sets the value of Content.
+func (s *ContentBlockStartContentBlockWebSearchToolResult) SetContent(val OptMessagesWebSearchToolResultContent) {
+	s.Content = val
+}
+
+// SetCaller sets the value of Caller.
+func (s *ContentBlockStartContentBlockWebSearchToolResult) SetCaller(val OptMessagesServerToolCaller) {
+	s.Caller = val
+}
+
+type ContentBlockStartContentBlockWebSearchToolResultType string
+
+const (
+	ContentBlockStartContentBlockWebSearchToolResultTypeWebSearchToolResult ContentBlockStartContentBlockWebSearchToolResultType = "web_search_tool_result"
+)
+
+// AllValues returns all ContentBlockStartContentBlockWebSearchToolResultType values.
+func (ContentBlockStartContentBlockWebSearchToolResultType) AllValues() []ContentBlockStartContentBlockWebSearchToolResultType {
+	return []ContentBlockStartContentBlockWebSearchToolResultType{
+		ContentBlockStartContentBlockWebSearchToolResultTypeWebSearchToolResult,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContentBlockStartContentBlockWebSearchToolResultType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContentBlockStartContentBlockWebSearchToolResultTypeWebSearchToolResult:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContentBlockStartContentBlockWebSearchToolResultType) UnmarshalText(data []byte) error {
+	switch ContentBlockStartContentBlockWebSearchToolResultType(data) {
+	case ContentBlockStartContentBlockWebSearchToolResultTypeWebSearchToolResult:
+		*s = ContentBlockStartContentBlockWebSearchToolResultTypeWebSearchToolResult
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 type ContentBlockStartType string
@@ -317,18 +706,240 @@ func (s *Error) SetType(val string) {
 }
 
 // Ref: #/components/schemas/MessagesContentPart
+// MessagesContentPart represents sum type.
 type MessagesContentPart struct {
-	OneOf MessagesContentPartSum
+	Type                                   MessagesContentPartType // switch on this field
+	MessagesContentPartText                MessagesContentPartText
+	MessagesContentPartThinking            MessagesContentPartThinking
+	MessagesContentPartImage               MessagesContentPartImage
+	MessagesContentPartDocument            MessagesContentPartDocument
+	MessagesContentPartToolUse             MessagesContentPartToolUse
+	MessagesContentPartToolResult          MessagesContentPartToolResult
+	MessagesContentPartServerToolUse       MessagesContentPartServerToolUse
+	MessagesContentPartWebSearchToolResult MessagesContentPartWebSearchToolResult
 }
 
-// GetOneOf returns the value of OneOf.
-func (s *MessagesContentPart) GetOneOf() MessagesContentPartSum {
-	return s.OneOf
+// MessagesContentPartType is oneOf type of MessagesContentPart.
+type MessagesContentPartType string
+
+// Possible values for MessagesContentPartType.
+const (
+	MessagesContentPartTextMessagesContentPart                MessagesContentPartType = "text"
+	MessagesContentPartThinkingMessagesContentPart            MessagesContentPartType = "thinking"
+	MessagesContentPartImageMessagesContentPart               MessagesContentPartType = "image"
+	MessagesContentPartDocumentMessagesContentPart            MessagesContentPartType = "document"
+	MessagesContentPartToolUseMessagesContentPart             MessagesContentPartType = "tool_use"
+	MessagesContentPartToolResultMessagesContentPart          MessagesContentPartType = "tool_result"
+	MessagesContentPartServerToolUseMessagesContentPart       MessagesContentPartType = "server_tool_use"
+	MessagesContentPartWebSearchToolResultMessagesContentPart MessagesContentPartType = "web_search_tool_result"
+)
+
+// IsMessagesContentPartText reports whether MessagesContentPart is MessagesContentPartText.
+func (s MessagesContentPart) IsMessagesContentPartText() bool {
+	return s.Type == MessagesContentPartTextMessagesContentPart
 }
 
-// SetOneOf sets the value of OneOf.
-func (s *MessagesContentPart) SetOneOf(val MessagesContentPartSum) {
-	s.OneOf = val
+// IsMessagesContentPartThinking reports whether MessagesContentPart is MessagesContentPartThinking.
+func (s MessagesContentPart) IsMessagesContentPartThinking() bool {
+	return s.Type == MessagesContentPartThinkingMessagesContentPart
+}
+
+// IsMessagesContentPartImage reports whether MessagesContentPart is MessagesContentPartImage.
+func (s MessagesContentPart) IsMessagesContentPartImage() bool {
+	return s.Type == MessagesContentPartImageMessagesContentPart
+}
+
+// IsMessagesContentPartDocument reports whether MessagesContentPart is MessagesContentPartDocument.
+func (s MessagesContentPart) IsMessagesContentPartDocument() bool {
+	return s.Type == MessagesContentPartDocumentMessagesContentPart
+}
+
+// IsMessagesContentPartToolUse reports whether MessagesContentPart is MessagesContentPartToolUse.
+func (s MessagesContentPart) IsMessagesContentPartToolUse() bool {
+	return s.Type == MessagesContentPartToolUseMessagesContentPart
+}
+
+// IsMessagesContentPartToolResult reports whether MessagesContentPart is MessagesContentPartToolResult.
+func (s MessagesContentPart) IsMessagesContentPartToolResult() bool {
+	return s.Type == MessagesContentPartToolResultMessagesContentPart
+}
+
+// IsMessagesContentPartServerToolUse reports whether MessagesContentPart is MessagesContentPartServerToolUse.
+func (s MessagesContentPart) IsMessagesContentPartServerToolUse() bool {
+	return s.Type == MessagesContentPartServerToolUseMessagesContentPart
+}
+
+// IsMessagesContentPartWebSearchToolResult reports whether MessagesContentPart is MessagesContentPartWebSearchToolResult.
+func (s MessagesContentPart) IsMessagesContentPartWebSearchToolResult() bool {
+	return s.Type == MessagesContentPartWebSearchToolResultMessagesContentPart
+}
+
+// SetMessagesContentPartText sets MessagesContentPart to MessagesContentPartText.
+func (s *MessagesContentPart) SetMessagesContentPartText(v MessagesContentPartText) {
+	s.Type = MessagesContentPartTextMessagesContentPart
+	s.MessagesContentPartText = v
+}
+
+// GetMessagesContentPartText returns MessagesContentPartText and true boolean if MessagesContentPart is MessagesContentPartText.
+func (s MessagesContentPart) GetMessagesContentPartText() (v MessagesContentPartText, ok bool) {
+	if !s.IsMessagesContentPartText() {
+		return v, false
+	}
+	return s.MessagesContentPartText, true
+}
+
+// NewMessagesContentPartTextMessagesContentPart returns new MessagesContentPart from MessagesContentPartText.
+func NewMessagesContentPartTextMessagesContentPart(v MessagesContentPartText) MessagesContentPart {
+	var s MessagesContentPart
+	s.SetMessagesContentPartText(v)
+	return s
+}
+
+// SetMessagesContentPartThinking sets MessagesContentPart to MessagesContentPartThinking.
+func (s *MessagesContentPart) SetMessagesContentPartThinking(v MessagesContentPartThinking) {
+	s.Type = MessagesContentPartThinkingMessagesContentPart
+	s.MessagesContentPartThinking = v
+}
+
+// GetMessagesContentPartThinking returns MessagesContentPartThinking and true boolean if MessagesContentPart is MessagesContentPartThinking.
+func (s MessagesContentPart) GetMessagesContentPartThinking() (v MessagesContentPartThinking, ok bool) {
+	if !s.IsMessagesContentPartThinking() {
+		return v, false
+	}
+	return s.MessagesContentPartThinking, true
+}
+
+// NewMessagesContentPartThinkingMessagesContentPart returns new MessagesContentPart from MessagesContentPartThinking.
+func NewMessagesContentPartThinkingMessagesContentPart(v MessagesContentPartThinking) MessagesContentPart {
+	var s MessagesContentPart
+	s.SetMessagesContentPartThinking(v)
+	return s
+}
+
+// SetMessagesContentPartImage sets MessagesContentPart to MessagesContentPartImage.
+func (s *MessagesContentPart) SetMessagesContentPartImage(v MessagesContentPartImage) {
+	s.Type = MessagesContentPartImageMessagesContentPart
+	s.MessagesContentPartImage = v
+}
+
+// GetMessagesContentPartImage returns MessagesContentPartImage and true boolean if MessagesContentPart is MessagesContentPartImage.
+func (s MessagesContentPart) GetMessagesContentPartImage() (v MessagesContentPartImage, ok bool) {
+	if !s.IsMessagesContentPartImage() {
+		return v, false
+	}
+	return s.MessagesContentPartImage, true
+}
+
+// NewMessagesContentPartImageMessagesContentPart returns new MessagesContentPart from MessagesContentPartImage.
+func NewMessagesContentPartImageMessagesContentPart(v MessagesContentPartImage) MessagesContentPart {
+	var s MessagesContentPart
+	s.SetMessagesContentPartImage(v)
+	return s
+}
+
+// SetMessagesContentPartDocument sets MessagesContentPart to MessagesContentPartDocument.
+func (s *MessagesContentPart) SetMessagesContentPartDocument(v MessagesContentPartDocument) {
+	s.Type = MessagesContentPartDocumentMessagesContentPart
+	s.MessagesContentPartDocument = v
+}
+
+// GetMessagesContentPartDocument returns MessagesContentPartDocument and true boolean if MessagesContentPart is MessagesContentPartDocument.
+func (s MessagesContentPart) GetMessagesContentPartDocument() (v MessagesContentPartDocument, ok bool) {
+	if !s.IsMessagesContentPartDocument() {
+		return v, false
+	}
+	return s.MessagesContentPartDocument, true
+}
+
+// NewMessagesContentPartDocumentMessagesContentPart returns new MessagesContentPart from MessagesContentPartDocument.
+func NewMessagesContentPartDocumentMessagesContentPart(v MessagesContentPartDocument) MessagesContentPart {
+	var s MessagesContentPart
+	s.SetMessagesContentPartDocument(v)
+	return s
+}
+
+// SetMessagesContentPartToolUse sets MessagesContentPart to MessagesContentPartToolUse.
+func (s *MessagesContentPart) SetMessagesContentPartToolUse(v MessagesContentPartToolUse) {
+	s.Type = MessagesContentPartToolUseMessagesContentPart
+	s.MessagesContentPartToolUse = v
+}
+
+// GetMessagesContentPartToolUse returns MessagesContentPartToolUse and true boolean if MessagesContentPart is MessagesContentPartToolUse.
+func (s MessagesContentPart) GetMessagesContentPartToolUse() (v MessagesContentPartToolUse, ok bool) {
+	if !s.IsMessagesContentPartToolUse() {
+		return v, false
+	}
+	return s.MessagesContentPartToolUse, true
+}
+
+// NewMessagesContentPartToolUseMessagesContentPart returns new MessagesContentPart from MessagesContentPartToolUse.
+func NewMessagesContentPartToolUseMessagesContentPart(v MessagesContentPartToolUse) MessagesContentPart {
+	var s MessagesContentPart
+	s.SetMessagesContentPartToolUse(v)
+	return s
+}
+
+// SetMessagesContentPartToolResult sets MessagesContentPart to MessagesContentPartToolResult.
+func (s *MessagesContentPart) SetMessagesContentPartToolResult(v MessagesContentPartToolResult) {
+	s.Type = MessagesContentPartToolResultMessagesContentPart
+	s.MessagesContentPartToolResult = v
+}
+
+// GetMessagesContentPartToolResult returns MessagesContentPartToolResult and true boolean if MessagesContentPart is MessagesContentPartToolResult.
+func (s MessagesContentPart) GetMessagesContentPartToolResult() (v MessagesContentPartToolResult, ok bool) {
+	if !s.IsMessagesContentPartToolResult() {
+		return v, false
+	}
+	return s.MessagesContentPartToolResult, true
+}
+
+// NewMessagesContentPartToolResultMessagesContentPart returns new MessagesContentPart from MessagesContentPartToolResult.
+func NewMessagesContentPartToolResultMessagesContentPart(v MessagesContentPartToolResult) MessagesContentPart {
+	var s MessagesContentPart
+	s.SetMessagesContentPartToolResult(v)
+	return s
+}
+
+// SetMessagesContentPartServerToolUse sets MessagesContentPart to MessagesContentPartServerToolUse.
+func (s *MessagesContentPart) SetMessagesContentPartServerToolUse(v MessagesContentPartServerToolUse) {
+	s.Type = MessagesContentPartServerToolUseMessagesContentPart
+	s.MessagesContentPartServerToolUse = v
+}
+
+// GetMessagesContentPartServerToolUse returns MessagesContentPartServerToolUse and true boolean if MessagesContentPart is MessagesContentPartServerToolUse.
+func (s MessagesContentPart) GetMessagesContentPartServerToolUse() (v MessagesContentPartServerToolUse, ok bool) {
+	if !s.IsMessagesContentPartServerToolUse() {
+		return v, false
+	}
+	return s.MessagesContentPartServerToolUse, true
+}
+
+// NewMessagesContentPartServerToolUseMessagesContentPart returns new MessagesContentPart from MessagesContentPartServerToolUse.
+func NewMessagesContentPartServerToolUseMessagesContentPart(v MessagesContentPartServerToolUse) MessagesContentPart {
+	var s MessagesContentPart
+	s.SetMessagesContentPartServerToolUse(v)
+	return s
+}
+
+// SetMessagesContentPartWebSearchToolResult sets MessagesContentPart to MessagesContentPartWebSearchToolResult.
+func (s *MessagesContentPart) SetMessagesContentPartWebSearchToolResult(v MessagesContentPartWebSearchToolResult) {
+	s.Type = MessagesContentPartWebSearchToolResultMessagesContentPart
+	s.MessagesContentPartWebSearchToolResult = v
+}
+
+// GetMessagesContentPartWebSearchToolResult returns MessagesContentPartWebSearchToolResult and true boolean if MessagesContentPart is MessagesContentPartWebSearchToolResult.
+func (s MessagesContentPart) GetMessagesContentPartWebSearchToolResult() (v MessagesContentPartWebSearchToolResult, ok bool) {
+	if !s.IsMessagesContentPartWebSearchToolResult() {
+		return v, false
+	}
+	return s.MessagesContentPartWebSearchToolResult, true
+}
+
+// NewMessagesContentPartWebSearchToolResultMessagesContentPart returns new MessagesContentPart from MessagesContentPartWebSearchToolResult.
+func NewMessagesContentPartWebSearchToolResultMessagesContentPart(v MessagesContentPartWebSearchToolResult) MessagesContentPart {
+	var s MessagesContentPart
+	s.SetMessagesContentPartWebSearchToolResult(v)
+	return s
 }
 
 // Ref: #/components/schemas/MessagesContentPartDocument
@@ -360,54 +971,383 @@ func (s *MessagesContentPartDocument) SetSource(val MessagesContentPartDocumentS
 
 // Ref: #/components/schemas/MessagesContentPartDocumentSource
 type MessagesContentPartDocumentSource struct {
-	// How the document is supplied.
-	Type MessagesDocumentSourceType `json:"type"`
-	// A URL of the document when `type` is `url`.
-	URL OptString `json:"url"`
-	// Document data for `base64` and `text` sources.
-	Data OptString `json:"data"`
-	// Inline document content when `type` is `content`.
-	Content *MessagesMessageContent `json:"content"`
+	OneOf MessagesContentPartDocumentSourceSum
+}
+
+// GetOneOf returns the value of OneOf.
+func (s *MessagesContentPartDocumentSource) GetOneOf() MessagesContentPartDocumentSourceSum {
+	return s.OneOf
+}
+
+// SetOneOf sets the value of OneOf.
+func (s *MessagesContentPartDocumentSource) SetOneOf(val MessagesContentPartDocumentSourceSum) {
+	s.OneOf = val
+}
+
+// Ref: #/components/schemas/MessagesContentPartDocumentSourceBase64
+type MessagesContentPartDocumentSourceBase64 struct {
+	Type MessagesContentPartDocumentSourceBase64Type `json:"type"`
+	// Base64-encoded document data.
+	Data string `json:"data"`
 }
 
 // GetType returns the value of Type.
-func (s *MessagesContentPartDocumentSource) GetType() MessagesDocumentSourceType {
+func (s *MessagesContentPartDocumentSourceBase64) GetType() MessagesContentPartDocumentSourceBase64Type {
 	return s.Type
 }
 
-// GetURL returns the value of URL.
-func (s *MessagesContentPartDocumentSource) GetURL() OptString {
-	return s.URL
-}
-
 // GetData returns the value of Data.
-func (s *MessagesContentPartDocumentSource) GetData() OptString {
+func (s *MessagesContentPartDocumentSourceBase64) GetData() string {
 	return s.Data
 }
 
+// SetType sets the value of Type.
+func (s *MessagesContentPartDocumentSourceBase64) SetType(val MessagesContentPartDocumentSourceBase64Type) {
+	s.Type = val
+}
+
+// SetData sets the value of Data.
+func (s *MessagesContentPartDocumentSourceBase64) SetData(val string) {
+	s.Data = val
+}
+
+type MessagesContentPartDocumentSourceBase64Type string
+
+const (
+	MessagesContentPartDocumentSourceBase64TypeBase64 MessagesContentPartDocumentSourceBase64Type = "base64"
+)
+
+// AllValues returns all MessagesContentPartDocumentSourceBase64Type values.
+func (MessagesContentPartDocumentSourceBase64Type) AllValues() []MessagesContentPartDocumentSourceBase64Type {
+	return []MessagesContentPartDocumentSourceBase64Type{
+		MessagesContentPartDocumentSourceBase64TypeBase64,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s MessagesContentPartDocumentSourceBase64Type) MarshalText() ([]byte, error) {
+	switch s {
+	case MessagesContentPartDocumentSourceBase64TypeBase64:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *MessagesContentPartDocumentSourceBase64Type) UnmarshalText(data []byte) error {
+	switch MessagesContentPartDocumentSourceBase64Type(data) {
+	case MessagesContentPartDocumentSourceBase64TypeBase64:
+		*s = MessagesContentPartDocumentSourceBase64TypeBase64
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/MessagesContentPartDocumentSourceContent
+type MessagesContentPartDocumentSourceContent struct {
+	Type    MessagesContentPartDocumentSourceContentType `json:"type"`
+	Content MessagesDocumentContent                      `json:"content"`
+}
+
+// GetType returns the value of Type.
+func (s *MessagesContentPartDocumentSourceContent) GetType() MessagesContentPartDocumentSourceContentType {
+	return s.Type
+}
+
 // GetContent returns the value of Content.
-func (s *MessagesContentPartDocumentSource) GetContent() *MessagesMessageContent {
+func (s *MessagesContentPartDocumentSourceContent) GetContent() MessagesDocumentContent {
 	return s.Content
 }
 
 // SetType sets the value of Type.
-func (s *MessagesContentPartDocumentSource) SetType(val MessagesDocumentSourceType) {
+func (s *MessagesContentPartDocumentSourceContent) SetType(val MessagesContentPartDocumentSourceContentType) {
+	s.Type = val
+}
+
+// SetContent sets the value of Content.
+func (s *MessagesContentPartDocumentSourceContent) SetContent(val MessagesDocumentContent) {
+	s.Content = val
+}
+
+type MessagesContentPartDocumentSourceContentType string
+
+const (
+	MessagesContentPartDocumentSourceContentTypeContent MessagesContentPartDocumentSourceContentType = "content"
+)
+
+// AllValues returns all MessagesContentPartDocumentSourceContentType values.
+func (MessagesContentPartDocumentSourceContentType) AllValues() []MessagesContentPartDocumentSourceContentType {
+	return []MessagesContentPartDocumentSourceContentType{
+		MessagesContentPartDocumentSourceContentTypeContent,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s MessagesContentPartDocumentSourceContentType) MarshalText() ([]byte, error) {
+	switch s {
+	case MessagesContentPartDocumentSourceContentTypeContent:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *MessagesContentPartDocumentSourceContentType) UnmarshalText(data []byte) error {
+	switch MessagesContentPartDocumentSourceContentType(data) {
+	case MessagesContentPartDocumentSourceContentTypeContent:
+		*s = MessagesContentPartDocumentSourceContentTypeContent
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// MessagesContentPartDocumentSourceSum represents sum type.
+type MessagesContentPartDocumentSourceSum struct {
+	Type                                     MessagesContentPartDocumentSourceSumType // switch on this field
+	MessagesContentPartDocumentSourceBase64  MessagesContentPartDocumentSourceBase64
+	MessagesContentPartDocumentSourceText    MessagesContentPartDocumentSourceText
+	MessagesContentPartDocumentSourceUrl     MessagesContentPartDocumentSourceUrl
+	MessagesContentPartDocumentSourceContent MessagesContentPartDocumentSourceContent
+}
+
+// MessagesContentPartDocumentSourceSumType is oneOf type of MessagesContentPartDocumentSourceSum.
+type MessagesContentPartDocumentSourceSumType string
+
+// Possible values for MessagesContentPartDocumentSourceSumType.
+const (
+	MessagesContentPartDocumentSourceBase64MessagesContentPartDocumentSourceSum  MessagesContentPartDocumentSourceSumType = "base64"
+	MessagesContentPartDocumentSourceTextMessagesContentPartDocumentSourceSum    MessagesContentPartDocumentSourceSumType = "text"
+	MessagesContentPartDocumentSourceUrlMessagesContentPartDocumentSourceSum     MessagesContentPartDocumentSourceSumType = "url"
+	MessagesContentPartDocumentSourceContentMessagesContentPartDocumentSourceSum MessagesContentPartDocumentSourceSumType = "content"
+)
+
+// IsMessagesContentPartDocumentSourceBase64 reports whether MessagesContentPartDocumentSourceSum is MessagesContentPartDocumentSourceBase64.
+func (s MessagesContentPartDocumentSourceSum) IsMessagesContentPartDocumentSourceBase64() bool {
+	return s.Type == MessagesContentPartDocumentSourceBase64MessagesContentPartDocumentSourceSum
+}
+
+// IsMessagesContentPartDocumentSourceText reports whether MessagesContentPartDocumentSourceSum is MessagesContentPartDocumentSourceText.
+func (s MessagesContentPartDocumentSourceSum) IsMessagesContentPartDocumentSourceText() bool {
+	return s.Type == MessagesContentPartDocumentSourceTextMessagesContentPartDocumentSourceSum
+}
+
+// IsMessagesContentPartDocumentSourceUrl reports whether MessagesContentPartDocumentSourceSum is MessagesContentPartDocumentSourceUrl.
+func (s MessagesContentPartDocumentSourceSum) IsMessagesContentPartDocumentSourceUrl() bool {
+	return s.Type == MessagesContentPartDocumentSourceUrlMessagesContentPartDocumentSourceSum
+}
+
+// IsMessagesContentPartDocumentSourceContent reports whether MessagesContentPartDocumentSourceSum is MessagesContentPartDocumentSourceContent.
+func (s MessagesContentPartDocumentSourceSum) IsMessagesContentPartDocumentSourceContent() bool {
+	return s.Type == MessagesContentPartDocumentSourceContentMessagesContentPartDocumentSourceSum
+}
+
+// SetMessagesContentPartDocumentSourceBase64 sets MessagesContentPartDocumentSourceSum to MessagesContentPartDocumentSourceBase64.
+func (s *MessagesContentPartDocumentSourceSum) SetMessagesContentPartDocumentSourceBase64(v MessagesContentPartDocumentSourceBase64) {
+	s.Type = MessagesContentPartDocumentSourceBase64MessagesContentPartDocumentSourceSum
+	s.MessagesContentPartDocumentSourceBase64 = v
+}
+
+// GetMessagesContentPartDocumentSourceBase64 returns MessagesContentPartDocumentSourceBase64 and true boolean if MessagesContentPartDocumentSourceSum is MessagesContentPartDocumentSourceBase64.
+func (s MessagesContentPartDocumentSourceSum) GetMessagesContentPartDocumentSourceBase64() (v MessagesContentPartDocumentSourceBase64, ok bool) {
+	if !s.IsMessagesContentPartDocumentSourceBase64() {
+		return v, false
+	}
+	return s.MessagesContentPartDocumentSourceBase64, true
+}
+
+// NewMessagesContentPartDocumentSourceBase64MessagesContentPartDocumentSourceSum returns new MessagesContentPartDocumentSourceSum from MessagesContentPartDocumentSourceBase64.
+func NewMessagesContentPartDocumentSourceBase64MessagesContentPartDocumentSourceSum(v MessagesContentPartDocumentSourceBase64) MessagesContentPartDocumentSourceSum {
+	var s MessagesContentPartDocumentSourceSum
+	s.SetMessagesContentPartDocumentSourceBase64(v)
+	return s
+}
+
+// SetMessagesContentPartDocumentSourceText sets MessagesContentPartDocumentSourceSum to MessagesContentPartDocumentSourceText.
+func (s *MessagesContentPartDocumentSourceSum) SetMessagesContentPartDocumentSourceText(v MessagesContentPartDocumentSourceText) {
+	s.Type = MessagesContentPartDocumentSourceTextMessagesContentPartDocumentSourceSum
+	s.MessagesContentPartDocumentSourceText = v
+}
+
+// GetMessagesContentPartDocumentSourceText returns MessagesContentPartDocumentSourceText and true boolean if MessagesContentPartDocumentSourceSum is MessagesContentPartDocumentSourceText.
+func (s MessagesContentPartDocumentSourceSum) GetMessagesContentPartDocumentSourceText() (v MessagesContentPartDocumentSourceText, ok bool) {
+	if !s.IsMessagesContentPartDocumentSourceText() {
+		return v, false
+	}
+	return s.MessagesContentPartDocumentSourceText, true
+}
+
+// NewMessagesContentPartDocumentSourceTextMessagesContentPartDocumentSourceSum returns new MessagesContentPartDocumentSourceSum from MessagesContentPartDocumentSourceText.
+func NewMessagesContentPartDocumentSourceTextMessagesContentPartDocumentSourceSum(v MessagesContentPartDocumentSourceText) MessagesContentPartDocumentSourceSum {
+	var s MessagesContentPartDocumentSourceSum
+	s.SetMessagesContentPartDocumentSourceText(v)
+	return s
+}
+
+// SetMessagesContentPartDocumentSourceUrl sets MessagesContentPartDocumentSourceSum to MessagesContentPartDocumentSourceUrl.
+func (s *MessagesContentPartDocumentSourceSum) SetMessagesContentPartDocumentSourceUrl(v MessagesContentPartDocumentSourceUrl) {
+	s.Type = MessagesContentPartDocumentSourceUrlMessagesContentPartDocumentSourceSum
+	s.MessagesContentPartDocumentSourceUrl = v
+}
+
+// GetMessagesContentPartDocumentSourceUrl returns MessagesContentPartDocumentSourceUrl and true boolean if MessagesContentPartDocumentSourceSum is MessagesContentPartDocumentSourceUrl.
+func (s MessagesContentPartDocumentSourceSum) GetMessagesContentPartDocumentSourceUrl() (v MessagesContentPartDocumentSourceUrl, ok bool) {
+	if !s.IsMessagesContentPartDocumentSourceUrl() {
+		return v, false
+	}
+	return s.MessagesContentPartDocumentSourceUrl, true
+}
+
+// NewMessagesContentPartDocumentSourceUrlMessagesContentPartDocumentSourceSum returns new MessagesContentPartDocumentSourceSum from MessagesContentPartDocumentSourceUrl.
+func NewMessagesContentPartDocumentSourceUrlMessagesContentPartDocumentSourceSum(v MessagesContentPartDocumentSourceUrl) MessagesContentPartDocumentSourceSum {
+	var s MessagesContentPartDocumentSourceSum
+	s.SetMessagesContentPartDocumentSourceUrl(v)
+	return s
+}
+
+// SetMessagesContentPartDocumentSourceContent sets MessagesContentPartDocumentSourceSum to MessagesContentPartDocumentSourceContent.
+func (s *MessagesContentPartDocumentSourceSum) SetMessagesContentPartDocumentSourceContent(v MessagesContentPartDocumentSourceContent) {
+	s.Type = MessagesContentPartDocumentSourceContentMessagesContentPartDocumentSourceSum
+	s.MessagesContentPartDocumentSourceContent = v
+}
+
+// GetMessagesContentPartDocumentSourceContent returns MessagesContentPartDocumentSourceContent and true boolean if MessagesContentPartDocumentSourceSum is MessagesContentPartDocumentSourceContent.
+func (s MessagesContentPartDocumentSourceSum) GetMessagesContentPartDocumentSourceContent() (v MessagesContentPartDocumentSourceContent, ok bool) {
+	if !s.IsMessagesContentPartDocumentSourceContent() {
+		return v, false
+	}
+	return s.MessagesContentPartDocumentSourceContent, true
+}
+
+// NewMessagesContentPartDocumentSourceContentMessagesContentPartDocumentSourceSum returns new MessagesContentPartDocumentSourceSum from MessagesContentPartDocumentSourceContent.
+func NewMessagesContentPartDocumentSourceContentMessagesContentPartDocumentSourceSum(v MessagesContentPartDocumentSourceContent) MessagesContentPartDocumentSourceSum {
+	var s MessagesContentPartDocumentSourceSum
+	s.SetMessagesContentPartDocumentSourceContent(v)
+	return s
+}
+
+// Ref: #/components/schemas/MessagesContentPartDocumentSourceText
+type MessagesContentPartDocumentSourceText struct {
+	Type MessagesContentPartDocumentSourceTextType `json:"type"`
+	// Plain-text document data.
+	Data string `json:"data"`
+}
+
+// GetType returns the value of Type.
+func (s *MessagesContentPartDocumentSourceText) GetType() MessagesContentPartDocumentSourceTextType {
+	return s.Type
+}
+
+// GetData returns the value of Data.
+func (s *MessagesContentPartDocumentSourceText) GetData() string {
+	return s.Data
+}
+
+// SetType sets the value of Type.
+func (s *MessagesContentPartDocumentSourceText) SetType(val MessagesContentPartDocumentSourceTextType) {
+	s.Type = val
+}
+
+// SetData sets the value of Data.
+func (s *MessagesContentPartDocumentSourceText) SetData(val string) {
+	s.Data = val
+}
+
+type MessagesContentPartDocumentSourceTextType string
+
+const (
+	MessagesContentPartDocumentSourceTextTypeText MessagesContentPartDocumentSourceTextType = "text"
+)
+
+// AllValues returns all MessagesContentPartDocumentSourceTextType values.
+func (MessagesContentPartDocumentSourceTextType) AllValues() []MessagesContentPartDocumentSourceTextType {
+	return []MessagesContentPartDocumentSourceTextType{
+		MessagesContentPartDocumentSourceTextTypeText,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s MessagesContentPartDocumentSourceTextType) MarshalText() ([]byte, error) {
+	switch s {
+	case MessagesContentPartDocumentSourceTextTypeText:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *MessagesContentPartDocumentSourceTextType) UnmarshalText(data []byte) error {
+	switch MessagesContentPartDocumentSourceTextType(data) {
+	case MessagesContentPartDocumentSourceTextTypeText:
+		*s = MessagesContentPartDocumentSourceTextTypeText
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/MessagesContentPartDocumentSourceUrl
+type MessagesContentPartDocumentSourceUrl struct {
+	Type MessagesContentPartDocumentSourceUrlType `json:"type"`
+	URL  string                                   `json:"url"`
+}
+
+// GetType returns the value of Type.
+func (s *MessagesContentPartDocumentSourceUrl) GetType() MessagesContentPartDocumentSourceUrlType {
+	return s.Type
+}
+
+// GetURL returns the value of URL.
+func (s *MessagesContentPartDocumentSourceUrl) GetURL() string {
+	return s.URL
+}
+
+// SetType sets the value of Type.
+func (s *MessagesContentPartDocumentSourceUrl) SetType(val MessagesContentPartDocumentSourceUrlType) {
 	s.Type = val
 }
 
 // SetURL sets the value of URL.
-func (s *MessagesContentPartDocumentSource) SetURL(val OptString) {
+func (s *MessagesContentPartDocumentSourceUrl) SetURL(val string) {
 	s.URL = val
 }
 
-// SetData sets the value of Data.
-func (s *MessagesContentPartDocumentSource) SetData(val OptString) {
-	s.Data = val
+type MessagesContentPartDocumentSourceUrlType string
+
+const (
+	MessagesContentPartDocumentSourceUrlTypeURL MessagesContentPartDocumentSourceUrlType = "url"
+)
+
+// AllValues returns all MessagesContentPartDocumentSourceUrlType values.
+func (MessagesContentPartDocumentSourceUrlType) AllValues() []MessagesContentPartDocumentSourceUrlType {
+	return []MessagesContentPartDocumentSourceUrlType{
+		MessagesContentPartDocumentSourceUrlTypeURL,
+	}
 }
 
-// SetContent sets the value of Content.
-func (s *MessagesContentPartDocumentSource) SetContent(val *MessagesMessageContent) {
-	s.Content = val
+// MarshalText implements encoding.TextMarshaler.
+func (s MessagesContentPartDocumentSourceUrlType) MarshalText() ([]byte, error) {
+	switch s {
+	case MessagesContentPartDocumentSourceUrlTypeURL:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *MessagesContentPartDocumentSourceUrlType) UnmarshalText(data []byte) error {
+	switch MessagesContentPartDocumentSourceUrlType(data) {
+	case MessagesContentPartDocumentSourceUrlTypeURL:
+		*s = MessagesContentPartDocumentSourceUrlTypeURL
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // The type of the content part. Always `document`.
@@ -477,15 +1417,15 @@ type MessagesContentPartImageSource struct {
 	// How the image is supplied.
 	Type MessagesImageSourceType `json:"type"`
 	// A URL of the image when `type` is `url`.
-	URL OptString `json:"url"`
+	URL OptNilString `json:"url"`
 	// The media type of base64-encoded image data.
-	MediaType OptString `json:"media_type"`
+	MediaType OptNilString `json:"media_type"`
 	// Base64-encoded image data when `type` is `base64`.
-	Data OptString `json:"data"`
+	Data OptNilString `json:"data"`
 	// The blob id of an image uploaded out-of-band.
-	FileID OptString `json:"file_id"`
+	FileID OptNilString `json:"file_id"`
 	// Whether this image was extracted from a document or video.
-	IsFrame OptBool `json:"is_frame"`
+	IsFrame OptNilBool `json:"is_frame"`
 }
 
 // GetType returns the value of Type.
@@ -494,27 +1434,27 @@ func (s *MessagesContentPartImageSource) GetType() MessagesImageSourceType {
 }
 
 // GetURL returns the value of URL.
-func (s *MessagesContentPartImageSource) GetURL() OptString {
+func (s *MessagesContentPartImageSource) GetURL() OptNilString {
 	return s.URL
 }
 
 // GetMediaType returns the value of MediaType.
-func (s *MessagesContentPartImageSource) GetMediaType() OptString {
+func (s *MessagesContentPartImageSource) GetMediaType() OptNilString {
 	return s.MediaType
 }
 
 // GetData returns the value of Data.
-func (s *MessagesContentPartImageSource) GetData() OptString {
+func (s *MessagesContentPartImageSource) GetData() OptNilString {
 	return s.Data
 }
 
 // GetFileID returns the value of FileID.
-func (s *MessagesContentPartImageSource) GetFileID() OptString {
+func (s *MessagesContentPartImageSource) GetFileID() OptNilString {
 	return s.FileID
 }
 
 // GetIsFrame returns the value of IsFrame.
-func (s *MessagesContentPartImageSource) GetIsFrame() OptBool {
+func (s *MessagesContentPartImageSource) GetIsFrame() OptNilBool {
 	return s.IsFrame
 }
 
@@ -524,27 +1464,27 @@ func (s *MessagesContentPartImageSource) SetType(val MessagesImageSourceType) {
 }
 
 // SetURL sets the value of URL.
-func (s *MessagesContentPartImageSource) SetURL(val OptString) {
+func (s *MessagesContentPartImageSource) SetURL(val OptNilString) {
 	s.URL = val
 }
 
 // SetMediaType sets the value of MediaType.
-func (s *MessagesContentPartImageSource) SetMediaType(val OptString) {
+func (s *MessagesContentPartImageSource) SetMediaType(val OptNilString) {
 	s.MediaType = val
 }
 
 // SetData sets the value of Data.
-func (s *MessagesContentPartImageSource) SetData(val OptString) {
+func (s *MessagesContentPartImageSource) SetData(val OptNilString) {
 	s.Data = val
 }
 
 // SetFileID sets the value of FileID.
-func (s *MessagesContentPartImageSource) SetFileID(val OptString) {
+func (s *MessagesContentPartImageSource) SetFileID(val OptNilString) {
 	s.FileID = val
 }
 
 // SetIsFrame sets the value of IsFrame.
-func (s *MessagesContentPartImageSource) SetIsFrame(val OptBool) {
+func (s *MessagesContentPartImageSource) SetIsFrame(val OptNilBool) {
 	s.IsFrame = val
 }
 
@@ -583,11 +1523,12 @@ func (s *MessagesContentPartImageType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Replays a server-managed tool invocation in an assistant message.
 // Ref: #/components/schemas/MessagesContentPartServerToolUse
 type MessagesContentPartServerToolUse struct {
 	// The type of the content part. Always `server_tool_use`.
 	Type MessagesContentPartServerToolUseType `json:"type"`
-	// The public id of the server-managed tool invocation.
+	// The non-empty public id of the server-managed tool invocation.
 	ID string `json:"id"`
 	// The name of the invoked server-managed tool.
 	Name string `json:"name"`
@@ -682,242 +1623,6 @@ func (s *MessagesContentPartServerToolUseType) UnmarshalText(data []byte) error 
 	}
 }
 
-// MessagesContentPartSum represents sum type.
-type MessagesContentPartSum struct {
-	Type                                   MessagesContentPartSumType // switch on this field
-	MessagesContentPartText                MessagesContentPartText
-	MessagesContentPartThinking            MessagesContentPartThinking
-	MessagesContentPartImage               MessagesContentPartImage
-	MessagesContentPartDocument            MessagesContentPartDocument
-	MessagesContentPartToolUse             MessagesContentPartToolUse
-	MessagesContentPartToolResult          MessagesContentPartToolResult
-	MessagesContentPartServerToolUse       MessagesContentPartServerToolUse
-	MessagesContentPartWebSearchToolResult MessagesContentPartWebSearchToolResult
-}
-
-// MessagesContentPartSumType is oneOf type of MessagesContentPartSum.
-type MessagesContentPartSumType string
-
-// Possible values for MessagesContentPartSumType.
-const (
-	MessagesContentPartTextMessagesContentPartSum                MessagesContentPartSumType = "text"
-	MessagesContentPartThinkingMessagesContentPartSum            MessagesContentPartSumType = "thinking"
-	MessagesContentPartImageMessagesContentPartSum               MessagesContentPartSumType = "image"
-	MessagesContentPartDocumentMessagesContentPartSum            MessagesContentPartSumType = "document"
-	MessagesContentPartToolUseMessagesContentPartSum             MessagesContentPartSumType = "tool_use"
-	MessagesContentPartToolResultMessagesContentPartSum          MessagesContentPartSumType = "tool_result"
-	MessagesContentPartServerToolUseMessagesContentPartSum       MessagesContentPartSumType = "server_tool_use"
-	MessagesContentPartWebSearchToolResultMessagesContentPartSum MessagesContentPartSumType = "web_search_tool_result"
-)
-
-// IsMessagesContentPartText reports whether MessagesContentPartSum is MessagesContentPartText.
-func (s MessagesContentPartSum) IsMessagesContentPartText() bool {
-	return s.Type == MessagesContentPartTextMessagesContentPartSum
-}
-
-// IsMessagesContentPartThinking reports whether MessagesContentPartSum is MessagesContentPartThinking.
-func (s MessagesContentPartSum) IsMessagesContentPartThinking() bool {
-	return s.Type == MessagesContentPartThinkingMessagesContentPartSum
-}
-
-// IsMessagesContentPartImage reports whether MessagesContentPartSum is MessagesContentPartImage.
-func (s MessagesContentPartSum) IsMessagesContentPartImage() bool {
-	return s.Type == MessagesContentPartImageMessagesContentPartSum
-}
-
-// IsMessagesContentPartDocument reports whether MessagesContentPartSum is MessagesContentPartDocument.
-func (s MessagesContentPartSum) IsMessagesContentPartDocument() bool {
-	return s.Type == MessagesContentPartDocumentMessagesContentPartSum
-}
-
-// IsMessagesContentPartToolUse reports whether MessagesContentPartSum is MessagesContentPartToolUse.
-func (s MessagesContentPartSum) IsMessagesContentPartToolUse() bool {
-	return s.Type == MessagesContentPartToolUseMessagesContentPartSum
-}
-
-// IsMessagesContentPartToolResult reports whether MessagesContentPartSum is MessagesContentPartToolResult.
-func (s MessagesContentPartSum) IsMessagesContentPartToolResult() bool {
-	return s.Type == MessagesContentPartToolResultMessagesContentPartSum
-}
-
-// IsMessagesContentPartServerToolUse reports whether MessagesContentPartSum is MessagesContentPartServerToolUse.
-func (s MessagesContentPartSum) IsMessagesContentPartServerToolUse() bool {
-	return s.Type == MessagesContentPartServerToolUseMessagesContentPartSum
-}
-
-// IsMessagesContentPartWebSearchToolResult reports whether MessagesContentPartSum is MessagesContentPartWebSearchToolResult.
-func (s MessagesContentPartSum) IsMessagesContentPartWebSearchToolResult() bool {
-	return s.Type == MessagesContentPartWebSearchToolResultMessagesContentPartSum
-}
-
-// SetMessagesContentPartText sets MessagesContentPartSum to MessagesContentPartText.
-func (s *MessagesContentPartSum) SetMessagesContentPartText(v MessagesContentPartText) {
-	s.Type = MessagesContentPartTextMessagesContentPartSum
-	s.MessagesContentPartText = v
-}
-
-// GetMessagesContentPartText returns MessagesContentPartText and true boolean if MessagesContentPartSum is MessagesContentPartText.
-func (s MessagesContentPartSum) GetMessagesContentPartText() (v MessagesContentPartText, ok bool) {
-	if !s.IsMessagesContentPartText() {
-		return v, false
-	}
-	return s.MessagesContentPartText, true
-}
-
-// NewMessagesContentPartTextMessagesContentPartSum returns new MessagesContentPartSum from MessagesContentPartText.
-func NewMessagesContentPartTextMessagesContentPartSum(v MessagesContentPartText) MessagesContentPartSum {
-	var s MessagesContentPartSum
-	s.SetMessagesContentPartText(v)
-	return s
-}
-
-// SetMessagesContentPartThinking sets MessagesContentPartSum to MessagesContentPartThinking.
-func (s *MessagesContentPartSum) SetMessagesContentPartThinking(v MessagesContentPartThinking) {
-	s.Type = MessagesContentPartThinkingMessagesContentPartSum
-	s.MessagesContentPartThinking = v
-}
-
-// GetMessagesContentPartThinking returns MessagesContentPartThinking and true boolean if MessagesContentPartSum is MessagesContentPartThinking.
-func (s MessagesContentPartSum) GetMessagesContentPartThinking() (v MessagesContentPartThinking, ok bool) {
-	if !s.IsMessagesContentPartThinking() {
-		return v, false
-	}
-	return s.MessagesContentPartThinking, true
-}
-
-// NewMessagesContentPartThinkingMessagesContentPartSum returns new MessagesContentPartSum from MessagesContentPartThinking.
-func NewMessagesContentPartThinkingMessagesContentPartSum(v MessagesContentPartThinking) MessagesContentPartSum {
-	var s MessagesContentPartSum
-	s.SetMessagesContentPartThinking(v)
-	return s
-}
-
-// SetMessagesContentPartImage sets MessagesContentPartSum to MessagesContentPartImage.
-func (s *MessagesContentPartSum) SetMessagesContentPartImage(v MessagesContentPartImage) {
-	s.Type = MessagesContentPartImageMessagesContentPartSum
-	s.MessagesContentPartImage = v
-}
-
-// GetMessagesContentPartImage returns MessagesContentPartImage and true boolean if MessagesContentPartSum is MessagesContentPartImage.
-func (s MessagesContentPartSum) GetMessagesContentPartImage() (v MessagesContentPartImage, ok bool) {
-	if !s.IsMessagesContentPartImage() {
-		return v, false
-	}
-	return s.MessagesContentPartImage, true
-}
-
-// NewMessagesContentPartImageMessagesContentPartSum returns new MessagesContentPartSum from MessagesContentPartImage.
-func NewMessagesContentPartImageMessagesContentPartSum(v MessagesContentPartImage) MessagesContentPartSum {
-	var s MessagesContentPartSum
-	s.SetMessagesContentPartImage(v)
-	return s
-}
-
-// SetMessagesContentPartDocument sets MessagesContentPartSum to MessagesContentPartDocument.
-func (s *MessagesContentPartSum) SetMessagesContentPartDocument(v MessagesContentPartDocument) {
-	s.Type = MessagesContentPartDocumentMessagesContentPartSum
-	s.MessagesContentPartDocument = v
-}
-
-// GetMessagesContentPartDocument returns MessagesContentPartDocument and true boolean if MessagesContentPartSum is MessagesContentPartDocument.
-func (s MessagesContentPartSum) GetMessagesContentPartDocument() (v MessagesContentPartDocument, ok bool) {
-	if !s.IsMessagesContentPartDocument() {
-		return v, false
-	}
-	return s.MessagesContentPartDocument, true
-}
-
-// NewMessagesContentPartDocumentMessagesContentPartSum returns new MessagesContentPartSum from MessagesContentPartDocument.
-func NewMessagesContentPartDocumentMessagesContentPartSum(v MessagesContentPartDocument) MessagesContentPartSum {
-	var s MessagesContentPartSum
-	s.SetMessagesContentPartDocument(v)
-	return s
-}
-
-// SetMessagesContentPartToolUse sets MessagesContentPartSum to MessagesContentPartToolUse.
-func (s *MessagesContentPartSum) SetMessagesContentPartToolUse(v MessagesContentPartToolUse) {
-	s.Type = MessagesContentPartToolUseMessagesContentPartSum
-	s.MessagesContentPartToolUse = v
-}
-
-// GetMessagesContentPartToolUse returns MessagesContentPartToolUse and true boolean if MessagesContentPartSum is MessagesContentPartToolUse.
-func (s MessagesContentPartSum) GetMessagesContentPartToolUse() (v MessagesContentPartToolUse, ok bool) {
-	if !s.IsMessagesContentPartToolUse() {
-		return v, false
-	}
-	return s.MessagesContentPartToolUse, true
-}
-
-// NewMessagesContentPartToolUseMessagesContentPartSum returns new MessagesContentPartSum from MessagesContentPartToolUse.
-func NewMessagesContentPartToolUseMessagesContentPartSum(v MessagesContentPartToolUse) MessagesContentPartSum {
-	var s MessagesContentPartSum
-	s.SetMessagesContentPartToolUse(v)
-	return s
-}
-
-// SetMessagesContentPartToolResult sets MessagesContentPartSum to MessagesContentPartToolResult.
-func (s *MessagesContentPartSum) SetMessagesContentPartToolResult(v MessagesContentPartToolResult) {
-	s.Type = MessagesContentPartToolResultMessagesContentPartSum
-	s.MessagesContentPartToolResult = v
-}
-
-// GetMessagesContentPartToolResult returns MessagesContentPartToolResult and true boolean if MessagesContentPartSum is MessagesContentPartToolResult.
-func (s MessagesContentPartSum) GetMessagesContentPartToolResult() (v MessagesContentPartToolResult, ok bool) {
-	if !s.IsMessagesContentPartToolResult() {
-		return v, false
-	}
-	return s.MessagesContentPartToolResult, true
-}
-
-// NewMessagesContentPartToolResultMessagesContentPartSum returns new MessagesContentPartSum from MessagesContentPartToolResult.
-func NewMessagesContentPartToolResultMessagesContentPartSum(v MessagesContentPartToolResult) MessagesContentPartSum {
-	var s MessagesContentPartSum
-	s.SetMessagesContentPartToolResult(v)
-	return s
-}
-
-// SetMessagesContentPartServerToolUse sets MessagesContentPartSum to MessagesContentPartServerToolUse.
-func (s *MessagesContentPartSum) SetMessagesContentPartServerToolUse(v MessagesContentPartServerToolUse) {
-	s.Type = MessagesContentPartServerToolUseMessagesContentPartSum
-	s.MessagesContentPartServerToolUse = v
-}
-
-// GetMessagesContentPartServerToolUse returns MessagesContentPartServerToolUse and true boolean if MessagesContentPartSum is MessagesContentPartServerToolUse.
-func (s MessagesContentPartSum) GetMessagesContentPartServerToolUse() (v MessagesContentPartServerToolUse, ok bool) {
-	if !s.IsMessagesContentPartServerToolUse() {
-		return v, false
-	}
-	return s.MessagesContentPartServerToolUse, true
-}
-
-// NewMessagesContentPartServerToolUseMessagesContentPartSum returns new MessagesContentPartSum from MessagesContentPartServerToolUse.
-func NewMessagesContentPartServerToolUseMessagesContentPartSum(v MessagesContentPartServerToolUse) MessagesContentPartSum {
-	var s MessagesContentPartSum
-	s.SetMessagesContentPartServerToolUse(v)
-	return s
-}
-
-// SetMessagesContentPartWebSearchToolResult sets MessagesContentPartSum to MessagesContentPartWebSearchToolResult.
-func (s *MessagesContentPartSum) SetMessagesContentPartWebSearchToolResult(v MessagesContentPartWebSearchToolResult) {
-	s.Type = MessagesContentPartWebSearchToolResultMessagesContentPartSum
-	s.MessagesContentPartWebSearchToolResult = v
-}
-
-// GetMessagesContentPartWebSearchToolResult returns MessagesContentPartWebSearchToolResult and true boolean if MessagesContentPartSum is MessagesContentPartWebSearchToolResult.
-func (s MessagesContentPartSum) GetMessagesContentPartWebSearchToolResult() (v MessagesContentPartWebSearchToolResult, ok bool) {
-	if !s.IsMessagesContentPartWebSearchToolResult() {
-		return v, false
-	}
-	return s.MessagesContentPartWebSearchToolResult, true
-}
-
-// NewMessagesContentPartWebSearchToolResultMessagesContentPartSum returns new MessagesContentPartSum from MessagesContentPartWebSearchToolResult.
-func NewMessagesContentPartWebSearchToolResultMessagesContentPartSum(v MessagesContentPartWebSearchToolResult) MessagesContentPartSum {
-	var s MessagesContentPartSum
-	s.SetMessagesContentPartWebSearchToolResult(v)
-	return s
-}
-
 // Ref: #/components/schemas/MessagesContentPartText
 type MessagesContentPartText struct {
 	// The type of the content part. Always `text`.
@@ -985,7 +1690,7 @@ func (s *MessagesContentPartTextType) UnmarshalText(data []byte) error {
 type MessagesContentPartThinking struct {
 	// The type of the content part. Always `thinking`.
 	Type MessagesContentPartThinkingType `json:"type"`
-	// The model's thinking content.
+	// The model's thinking content. At least one of `thinking` or `signature` is required.
 	Thinking OptString `json:"thinking"`
 	// An opaque signature used to replay thinking content.
 	Signature OptString `json:"signature"`
@@ -1123,10 +1828,10 @@ func (s *MessagesContentPartToolReferenceType) UnmarshalText(data []byte) error 
 type MessagesContentPartToolResult struct {
 	// The type of the content part. Always `tool_result`.
 	Type MessagesContentPartToolResultType `json:"type"`
-	// The tool invocation this result answers.
-	ToolUseID string `json:"tool_use_id"`
-	// The content returned by the tool.
-	Content MessagesToolResultContent `json:"content"`
+	// The tool invocation id. Missing, null, and empty ids are accepted for compatibility.
+	ToolUseID OptNilString `json:"tool_use_id"`
+	// The content returned by the tool. Missing or null content becomes an empty string.
+	Content OptNilMessagesToolResultContent `json:"content"`
 	// Whether the tool execution failed.
 	IsError OptBool `json:"is_error"`
 }
@@ -1137,12 +1842,12 @@ func (s *MessagesContentPartToolResult) GetType() MessagesContentPartToolResultT
 }
 
 // GetToolUseID returns the value of ToolUseID.
-func (s *MessagesContentPartToolResult) GetToolUseID() string {
+func (s *MessagesContentPartToolResult) GetToolUseID() OptNilString {
 	return s.ToolUseID
 }
 
 // GetContent returns the value of Content.
-func (s *MessagesContentPartToolResult) GetContent() MessagesToolResultContent {
+func (s *MessagesContentPartToolResult) GetContent() OptNilMessagesToolResultContent {
 	return s.Content
 }
 
@@ -1157,12 +1862,12 @@ func (s *MessagesContentPartToolResult) SetType(val MessagesContentPartToolResul
 }
 
 // SetToolUseID sets the value of ToolUseID.
-func (s *MessagesContentPartToolResult) SetToolUseID(val string) {
+func (s *MessagesContentPartToolResult) SetToolUseID(val OptNilString) {
 	s.ToolUseID = val
 }
 
 // SetContent sets the value of Content.
-func (s *MessagesContentPartToolResult) SetContent(val MessagesToolResultContent) {
+func (s *MessagesContentPartToolResult) SetContent(val OptNilMessagesToolResultContent) {
 	s.Content = val
 }
 
@@ -1210,8 +1915,8 @@ func (s *MessagesContentPartToolResultType) UnmarshalText(data []byte) error {
 type MessagesContentPartToolUse struct {
 	// The type of the content part. Always `tool_use`.
 	Type MessagesContentPartToolUseType `json:"type"`
-	// The id of the tool invocation.
-	ID string `json:"id"`
+	// The tool invocation id. Missing, null, and empty ids are accepted for compatibility.
+	ID OptNilString `json:"id"`
 	// The name of the invoked tool.
 	Name string `json:"name"`
 	// The input generated for the tool.
@@ -1224,7 +1929,7 @@ func (s *MessagesContentPartToolUse) GetType() MessagesContentPartToolUseType {
 }
 
 // GetID returns the value of ID.
-func (s *MessagesContentPartToolUse) GetID() string {
+func (s *MessagesContentPartToolUse) GetID() OptNilString {
 	return s.ID
 }
 
@@ -1244,7 +1949,7 @@ func (s *MessagesContentPartToolUse) SetType(val MessagesContentPartToolUseType)
 }
 
 // SetID sets the value of ID.
-func (s *MessagesContentPartToolUse) SetID(val string) {
+func (s *MessagesContentPartToolUse) SetID(val OptNilString) {
 	s.ID = val
 }
 
@@ -1305,14 +2010,16 @@ func (s *MessagesContentPartToolUseType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Replays a public search result in an assistant message after its `server_tool_use`.
 // Ref: #/components/schemas/MessagesContentPartWebSearchToolResult
 type MessagesContentPartWebSearchToolResult struct {
 	// The type of the content part. Always `web_search_tool_result`.
 	Type MessagesContentPartWebSearchToolResultType `json:"type"`
 	// The server-tool invocation this result answers.
-	ToolUseID string                             `json:"tool_use_id"`
-	Content   MessagesWebSearchToolResultContent `json:"content"`
-	Caller    OptMessagesServerToolCaller        `json:"caller"`
+	ToolUseID string `json:"tool_use_id"`
+	// Null is accepted on replay and normalized to an empty results array.
+	Content NilMessagesWebSearchToolResultContent `json:"content"`
+	Caller  OptNilMessagesServerToolCaller        `json:"caller"`
 }
 
 // GetType returns the value of Type.
@@ -1326,12 +2033,12 @@ func (s *MessagesContentPartWebSearchToolResult) GetToolUseID() string {
 }
 
 // GetContent returns the value of Content.
-func (s *MessagesContentPartWebSearchToolResult) GetContent() MessagesWebSearchToolResultContent {
+func (s *MessagesContentPartWebSearchToolResult) GetContent() NilMessagesWebSearchToolResultContent {
 	return s.Content
 }
 
 // GetCaller returns the value of Caller.
-func (s *MessagesContentPartWebSearchToolResult) GetCaller() OptMessagesServerToolCaller {
+func (s *MessagesContentPartWebSearchToolResult) GetCaller() OptNilMessagesServerToolCaller {
 	return s.Caller
 }
 
@@ -1346,12 +2053,12 @@ func (s *MessagesContentPartWebSearchToolResult) SetToolUseID(val string) {
 }
 
 // SetContent sets the value of Content.
-func (s *MessagesContentPartWebSearchToolResult) SetContent(val MessagesWebSearchToolResultContent) {
+func (s *MessagesContentPartWebSearchToolResult) SetContent(val NilMessagesWebSearchToolResultContent) {
 	s.Content = val
 }
 
 // SetCaller sets the value of Caller.
-func (s *MessagesContentPartWebSearchToolResult) SetCaller(val OptMessagesServerToolCaller) {
+func (s *MessagesContentPartWebSearchToolResult) SetCaller(val OptNilMessagesServerToolCaller) {
 	s.Caller = val
 }
 
@@ -1392,313 +2099,111 @@ func (s *MessagesContentPartWebSearchToolResultType) UnmarshalText(data []byte) 
 
 // Ref: #/components/schemas/MessagesContextManagement
 type MessagesContextManagement struct {
-	Edits []MessagesContextManagementEdit `json:"edits"`
+	Edits OptNilMessagesContextManagementEditArray `json:"edits"`
 }
 
 // GetEdits returns the value of Edits.
-func (s *MessagesContextManagement) GetEdits() []MessagesContextManagementEdit {
+func (s *MessagesContextManagement) GetEdits() OptNilMessagesContextManagementEditArray {
 	return s.Edits
 }
 
 // SetEdits sets the value of Edits.
-func (s *MessagesContextManagement) SetEdits(val []MessagesContextManagementEdit) {
+func (s *MessagesContextManagement) SetEdits(val OptNilMessagesContextManagementEditArray) {
 	s.Edits = val
-}
-
-// Ref: #/components/schemas/MessagesContextManagementClearThinking
-type MessagesContextManagementClearThinking struct {
-	Type MessagesContextManagementClearThinkingType `json:"type"`
-	Keep OptMessagesContextManagementKeep           `json:"keep"`
-}
-
-// GetType returns the value of Type.
-func (s *MessagesContextManagementClearThinking) GetType() MessagesContextManagementClearThinkingType {
-	return s.Type
-}
-
-// GetKeep returns the value of Keep.
-func (s *MessagesContextManagementClearThinking) GetKeep() OptMessagesContextManagementKeep {
-	return s.Keep
-}
-
-// SetType sets the value of Type.
-func (s *MessagesContextManagementClearThinking) SetType(val MessagesContextManagementClearThinkingType) {
-	s.Type = val
-}
-
-// SetKeep sets the value of Keep.
-func (s *MessagesContextManagementClearThinking) SetKeep(val OptMessagesContextManagementKeep) {
-	s.Keep = val
-}
-
-type MessagesContextManagementClearThinkingType string
-
-const (
-	MessagesContextManagementClearThinkingTypeClearThinking MessagesContextManagementClearThinkingType = "clear_thinking"
-)
-
-// AllValues returns all MessagesContextManagementClearThinkingType values.
-func (MessagesContextManagementClearThinkingType) AllValues() []MessagesContextManagementClearThinkingType {
-	return []MessagesContextManagementClearThinkingType{
-		MessagesContextManagementClearThinkingTypeClearThinking,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s MessagesContextManagementClearThinkingType) MarshalText() ([]byte, error) {
-	switch s {
-	case MessagesContextManagementClearThinkingTypeClearThinking:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *MessagesContextManagementClearThinkingType) UnmarshalText(data []byte) error {
-	switch MessagesContextManagementClearThinkingType(data) {
-	case MessagesContextManagementClearThinkingTypeClearThinking:
-		*s = MessagesContextManagementClearThinkingTypeClearThinking
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
-
-// Ref: #/components/schemas/MessagesContextManagementClearToolUses
-type MessagesContextManagementClearToolUses struct {
-	Type            MessagesContextManagementClearToolUsesType       `json:"type"`
-	Keep            OptMessagesContextManagementKeep                 `json:"keep"`
-	ExcludeTools    []string                                         `json:"exclude_tools"`
-	ClearToolInputs OptBool                                          `json:"clear_tool_inputs"`
-	Trigger         OptMessagesContextManagementClearToolUsesTrigger `json:"trigger"`
-}
-
-// GetType returns the value of Type.
-func (s *MessagesContextManagementClearToolUses) GetType() MessagesContextManagementClearToolUsesType {
-	return s.Type
-}
-
-// GetKeep returns the value of Keep.
-func (s *MessagesContextManagementClearToolUses) GetKeep() OptMessagesContextManagementKeep {
-	return s.Keep
-}
-
-// GetExcludeTools returns the value of ExcludeTools.
-func (s *MessagesContextManagementClearToolUses) GetExcludeTools() []string {
-	return s.ExcludeTools
-}
-
-// GetClearToolInputs returns the value of ClearToolInputs.
-func (s *MessagesContextManagementClearToolUses) GetClearToolInputs() OptBool {
-	return s.ClearToolInputs
-}
-
-// GetTrigger returns the value of Trigger.
-func (s *MessagesContextManagementClearToolUses) GetTrigger() OptMessagesContextManagementClearToolUsesTrigger {
-	return s.Trigger
-}
-
-// SetType sets the value of Type.
-func (s *MessagesContextManagementClearToolUses) SetType(val MessagesContextManagementClearToolUsesType) {
-	s.Type = val
-}
-
-// SetKeep sets the value of Keep.
-func (s *MessagesContextManagementClearToolUses) SetKeep(val OptMessagesContextManagementKeep) {
-	s.Keep = val
-}
-
-// SetExcludeTools sets the value of ExcludeTools.
-func (s *MessagesContextManagementClearToolUses) SetExcludeTools(val []string) {
-	s.ExcludeTools = val
-}
-
-// SetClearToolInputs sets the value of ClearToolInputs.
-func (s *MessagesContextManagementClearToolUses) SetClearToolInputs(val OptBool) {
-	s.ClearToolInputs = val
-}
-
-// SetTrigger sets the value of Trigger.
-func (s *MessagesContextManagementClearToolUses) SetTrigger(val OptMessagesContextManagementClearToolUsesTrigger) {
-	s.Trigger = val
 }
 
 // Ref: #/components/schemas/MessagesContextManagementClearToolUsesTrigger
 type MessagesContextManagementClearToolUsesTrigger struct {
-	Type  MessagesContextManagementClearToolUsesTriggerType `json:"type"`
-	Value uint32                                            `json:"value"`
+	// The trigger type. `tool_uses` and other values such as `input_tokens`
+	// are accepted.
+	Type string `json:"type"`
+	// For `tool_uses`, the server requires a value of at least 1. Other
+	// trigger types accept an omitted value or any uint32 value, including 0.
+	// This type-specific constraint is validated by the server.
+	Value OptUint32 `json:"value"`
 }
 
 // GetType returns the value of Type.
-func (s *MessagesContextManagementClearToolUsesTrigger) GetType() MessagesContextManagementClearToolUsesTriggerType {
+func (s *MessagesContextManagementClearToolUsesTrigger) GetType() string {
 	return s.Type
 }
 
 // GetValue returns the value of Value.
-func (s *MessagesContextManagementClearToolUsesTrigger) GetValue() uint32 {
+func (s *MessagesContextManagementClearToolUsesTrigger) GetValue() OptUint32 {
 	return s.Value
 }
 
 // SetType sets the value of Type.
-func (s *MessagesContextManagementClearToolUsesTrigger) SetType(val MessagesContextManagementClearToolUsesTriggerType) {
+func (s *MessagesContextManagementClearToolUsesTrigger) SetType(val string) {
 	s.Type = val
 }
 
 // SetValue sets the value of Value.
-func (s *MessagesContextManagementClearToolUsesTrigger) SetValue(val uint32) {
+func (s *MessagesContextManagementClearToolUsesTrigger) SetValue(val OptUint32) {
 	s.Value = val
-}
-
-type MessagesContextManagementClearToolUsesTriggerType string
-
-const (
-	MessagesContextManagementClearToolUsesTriggerTypeToolUses MessagesContextManagementClearToolUsesTriggerType = "tool_uses"
-)
-
-// AllValues returns all MessagesContextManagementClearToolUsesTriggerType values.
-func (MessagesContextManagementClearToolUsesTriggerType) AllValues() []MessagesContextManagementClearToolUsesTriggerType {
-	return []MessagesContextManagementClearToolUsesTriggerType{
-		MessagesContextManagementClearToolUsesTriggerTypeToolUses,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s MessagesContextManagementClearToolUsesTriggerType) MarshalText() ([]byte, error) {
-	switch s {
-	case MessagesContextManagementClearToolUsesTriggerTypeToolUses:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *MessagesContextManagementClearToolUsesTriggerType) UnmarshalText(data []byte) error {
-	switch MessagesContextManagementClearToolUsesTriggerType(data) {
-	case MessagesContextManagementClearToolUsesTriggerTypeToolUses:
-		*s = MessagesContextManagementClearToolUsesTriggerTypeToolUses
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
-
-type MessagesContextManagementClearToolUsesType string
-
-const (
-	MessagesContextManagementClearToolUsesTypeClearToolUses MessagesContextManagementClearToolUsesType = "clear_tool_uses"
-)
-
-// AllValues returns all MessagesContextManagementClearToolUsesType values.
-func (MessagesContextManagementClearToolUsesType) AllValues() []MessagesContextManagementClearToolUsesType {
-	return []MessagesContextManagementClearToolUsesType{
-		MessagesContextManagementClearToolUsesTypeClearToolUses,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s MessagesContextManagementClearToolUsesType) MarshalText() ([]byte, error) {
-	switch s {
-	case MessagesContextManagementClearToolUsesTypeClearToolUses:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *MessagesContextManagementClearToolUsesType) UnmarshalText(data []byte) error {
-	switch MessagesContextManagementClearToolUsesType(data) {
-	case MessagesContextManagementClearToolUsesTypeClearToolUses:
-		*s = MessagesContextManagementClearToolUsesTypeClearToolUses
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
 }
 
 // Ref: #/components/schemas/MessagesContextManagementEdit
 type MessagesContextManagementEdit struct {
-	OneOf MessagesContextManagementEditSum
+	// Supports `clear_thinking`, `clear_tool_uses`, and version-suffixed forms.
+	Type string                              `json:"type"`
+	Keep OptNilMessagesContextManagementKeep `json:"keep"`
+	// Applies to clear_tool_uses edits.
+	ExcludeTools OptNilStringArray `json:"exclude_tools"`
+	// Applies to clear_tool_uses edits.
+	ClearToolInputs OptNilBool `json:"clear_tool_inputs"`
+	// Applies to clear_tool_uses edits.
+	Trigger OptNilMessagesContextManagementClearToolUsesTrigger `json:"trigger"`
 }
 
-// GetOneOf returns the value of OneOf.
-func (s *MessagesContextManagementEdit) GetOneOf() MessagesContextManagementEditSum {
-	return s.OneOf
+// GetType returns the value of Type.
+func (s *MessagesContextManagementEdit) GetType() string {
+	return s.Type
 }
 
-// SetOneOf sets the value of OneOf.
-func (s *MessagesContextManagementEdit) SetOneOf(val MessagesContextManagementEditSum) {
-	s.OneOf = val
+// GetKeep returns the value of Keep.
+func (s *MessagesContextManagementEdit) GetKeep() OptNilMessagesContextManagementKeep {
+	return s.Keep
 }
 
-// MessagesContextManagementEditSum represents sum type.
-type MessagesContextManagementEditSum struct {
-	Type                                   MessagesContextManagementEditSumType // switch on this field
-	MessagesContextManagementClearThinking MessagesContextManagementClearThinking
-	MessagesContextManagementClearToolUses MessagesContextManagementClearToolUses
+// GetExcludeTools returns the value of ExcludeTools.
+func (s *MessagesContextManagementEdit) GetExcludeTools() OptNilStringArray {
+	return s.ExcludeTools
 }
 
-// MessagesContextManagementEditSumType is oneOf type of MessagesContextManagementEditSum.
-type MessagesContextManagementEditSumType string
-
-// Possible values for MessagesContextManagementEditSumType.
-const (
-	MessagesContextManagementClearThinkingMessagesContextManagementEditSum MessagesContextManagementEditSumType = "clear_thinking"
-	MessagesContextManagementClearToolUsesMessagesContextManagementEditSum MessagesContextManagementEditSumType = "clear_tool_uses"
-)
-
-// IsMessagesContextManagementClearThinking reports whether MessagesContextManagementEditSum is MessagesContextManagementClearThinking.
-func (s MessagesContextManagementEditSum) IsMessagesContextManagementClearThinking() bool {
-	return s.Type == MessagesContextManagementClearThinkingMessagesContextManagementEditSum
+// GetClearToolInputs returns the value of ClearToolInputs.
+func (s *MessagesContextManagementEdit) GetClearToolInputs() OptNilBool {
+	return s.ClearToolInputs
 }
 
-// IsMessagesContextManagementClearToolUses reports whether MessagesContextManagementEditSum is MessagesContextManagementClearToolUses.
-func (s MessagesContextManagementEditSum) IsMessagesContextManagementClearToolUses() bool {
-	return s.Type == MessagesContextManagementClearToolUsesMessagesContextManagementEditSum
+// GetTrigger returns the value of Trigger.
+func (s *MessagesContextManagementEdit) GetTrigger() OptNilMessagesContextManagementClearToolUsesTrigger {
+	return s.Trigger
 }
 
-// SetMessagesContextManagementClearThinking sets MessagesContextManagementEditSum to MessagesContextManagementClearThinking.
-func (s *MessagesContextManagementEditSum) SetMessagesContextManagementClearThinking(v MessagesContextManagementClearThinking) {
-	s.Type = MessagesContextManagementClearThinkingMessagesContextManagementEditSum
-	s.MessagesContextManagementClearThinking = v
+// SetType sets the value of Type.
+func (s *MessagesContextManagementEdit) SetType(val string) {
+	s.Type = val
 }
 
-// GetMessagesContextManagementClearThinking returns MessagesContextManagementClearThinking and true boolean if MessagesContextManagementEditSum is MessagesContextManagementClearThinking.
-func (s MessagesContextManagementEditSum) GetMessagesContextManagementClearThinking() (v MessagesContextManagementClearThinking, ok bool) {
-	if !s.IsMessagesContextManagementClearThinking() {
-		return v, false
-	}
-	return s.MessagesContextManagementClearThinking, true
+// SetKeep sets the value of Keep.
+func (s *MessagesContextManagementEdit) SetKeep(val OptNilMessagesContextManagementKeep) {
+	s.Keep = val
 }
 
-// NewMessagesContextManagementClearThinkingMessagesContextManagementEditSum returns new MessagesContextManagementEditSum from MessagesContextManagementClearThinking.
-func NewMessagesContextManagementClearThinkingMessagesContextManagementEditSum(v MessagesContextManagementClearThinking) MessagesContextManagementEditSum {
-	var s MessagesContextManagementEditSum
-	s.SetMessagesContextManagementClearThinking(v)
-	return s
+// SetExcludeTools sets the value of ExcludeTools.
+func (s *MessagesContextManagementEdit) SetExcludeTools(val OptNilStringArray) {
+	s.ExcludeTools = val
 }
 
-// SetMessagesContextManagementClearToolUses sets MessagesContextManagementEditSum to MessagesContextManagementClearToolUses.
-func (s *MessagesContextManagementEditSum) SetMessagesContextManagementClearToolUses(v MessagesContextManagementClearToolUses) {
-	s.Type = MessagesContextManagementClearToolUsesMessagesContextManagementEditSum
-	s.MessagesContextManagementClearToolUses = v
+// SetClearToolInputs sets the value of ClearToolInputs.
+func (s *MessagesContextManagementEdit) SetClearToolInputs(val OptNilBool) {
+	s.ClearToolInputs = val
 }
 
-// GetMessagesContextManagementClearToolUses returns MessagesContextManagementClearToolUses and true boolean if MessagesContextManagementEditSum is MessagesContextManagementClearToolUses.
-func (s MessagesContextManagementEditSum) GetMessagesContextManagementClearToolUses() (v MessagesContextManagementClearToolUses, ok bool) {
-	if !s.IsMessagesContextManagementClearToolUses() {
-		return v, false
-	}
-	return s.MessagesContextManagementClearToolUses, true
-}
-
-// NewMessagesContextManagementClearToolUsesMessagesContextManagementEditSum returns new MessagesContextManagementEditSum from MessagesContextManagementClearToolUses.
-func NewMessagesContextManagementClearToolUsesMessagesContextManagementEditSum(v MessagesContextManagementClearToolUses) MessagesContextManagementEditSum {
-	var s MessagesContextManagementEditSum
-	s.SetMessagesContextManagementClearToolUses(v)
-	return s
+// SetTrigger sets the value of Trigger.
+func (s *MessagesContextManagementEdit) SetTrigger(val OptNilMessagesContextManagementClearToolUsesTrigger) {
+	s.Trigger = val
 }
 
 // A literal retention mode or a typed retention parameter.
@@ -1807,7 +2312,8 @@ func (s *MessagesContextManagementKeep0) UnmarshalText(data []byte) error {
 
 // Ref: #/components/schemas/MessagesContextManagementKeepAll
 type MessagesContextManagementKeepAll struct {
-	Type MessagesContextManagementKeepAllType `json:"type"`
+	Type  MessagesContextManagementKeepAllType `json:"type"`
+	Value OptNilInt32                          `json:"value"`
 }
 
 // GetType returns the value of Type.
@@ -1815,9 +2321,19 @@ func (s *MessagesContextManagementKeepAll) GetType() MessagesContextManagementKe
 	return s.Type
 }
 
+// GetValue returns the value of Value.
+func (s *MessagesContextManagementKeepAll) GetValue() OptNilInt32 {
+	return s.Value
+}
+
 // SetType sets the value of Type.
 func (s *MessagesContextManagementKeepAll) SetType(val MessagesContextManagementKeepAllType) {
 	s.Type = val
+}
+
+// SetValue sets the value of Value.
+func (s *MessagesContextManagementKeepAll) SetValue(val OptNilInt32) {
+	s.Value = val
 }
 
 type MessagesContextManagementKeepAllType string
@@ -1969,7 +2485,7 @@ func NewMessagesContextManagementKeepToolUsesMessagesContextManagementKeepParame
 // Ref: #/components/schemas/MessagesContextManagementKeepThinkingTurns
 type MessagesContextManagementKeepThinkingTurns struct {
 	Type  MessagesContextManagementKeepThinkingTurnsType `json:"type"`
-	Value int32                                          `json:"value"`
+	Value NilInt32                                       `json:"value"`
 }
 
 // GetType returns the value of Type.
@@ -1978,7 +2494,7 @@ func (s *MessagesContextManagementKeepThinkingTurns) GetType() MessagesContextMa
 }
 
 // GetValue returns the value of Value.
-func (s *MessagesContextManagementKeepThinkingTurns) GetValue() int32 {
+func (s *MessagesContextManagementKeepThinkingTurns) GetValue() NilInt32 {
 	return s.Value
 }
 
@@ -1988,7 +2504,7 @@ func (s *MessagesContextManagementKeepThinkingTurns) SetType(val MessagesContext
 }
 
 // SetValue sets the value of Value.
-func (s *MessagesContextManagementKeepThinkingTurns) SetValue(val int32) {
+func (s *MessagesContextManagementKeepThinkingTurns) SetValue(val NilInt32) {
 	s.Value = val
 }
 
@@ -2029,7 +2545,7 @@ func (s *MessagesContextManagementKeepThinkingTurnsType) UnmarshalText(data []by
 // Ref: #/components/schemas/MessagesContextManagementKeepToolUses
 type MessagesContextManagementKeepToolUses struct {
 	Type  MessagesContextManagementKeepToolUsesType `json:"type"`
-	Value int32                                     `json:"value"`
+	Value NilInt32                                  `json:"value"`
 }
 
 // GetType returns the value of Type.
@@ -2038,7 +2554,7 @@ func (s *MessagesContextManagementKeepToolUses) GetType() MessagesContextManagem
 }
 
 // GetValue returns the value of Value.
-func (s *MessagesContextManagementKeepToolUses) GetValue() int32 {
+func (s *MessagesContextManagementKeepToolUses) GetValue() NilInt32 {
 	return s.Value
 }
 
@@ -2048,7 +2564,7 @@ func (s *MessagesContextManagementKeepToolUses) SetType(val MessagesContextManag
 }
 
 // SetValue sets the value of Value.
-func (s *MessagesContextManagementKeepToolUses) SetValue(val int32) {
+func (s *MessagesContextManagementKeepToolUses) SetValue(val NilInt32) {
 	s.Value = val
 }
 
@@ -2086,61 +2602,79 @@ func (s *MessagesContextManagementKeepToolUsesType) UnmarshalText(data []byte) e
 	}
 }
 
-// Ref: #/components/schemas/MessagesDocumentSourceType
-type MessagesDocumentSourceType string
+// Inline document content must be a non-empty string or array.
+// Ref: #/components/schemas/MessagesDocumentContent
+// MessagesDocumentContent represents sum type.
+type MessagesDocumentContent struct {
+	Type                         MessagesDocumentContentType // switch on this field
+	MessagesDocumentContentText  MessagesDocumentContentText
+	MessagesDocumentContentParts MessagesDocumentContentParts
+}
 
+// MessagesDocumentContentType is oneOf type of MessagesDocumentContent.
+type MessagesDocumentContentType string
+
+// Possible values for MessagesDocumentContentType.
 const (
-	MessagesDocumentSourceTypeBase64  MessagesDocumentSourceType = "base64"
-	MessagesDocumentSourceTypeText    MessagesDocumentSourceType = "text"
-	MessagesDocumentSourceTypeURL     MessagesDocumentSourceType = "url"
-	MessagesDocumentSourceTypeContent MessagesDocumentSourceType = "content"
+	MessagesDocumentContentTextMessagesDocumentContent  MessagesDocumentContentType = "MessagesDocumentContentText"
+	MessagesDocumentContentPartsMessagesDocumentContent MessagesDocumentContentType = "MessagesDocumentContentParts"
 )
 
-// AllValues returns all MessagesDocumentSourceType values.
-func (MessagesDocumentSourceType) AllValues() []MessagesDocumentSourceType {
-	return []MessagesDocumentSourceType{
-		MessagesDocumentSourceTypeBase64,
-		MessagesDocumentSourceTypeText,
-		MessagesDocumentSourceTypeURL,
-		MessagesDocumentSourceTypeContent,
-	}
+// IsMessagesDocumentContentText reports whether MessagesDocumentContent is MessagesDocumentContentText.
+func (s MessagesDocumentContent) IsMessagesDocumentContentText() bool {
+	return s.Type == MessagesDocumentContentTextMessagesDocumentContent
 }
 
-// MarshalText implements encoding.TextMarshaler.
-func (s MessagesDocumentSourceType) MarshalText() ([]byte, error) {
-	switch s {
-	case MessagesDocumentSourceTypeBase64:
-		return []byte(s), nil
-	case MessagesDocumentSourceTypeText:
-		return []byte(s), nil
-	case MessagesDocumentSourceTypeURL:
-		return []byte(s), nil
-	case MessagesDocumentSourceTypeContent:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
+// IsMessagesDocumentContentParts reports whether MessagesDocumentContent is MessagesDocumentContentParts.
+func (s MessagesDocumentContent) IsMessagesDocumentContentParts() bool {
+	return s.Type == MessagesDocumentContentPartsMessagesDocumentContent
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *MessagesDocumentSourceType) UnmarshalText(data []byte) error {
-	switch MessagesDocumentSourceType(data) {
-	case MessagesDocumentSourceTypeBase64:
-		*s = MessagesDocumentSourceTypeBase64
-		return nil
-	case MessagesDocumentSourceTypeText:
-		*s = MessagesDocumentSourceTypeText
-		return nil
-	case MessagesDocumentSourceTypeURL:
-		*s = MessagesDocumentSourceTypeURL
-		return nil
-	case MessagesDocumentSourceTypeContent:
-		*s = MessagesDocumentSourceTypeContent
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
+// SetMessagesDocumentContentText sets MessagesDocumentContent to MessagesDocumentContentText.
+func (s *MessagesDocumentContent) SetMessagesDocumentContentText(v MessagesDocumentContentText) {
+	s.Type = MessagesDocumentContentTextMessagesDocumentContent
+	s.MessagesDocumentContentText = v
 }
+
+// GetMessagesDocumentContentText returns MessagesDocumentContentText and true boolean if MessagesDocumentContent is MessagesDocumentContentText.
+func (s MessagesDocumentContent) GetMessagesDocumentContentText() (v MessagesDocumentContentText, ok bool) {
+	if !s.IsMessagesDocumentContentText() {
+		return v, false
+	}
+	return s.MessagesDocumentContentText, true
+}
+
+// NewMessagesDocumentContentTextMessagesDocumentContent returns new MessagesDocumentContent from MessagesDocumentContentText.
+func NewMessagesDocumentContentTextMessagesDocumentContent(v MessagesDocumentContentText) MessagesDocumentContent {
+	var s MessagesDocumentContent
+	s.SetMessagesDocumentContentText(v)
+	return s
+}
+
+// SetMessagesDocumentContentParts sets MessagesDocumentContent to MessagesDocumentContentParts.
+func (s *MessagesDocumentContent) SetMessagesDocumentContentParts(v MessagesDocumentContentParts) {
+	s.Type = MessagesDocumentContentPartsMessagesDocumentContent
+	s.MessagesDocumentContentParts = v
+}
+
+// GetMessagesDocumentContentParts returns MessagesDocumentContentParts and true boolean if MessagesDocumentContent is MessagesDocumentContentParts.
+func (s MessagesDocumentContent) GetMessagesDocumentContentParts() (v MessagesDocumentContentParts, ok bool) {
+	if !s.IsMessagesDocumentContentParts() {
+		return v, false
+	}
+	return s.MessagesDocumentContentParts, true
+}
+
+// NewMessagesDocumentContentPartsMessagesDocumentContent returns new MessagesDocumentContent from MessagesDocumentContentParts.
+func NewMessagesDocumentContentPartsMessagesDocumentContent(v MessagesDocumentContentParts) MessagesDocumentContent {
+	var s MessagesDocumentContent
+	s.SetMessagesDocumentContentParts(v)
+	return s
+}
+
+type MessagesDocumentContentParts []MessagesContentPart
+
+type MessagesDocumentContentText string
 
 // Ref: #/components/schemas/MessagesErrorResponse
 type MessagesErrorResponse struct {
@@ -2204,6 +2738,8 @@ func (s *MessagesErrorResponseType) UnmarshalText(data []byte) error {
 	}
 }
 
+type MessagesFrequencyPenalty float64
+
 // Ref: #/components/schemas/MessagesImageSourceType
 type MessagesImageSourceType string
 
@@ -2248,9 +2784,9 @@ func (s *MessagesImageSourceType) UnmarshalText(data []byte) error {
 
 // Ref: #/components/schemas/MessagesIterationUsage
 type MessagesIterationUsage struct {
-	// The iteration usage record type.
+	// The iteration usage record type, currently `message`.
 	Type string `json:"type"`
-	// Number of input tokens consumed by this model iteration.
+	// Number of input tokens consumed by this iteration, excluding cache reads.
 	InputTokens int32 `json:"input_tokens"`
 	// Number of output tokens generated by this model iteration.
 	OutputTokens int32 `json:"output_tokens"`
@@ -2297,6 +2833,12 @@ func (s *MessagesIterationUsage) SetOutputTokens(val int32) {
 func (s *MessagesIterationUsage) SetCacheReadInputTokens(val int32) {
 	s.CacheReadInputTokens = val
 }
+
+type MessagesLogitBiasValue float32
+
+type MessagesMaxTokens int32
+
+type MessagesMaxUses int32
 
 // Message content can be a bare string or an array of typed content parts.
 // Ref: #/components/schemas/MessagesMessageContent
@@ -2369,101 +2911,93 @@ func NewMessagesContentPartArrayMessagesMessageContent(v []MessagesContentPart) 
 // Ref: #/components/schemas/MessagesMetadata
 type MessagesMetadata struct {
 	// An external identifier for the user associated with the request.
-	UserID OptString `json:"user_id"`
+	UserID OptNilString `json:"user_id"`
 }
 
 // GetUserID returns the value of UserID.
-func (s *MessagesMetadata) GetUserID() OptString {
+func (s *MessagesMetadata) GetUserID() OptNilString {
 	return s.UserID
 }
 
 // SetUserID sets the value of UserID.
-func (s *MessagesMetadata) SetUserID(val OptString) {
+func (s *MessagesMetadata) SetUserID(val OptNilString) {
 	s.UserID = val
 }
 
 // Ref: #/components/schemas/MessagesOutputConfig
 type MessagesOutputConfig struct {
 	// Requested reasoning effort.
-	Effort OptString `json:"effort"`
+	Effort OptNilString `json:"effort"`
 }
 
 // GetEffort returns the value of Effort.
-func (s *MessagesOutputConfig) GetEffort() OptString {
+func (s *MessagesOutputConfig) GetEffort() OptNilString {
 	return s.Effort
 }
 
 // SetEffort sets the value of Effort.
-func (s *MessagesOutputConfig) SetEffort(val OptString) {
+func (s *MessagesOutputConfig) SetEffort(val OptNilString) {
 	s.Effort = val
 }
 
 // Ref: #/components/schemas/MessagesOutputFormat
 type MessagesOutputFormat struct {
-	// The requested output format.
-	Type MessagesOutputFormatType `json:"type"`
-	// JSON Schema used when `type` is `json_schema`.
-	Schema OptMessagesOutputFormatSchema `json:"schema"`
+	OneOf MessagesOutputFormatSum
+}
+
+// GetOneOf returns the value of OneOf.
+func (s *MessagesOutputFormat) GetOneOf() MessagesOutputFormatSum {
+	return s.OneOf
+}
+
+// SetOneOf sets the value of OneOf.
+func (s *MessagesOutputFormat) SetOneOf(val MessagesOutputFormatSum) {
+	s.OneOf = val
+}
+
+// Ref: #/components/schemas/MessagesOutputFormatJsonObject
+type MessagesOutputFormatJsonObject struct {
+	Type   MessagesOutputFormatJsonObjectType `json:"type"`
+	Schema jx.Raw                             `json:"schema"`
 }
 
 // GetType returns the value of Type.
-func (s *MessagesOutputFormat) GetType() MessagesOutputFormatType {
+func (s *MessagesOutputFormatJsonObject) GetType() MessagesOutputFormatJsonObjectType {
 	return s.Type
 }
 
 // GetSchema returns the value of Schema.
-func (s *MessagesOutputFormat) GetSchema() OptMessagesOutputFormatSchema {
+func (s *MessagesOutputFormatJsonObject) GetSchema() jx.Raw {
 	return s.Schema
 }
 
 // SetType sets the value of Type.
-func (s *MessagesOutputFormat) SetType(val MessagesOutputFormatType) {
+func (s *MessagesOutputFormatJsonObject) SetType(val MessagesOutputFormatJsonObjectType) {
 	s.Type = val
 }
 
 // SetSchema sets the value of Schema.
-func (s *MessagesOutputFormat) SetSchema(val OptMessagesOutputFormatSchema) {
+func (s *MessagesOutputFormatJsonObject) SetSchema(val jx.Raw) {
 	s.Schema = val
 }
 
-// JSON Schema used when `type` is `json_schema`.
-type MessagesOutputFormatSchema map[string]jx.Raw
-
-func (s *MessagesOutputFormatSchema) init() MessagesOutputFormatSchema {
-	m := *s
-	if m == nil {
-		m = map[string]jx.Raw{}
-		*s = m
-	}
-	return m
-}
-
-// Ref: #/components/schemas/MessagesOutputFormatType
-type MessagesOutputFormatType string
+type MessagesOutputFormatJsonObjectType string
 
 const (
-	MessagesOutputFormatTypeText       MessagesOutputFormatType = "text"
-	MessagesOutputFormatTypeJSONObject MessagesOutputFormatType = "json_object"
-	MessagesOutputFormatTypeJSONSchema MessagesOutputFormatType = "json_schema"
+	MessagesOutputFormatJsonObjectTypeJSONObject MessagesOutputFormatJsonObjectType = "json_object"
 )
 
-// AllValues returns all MessagesOutputFormatType values.
-func (MessagesOutputFormatType) AllValues() []MessagesOutputFormatType {
-	return []MessagesOutputFormatType{
-		MessagesOutputFormatTypeText,
-		MessagesOutputFormatTypeJSONObject,
-		MessagesOutputFormatTypeJSONSchema,
+// AllValues returns all MessagesOutputFormatJsonObjectType values.
+func (MessagesOutputFormatJsonObjectType) AllValues() []MessagesOutputFormatJsonObjectType {
+	return []MessagesOutputFormatJsonObjectType{
+		MessagesOutputFormatJsonObjectTypeJSONObject,
 	}
 }
 
 // MarshalText implements encoding.TextMarshaler.
-func (s MessagesOutputFormatType) MarshalText() ([]byte, error) {
+func (s MessagesOutputFormatJsonObjectType) MarshalText() ([]byte, error) {
 	switch s {
-	case MessagesOutputFormatTypeText:
-		return []byte(s), nil
-	case MessagesOutputFormatTypeJSONObject:
-		return []byte(s), nil
-	case MessagesOutputFormatTypeJSONSchema:
+	case MessagesOutputFormatJsonObjectTypeJSONObject:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -2471,21 +3005,236 @@ func (s MessagesOutputFormatType) MarshalText() ([]byte, error) {
 }
 
 // UnmarshalText implements encoding.TextUnmarshaler.
-func (s *MessagesOutputFormatType) UnmarshalText(data []byte) error {
-	switch MessagesOutputFormatType(data) {
-	case MessagesOutputFormatTypeText:
-		*s = MessagesOutputFormatTypeText
-		return nil
-	case MessagesOutputFormatTypeJSONObject:
-		*s = MessagesOutputFormatTypeJSONObject
-		return nil
-	case MessagesOutputFormatTypeJSONSchema:
-		*s = MessagesOutputFormatTypeJSONSchema
+func (s *MessagesOutputFormatJsonObjectType) UnmarshalText(data []byte) error {
+	switch MessagesOutputFormatJsonObjectType(data) {
+	case MessagesOutputFormatJsonObjectTypeJSONObject:
+		*s = MessagesOutputFormatJsonObjectTypeJSONObject
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
 }
+
+// Ref: #/components/schemas/MessagesOutputFormatJsonSchema
+type MessagesOutputFormatJsonSchema struct {
+	Type MessagesOutputFormatJsonSchemaType `json:"type"`
+	// The JSON Schema value, preserved as raw JSON by the request decoder.
+	Schema jx.Raw `json:"schema"`
+}
+
+// GetType returns the value of Type.
+func (s *MessagesOutputFormatJsonSchema) GetType() MessagesOutputFormatJsonSchemaType {
+	return s.Type
+}
+
+// GetSchema returns the value of Schema.
+func (s *MessagesOutputFormatJsonSchema) GetSchema() jx.Raw {
+	return s.Schema
+}
+
+// SetType sets the value of Type.
+func (s *MessagesOutputFormatJsonSchema) SetType(val MessagesOutputFormatJsonSchemaType) {
+	s.Type = val
+}
+
+// SetSchema sets the value of Schema.
+func (s *MessagesOutputFormatJsonSchema) SetSchema(val jx.Raw) {
+	s.Schema = val
+}
+
+type MessagesOutputFormatJsonSchemaType string
+
+const (
+	MessagesOutputFormatJsonSchemaTypeJSONSchema MessagesOutputFormatJsonSchemaType = "json_schema"
+)
+
+// AllValues returns all MessagesOutputFormatJsonSchemaType values.
+func (MessagesOutputFormatJsonSchemaType) AllValues() []MessagesOutputFormatJsonSchemaType {
+	return []MessagesOutputFormatJsonSchemaType{
+		MessagesOutputFormatJsonSchemaTypeJSONSchema,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s MessagesOutputFormatJsonSchemaType) MarshalText() ([]byte, error) {
+	switch s {
+	case MessagesOutputFormatJsonSchemaTypeJSONSchema:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *MessagesOutputFormatJsonSchemaType) UnmarshalText(data []byte) error {
+	switch MessagesOutputFormatJsonSchemaType(data) {
+	case MessagesOutputFormatJsonSchemaTypeJSONSchema:
+		*s = MessagesOutputFormatJsonSchemaTypeJSONSchema
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// MessagesOutputFormatSum represents sum type.
+type MessagesOutputFormatSum struct {
+	Type                           MessagesOutputFormatSumType // switch on this field
+	MessagesOutputFormatText       MessagesOutputFormatText
+	MessagesOutputFormatJsonObject MessagesOutputFormatJsonObject
+	MessagesOutputFormatJsonSchema MessagesOutputFormatJsonSchema
+}
+
+// MessagesOutputFormatSumType is oneOf type of MessagesOutputFormatSum.
+type MessagesOutputFormatSumType string
+
+// Possible values for MessagesOutputFormatSumType.
+const (
+	MessagesOutputFormatTextMessagesOutputFormatSum       MessagesOutputFormatSumType = "text"
+	MessagesOutputFormatJsonObjectMessagesOutputFormatSum MessagesOutputFormatSumType = "json_object"
+	MessagesOutputFormatJsonSchemaMessagesOutputFormatSum MessagesOutputFormatSumType = "json_schema"
+)
+
+// IsMessagesOutputFormatText reports whether MessagesOutputFormatSum is MessagesOutputFormatText.
+func (s MessagesOutputFormatSum) IsMessagesOutputFormatText() bool {
+	return s.Type == MessagesOutputFormatTextMessagesOutputFormatSum
+}
+
+// IsMessagesOutputFormatJsonObject reports whether MessagesOutputFormatSum is MessagesOutputFormatJsonObject.
+func (s MessagesOutputFormatSum) IsMessagesOutputFormatJsonObject() bool {
+	return s.Type == MessagesOutputFormatJsonObjectMessagesOutputFormatSum
+}
+
+// IsMessagesOutputFormatJsonSchema reports whether MessagesOutputFormatSum is MessagesOutputFormatJsonSchema.
+func (s MessagesOutputFormatSum) IsMessagesOutputFormatJsonSchema() bool {
+	return s.Type == MessagesOutputFormatJsonSchemaMessagesOutputFormatSum
+}
+
+// SetMessagesOutputFormatText sets MessagesOutputFormatSum to MessagesOutputFormatText.
+func (s *MessagesOutputFormatSum) SetMessagesOutputFormatText(v MessagesOutputFormatText) {
+	s.Type = MessagesOutputFormatTextMessagesOutputFormatSum
+	s.MessagesOutputFormatText = v
+}
+
+// GetMessagesOutputFormatText returns MessagesOutputFormatText and true boolean if MessagesOutputFormatSum is MessagesOutputFormatText.
+func (s MessagesOutputFormatSum) GetMessagesOutputFormatText() (v MessagesOutputFormatText, ok bool) {
+	if !s.IsMessagesOutputFormatText() {
+		return v, false
+	}
+	return s.MessagesOutputFormatText, true
+}
+
+// NewMessagesOutputFormatTextMessagesOutputFormatSum returns new MessagesOutputFormatSum from MessagesOutputFormatText.
+func NewMessagesOutputFormatTextMessagesOutputFormatSum(v MessagesOutputFormatText) MessagesOutputFormatSum {
+	var s MessagesOutputFormatSum
+	s.SetMessagesOutputFormatText(v)
+	return s
+}
+
+// SetMessagesOutputFormatJsonObject sets MessagesOutputFormatSum to MessagesOutputFormatJsonObject.
+func (s *MessagesOutputFormatSum) SetMessagesOutputFormatJsonObject(v MessagesOutputFormatJsonObject) {
+	s.Type = MessagesOutputFormatJsonObjectMessagesOutputFormatSum
+	s.MessagesOutputFormatJsonObject = v
+}
+
+// GetMessagesOutputFormatJsonObject returns MessagesOutputFormatJsonObject and true boolean if MessagesOutputFormatSum is MessagesOutputFormatJsonObject.
+func (s MessagesOutputFormatSum) GetMessagesOutputFormatJsonObject() (v MessagesOutputFormatJsonObject, ok bool) {
+	if !s.IsMessagesOutputFormatJsonObject() {
+		return v, false
+	}
+	return s.MessagesOutputFormatJsonObject, true
+}
+
+// NewMessagesOutputFormatJsonObjectMessagesOutputFormatSum returns new MessagesOutputFormatSum from MessagesOutputFormatJsonObject.
+func NewMessagesOutputFormatJsonObjectMessagesOutputFormatSum(v MessagesOutputFormatJsonObject) MessagesOutputFormatSum {
+	var s MessagesOutputFormatSum
+	s.SetMessagesOutputFormatJsonObject(v)
+	return s
+}
+
+// SetMessagesOutputFormatJsonSchema sets MessagesOutputFormatSum to MessagesOutputFormatJsonSchema.
+func (s *MessagesOutputFormatSum) SetMessagesOutputFormatJsonSchema(v MessagesOutputFormatJsonSchema) {
+	s.Type = MessagesOutputFormatJsonSchemaMessagesOutputFormatSum
+	s.MessagesOutputFormatJsonSchema = v
+}
+
+// GetMessagesOutputFormatJsonSchema returns MessagesOutputFormatJsonSchema and true boolean if MessagesOutputFormatSum is MessagesOutputFormatJsonSchema.
+func (s MessagesOutputFormatSum) GetMessagesOutputFormatJsonSchema() (v MessagesOutputFormatJsonSchema, ok bool) {
+	if !s.IsMessagesOutputFormatJsonSchema() {
+		return v, false
+	}
+	return s.MessagesOutputFormatJsonSchema, true
+}
+
+// NewMessagesOutputFormatJsonSchemaMessagesOutputFormatSum returns new MessagesOutputFormatSum from MessagesOutputFormatJsonSchema.
+func NewMessagesOutputFormatJsonSchemaMessagesOutputFormatSum(v MessagesOutputFormatJsonSchema) MessagesOutputFormatSum {
+	var s MessagesOutputFormatSum
+	s.SetMessagesOutputFormatJsonSchema(v)
+	return s
+}
+
+// Ref: #/components/schemas/MessagesOutputFormatText
+type MessagesOutputFormatText struct {
+	Type   MessagesOutputFormatTextType `json:"type"`
+	Schema jx.Raw                       `json:"schema"`
+}
+
+// GetType returns the value of Type.
+func (s *MessagesOutputFormatText) GetType() MessagesOutputFormatTextType {
+	return s.Type
+}
+
+// GetSchema returns the value of Schema.
+func (s *MessagesOutputFormatText) GetSchema() jx.Raw {
+	return s.Schema
+}
+
+// SetType sets the value of Type.
+func (s *MessagesOutputFormatText) SetType(val MessagesOutputFormatTextType) {
+	s.Type = val
+}
+
+// SetSchema sets the value of Schema.
+func (s *MessagesOutputFormatText) SetSchema(val jx.Raw) {
+	s.Schema = val
+}
+
+type MessagesOutputFormatTextType string
+
+const (
+	MessagesOutputFormatTextTypeText MessagesOutputFormatTextType = "text"
+)
+
+// AllValues returns all MessagesOutputFormatTextType values.
+func (MessagesOutputFormatTextType) AllValues() []MessagesOutputFormatTextType {
+	return []MessagesOutputFormatTextType{
+		MessagesOutputFormatTextTypeText,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s MessagesOutputFormatTextType) MarshalText() ([]byte, error) {
+	switch s {
+	case MessagesOutputFormatTextTypeText:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *MessagesOutputFormatTextType) UnmarshalText(data []byte) error {
+	switch MessagesOutputFormatTextType(data) {
+	case MessagesOutputFormatTextTypeText:
+		*s = MessagesOutputFormatTextTypeText
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+type MessagesPresencePenalty float64
+
+type MessagesRepetitionPenalty float64
 
 // Creates a model response for the supplied conversation.
 // Ref: #/components/schemas/MessagesRequest
@@ -2495,50 +3244,50 @@ type MessagesRequest struct {
 	// Endpoint ID of the model to use.
 	Model string `json:"model"`
 	// A system prompt supplied separately from the conversation messages.
-	System OptMessagesSystem `json:"system"`
+	System OptNilMessagesSystem `json:"system"`
 	// Number between -2.0 and 2.0. Positive values penalize tokens based on
 	// their existing frequency in the generated text.
-	FrequencyPenalty OptFloat64 `json:"frequency_penalty"`
-	// Modify the likelihood of token IDs appearing in the response. Values
-	// range from -100 to 100.
-	LogitBias OptMessagesRequestLogitBias `json:"logit_bias"`
+	FrequencyPenalty OptNilMessagesFrequencyPenalty `json:"frequency_penalty"`
+	// Modify the likelihood of token IDs appearing in the response.
+	// Keys must be integer token IDs; values range from -100 to 100.
+	LogitBias OptNilMessagesRequestLogitBias `json:"logit_bias"`
 	// Whether to return log probabilities of output tokens.
-	Logprobs OptBool `json:"logprobs"`
+	Logprobs OptNilBool `json:"logprobs"`
 	// Maximum number of tokens that may be generated.
-	MaxTokens OptInt32 `json:"max_tokens"`
+	MaxTokens OptNilMessagesMaxTokens `json:"max_tokens"`
 	// Number between -2.0 and 2.0. Positive values penalize tokens based on
 	// whether they have appeared in the generated text.
-	PresencePenalty OptFloat64 `json:"presence_penalty"`
+	PresencePenalty OptNilMessagesPresencePenalty `json:"presence_penalty"`
 	// Number between 0.0 and 2.0 that penalizes repetition.
-	RepetitionPenalty OptFloat64 `json:"repetition_penalty"`
+	RepetitionPenalty OptNilMessagesRepetitionPenalty `json:"repetition_penalty"`
 	// The format the model must produce.
-	OutputFormat OptMessagesOutputFormat `json:"output_format"`
+	OutputFormat OptNilMessagesOutputFormat `json:"output_format"`
 	// Sequences that stop generation when produced.
 	StopSequences OptMessagesStopSequences `json:"stop_sequences"`
 	// Whether to stream the response as server-sent events.
-	Stream OptBool `json:"stream"`
+	Stream OptNilBool `json:"stream"`
 	// Options for streaming responses.
-	StreamOptions OptMessagesStreamOptions `json:"stream_options"`
+	StreamOptions OptNilMessagesStreamOptions `json:"stream_options"`
 	// Sampling temperature between 0 and 2.
-	Temperature OptFloat64 `json:"temperature"`
+	Temperature OptNilMessagesTemperature `json:"temperature"`
 	// Controls which tool, if any, the model calls.
-	ToolChoice OptMessagesToolChoice `json:"tool_choice"`
-	// Tools the model may call.
-	Tools []MessagesTool `json:"tools"`
+	ToolChoice OptNilMessagesToolChoice `json:"tool_choice"`
+	// Tools the model may call. Tool names must be unique.
+	Tools OptNilMessagesToolArray `json:"tools"`
 	// Number of most-likely tokens returned at each position. Range 0-20.
-	TopLogprobs OptInt32 `json:"top_logprobs"`
+	TopLogprobs OptNilMessagesTopLogprobs `json:"top_logprobs"`
 	// Nucleus sampling probability between 0 and 1.
-	TopP OptFloat64 `json:"top_p"`
-	// Latency tier used to process the request.
-	ServiceTier OptMessagesRequestServiceTier `json:"service_tier"`
+	TopP OptNilMessagesTopP `json:"top_p"`
+	// Latency tier used to process the request. Empty or null uses the default behavior.
+	ServiceTier OptNilMessagesRequestServiceTier `json:"service_tier"`
 	// Thinking-mode configuration.
-	Thinking OptMessagesThinking `json:"thinking"`
+	Thinking OptNilMessagesThinking `json:"thinking"`
 	// Output configuration for reasoning models.
-	OutputConfig OptMessagesOutputConfig `json:"output_config"`
+	OutputConfig OptNilMessagesOutputConfig `json:"output_config"`
 	// Metadata associated with the request.
-	Metadata OptMessagesMetadata `json:"metadata"`
+	Metadata OptNilMessagesMetadata `json:"metadata"`
 	// Context-editing rules applied before inference.
-	ContextManagement OptMessagesContextManagement `json:"context_management"`
+	ContextManagement OptNilMessagesContextManagement `json:"context_management"`
 }
 
 // GetMessages returns the value of Messages.
@@ -2552,42 +3301,42 @@ func (s *MessagesRequest) GetModel() string {
 }
 
 // GetSystem returns the value of System.
-func (s *MessagesRequest) GetSystem() OptMessagesSystem {
+func (s *MessagesRequest) GetSystem() OptNilMessagesSystem {
 	return s.System
 }
 
 // GetFrequencyPenalty returns the value of FrequencyPenalty.
-func (s *MessagesRequest) GetFrequencyPenalty() OptFloat64 {
+func (s *MessagesRequest) GetFrequencyPenalty() OptNilMessagesFrequencyPenalty {
 	return s.FrequencyPenalty
 }
 
 // GetLogitBias returns the value of LogitBias.
-func (s *MessagesRequest) GetLogitBias() OptMessagesRequestLogitBias {
+func (s *MessagesRequest) GetLogitBias() OptNilMessagesRequestLogitBias {
 	return s.LogitBias
 }
 
 // GetLogprobs returns the value of Logprobs.
-func (s *MessagesRequest) GetLogprobs() OptBool {
+func (s *MessagesRequest) GetLogprobs() OptNilBool {
 	return s.Logprobs
 }
 
 // GetMaxTokens returns the value of MaxTokens.
-func (s *MessagesRequest) GetMaxTokens() OptInt32 {
+func (s *MessagesRequest) GetMaxTokens() OptNilMessagesMaxTokens {
 	return s.MaxTokens
 }
 
 // GetPresencePenalty returns the value of PresencePenalty.
-func (s *MessagesRequest) GetPresencePenalty() OptFloat64 {
+func (s *MessagesRequest) GetPresencePenalty() OptNilMessagesPresencePenalty {
 	return s.PresencePenalty
 }
 
 // GetRepetitionPenalty returns the value of RepetitionPenalty.
-func (s *MessagesRequest) GetRepetitionPenalty() OptFloat64 {
+func (s *MessagesRequest) GetRepetitionPenalty() OptNilMessagesRepetitionPenalty {
 	return s.RepetitionPenalty
 }
 
 // GetOutputFormat returns the value of OutputFormat.
-func (s *MessagesRequest) GetOutputFormat() OptMessagesOutputFormat {
+func (s *MessagesRequest) GetOutputFormat() OptNilMessagesOutputFormat {
 	return s.OutputFormat
 }
 
@@ -2597,62 +3346,62 @@ func (s *MessagesRequest) GetStopSequences() OptMessagesStopSequences {
 }
 
 // GetStream returns the value of Stream.
-func (s *MessagesRequest) GetStream() OptBool {
+func (s *MessagesRequest) GetStream() OptNilBool {
 	return s.Stream
 }
 
 // GetStreamOptions returns the value of StreamOptions.
-func (s *MessagesRequest) GetStreamOptions() OptMessagesStreamOptions {
+func (s *MessagesRequest) GetStreamOptions() OptNilMessagesStreamOptions {
 	return s.StreamOptions
 }
 
 // GetTemperature returns the value of Temperature.
-func (s *MessagesRequest) GetTemperature() OptFloat64 {
+func (s *MessagesRequest) GetTemperature() OptNilMessagesTemperature {
 	return s.Temperature
 }
 
 // GetToolChoice returns the value of ToolChoice.
-func (s *MessagesRequest) GetToolChoice() OptMessagesToolChoice {
+func (s *MessagesRequest) GetToolChoice() OptNilMessagesToolChoice {
 	return s.ToolChoice
 }
 
 // GetTools returns the value of Tools.
-func (s *MessagesRequest) GetTools() []MessagesTool {
+func (s *MessagesRequest) GetTools() OptNilMessagesToolArray {
 	return s.Tools
 }
 
 // GetTopLogprobs returns the value of TopLogprobs.
-func (s *MessagesRequest) GetTopLogprobs() OptInt32 {
+func (s *MessagesRequest) GetTopLogprobs() OptNilMessagesTopLogprobs {
 	return s.TopLogprobs
 }
 
 // GetTopP returns the value of TopP.
-func (s *MessagesRequest) GetTopP() OptFloat64 {
+func (s *MessagesRequest) GetTopP() OptNilMessagesTopP {
 	return s.TopP
 }
 
 // GetServiceTier returns the value of ServiceTier.
-func (s *MessagesRequest) GetServiceTier() OptMessagesRequestServiceTier {
+func (s *MessagesRequest) GetServiceTier() OptNilMessagesRequestServiceTier {
 	return s.ServiceTier
 }
 
 // GetThinking returns the value of Thinking.
-func (s *MessagesRequest) GetThinking() OptMessagesThinking {
+func (s *MessagesRequest) GetThinking() OptNilMessagesThinking {
 	return s.Thinking
 }
 
 // GetOutputConfig returns the value of OutputConfig.
-func (s *MessagesRequest) GetOutputConfig() OptMessagesOutputConfig {
+func (s *MessagesRequest) GetOutputConfig() OptNilMessagesOutputConfig {
 	return s.OutputConfig
 }
 
 // GetMetadata returns the value of Metadata.
-func (s *MessagesRequest) GetMetadata() OptMessagesMetadata {
+func (s *MessagesRequest) GetMetadata() OptNilMessagesMetadata {
 	return s.Metadata
 }
 
 // GetContextManagement returns the value of ContextManagement.
-func (s *MessagesRequest) GetContextManagement() OptMessagesContextManagement {
+func (s *MessagesRequest) GetContextManagement() OptNilMessagesContextManagement {
 	return s.ContextManagement
 }
 
@@ -2667,42 +3416,42 @@ func (s *MessagesRequest) SetModel(val string) {
 }
 
 // SetSystem sets the value of System.
-func (s *MessagesRequest) SetSystem(val OptMessagesSystem) {
+func (s *MessagesRequest) SetSystem(val OptNilMessagesSystem) {
 	s.System = val
 }
 
 // SetFrequencyPenalty sets the value of FrequencyPenalty.
-func (s *MessagesRequest) SetFrequencyPenalty(val OptFloat64) {
+func (s *MessagesRequest) SetFrequencyPenalty(val OptNilMessagesFrequencyPenalty) {
 	s.FrequencyPenalty = val
 }
 
 // SetLogitBias sets the value of LogitBias.
-func (s *MessagesRequest) SetLogitBias(val OptMessagesRequestLogitBias) {
+func (s *MessagesRequest) SetLogitBias(val OptNilMessagesRequestLogitBias) {
 	s.LogitBias = val
 }
 
 // SetLogprobs sets the value of Logprobs.
-func (s *MessagesRequest) SetLogprobs(val OptBool) {
+func (s *MessagesRequest) SetLogprobs(val OptNilBool) {
 	s.Logprobs = val
 }
 
 // SetMaxTokens sets the value of MaxTokens.
-func (s *MessagesRequest) SetMaxTokens(val OptInt32) {
+func (s *MessagesRequest) SetMaxTokens(val OptNilMessagesMaxTokens) {
 	s.MaxTokens = val
 }
 
 // SetPresencePenalty sets the value of PresencePenalty.
-func (s *MessagesRequest) SetPresencePenalty(val OptFloat64) {
+func (s *MessagesRequest) SetPresencePenalty(val OptNilMessagesPresencePenalty) {
 	s.PresencePenalty = val
 }
 
 // SetRepetitionPenalty sets the value of RepetitionPenalty.
-func (s *MessagesRequest) SetRepetitionPenalty(val OptFloat64) {
+func (s *MessagesRequest) SetRepetitionPenalty(val OptNilMessagesRepetitionPenalty) {
 	s.RepetitionPenalty = val
 }
 
 // SetOutputFormat sets the value of OutputFormat.
-func (s *MessagesRequest) SetOutputFormat(val OptMessagesOutputFormat) {
+func (s *MessagesRequest) SetOutputFormat(val OptNilMessagesOutputFormat) {
 	s.OutputFormat = val
 }
 
@@ -2712,73 +3461,71 @@ func (s *MessagesRequest) SetStopSequences(val OptMessagesStopSequences) {
 }
 
 // SetStream sets the value of Stream.
-func (s *MessagesRequest) SetStream(val OptBool) {
+func (s *MessagesRequest) SetStream(val OptNilBool) {
 	s.Stream = val
 }
 
 // SetStreamOptions sets the value of StreamOptions.
-func (s *MessagesRequest) SetStreamOptions(val OptMessagesStreamOptions) {
+func (s *MessagesRequest) SetStreamOptions(val OptNilMessagesStreamOptions) {
 	s.StreamOptions = val
 }
 
 // SetTemperature sets the value of Temperature.
-func (s *MessagesRequest) SetTemperature(val OptFloat64) {
+func (s *MessagesRequest) SetTemperature(val OptNilMessagesTemperature) {
 	s.Temperature = val
 }
 
 // SetToolChoice sets the value of ToolChoice.
-func (s *MessagesRequest) SetToolChoice(val OptMessagesToolChoice) {
+func (s *MessagesRequest) SetToolChoice(val OptNilMessagesToolChoice) {
 	s.ToolChoice = val
 }
 
 // SetTools sets the value of Tools.
-func (s *MessagesRequest) SetTools(val []MessagesTool) {
+func (s *MessagesRequest) SetTools(val OptNilMessagesToolArray) {
 	s.Tools = val
 }
 
 // SetTopLogprobs sets the value of TopLogprobs.
-func (s *MessagesRequest) SetTopLogprobs(val OptInt32) {
+func (s *MessagesRequest) SetTopLogprobs(val OptNilMessagesTopLogprobs) {
 	s.TopLogprobs = val
 }
 
 // SetTopP sets the value of TopP.
-func (s *MessagesRequest) SetTopP(val OptFloat64) {
+func (s *MessagesRequest) SetTopP(val OptNilMessagesTopP) {
 	s.TopP = val
 }
 
 // SetServiceTier sets the value of ServiceTier.
-func (s *MessagesRequest) SetServiceTier(val OptMessagesRequestServiceTier) {
+func (s *MessagesRequest) SetServiceTier(val OptNilMessagesRequestServiceTier) {
 	s.ServiceTier = val
 }
 
 // SetThinking sets the value of Thinking.
-func (s *MessagesRequest) SetThinking(val OptMessagesThinking) {
+func (s *MessagesRequest) SetThinking(val OptNilMessagesThinking) {
 	s.Thinking = val
 }
 
 // SetOutputConfig sets the value of OutputConfig.
-func (s *MessagesRequest) SetOutputConfig(val OptMessagesOutputConfig) {
+func (s *MessagesRequest) SetOutputConfig(val OptNilMessagesOutputConfig) {
 	s.OutputConfig = val
 }
 
 // SetMetadata sets the value of Metadata.
-func (s *MessagesRequest) SetMetadata(val OptMessagesMetadata) {
+func (s *MessagesRequest) SetMetadata(val OptNilMessagesMetadata) {
 	s.Metadata = val
 }
 
 // SetContextManagement sets the value of ContextManagement.
-func (s *MessagesRequest) SetContextManagement(val OptMessagesContextManagement) {
+func (s *MessagesRequest) SetContextManagement(val OptNilMessagesContextManagement) {
 	s.ContextManagement = val
 }
 
-// Modify the likelihood of token IDs appearing in the response. Values
-// range from -100 to 100.
-type MessagesRequestLogitBias map[string]float32
+type MessagesRequestLogitBias map[string]MessagesLogitBiasValue
 
 func (s *MessagesRequestLogitBias) init() MessagesRequestLogitBias {
 	m := *s
 	if m == nil {
-		m = map[string]float32{}
+		m = map[string]MessagesLogitBiasValue{}
 		*s = m
 	}
 	return m
@@ -2786,10 +3533,14 @@ func (s *MessagesRequestLogitBias) init() MessagesRequestLogitBias {
 
 // Ref: #/components/schemas/MessagesRequestMessage
 type MessagesRequestMessage struct {
-	// The role of the message author.
+	// Any non-empty role. Roles other than `user` and `assistant` are
+	// interpreted as system messages.
 	Role MessagesRole `json:"role"`
-	// The contents of the message.
-	Content MessagesMessageContent `json:"content"`
+	// The message content. For user and assistant messages, missing, null,
+	// and empty-array content is normalized to an empty string. For all other
+	// roles, the server requires this field to be present (null is accepted).
+	// This conditional requirement is validated by the server.
+	Content OptNilMessagesMessageContent `json:"content"`
 }
 
 // GetRole returns the value of Role.
@@ -2798,7 +3549,7 @@ func (s *MessagesRequestMessage) GetRole() MessagesRole {
 }
 
 // GetContent returns the value of Content.
-func (s *MessagesRequestMessage) GetContent() MessagesMessageContent {
+func (s *MessagesRequestMessage) GetContent() OptNilMessagesMessageContent {
 	return s.Content
 }
 
@@ -2808,7 +3559,7 @@ func (s *MessagesRequestMessage) SetRole(val MessagesRole) {
 }
 
 // SetContent sets the value of Content.
-func (s *MessagesRequestMessage) SetContent(val MessagesMessageContent) {
+func (s *MessagesRequestMessage) SetContent(val OptNilMessagesMessageContent) {
 	s.Content = val
 }
 
@@ -2816,24 +3567,32 @@ func (s *MessagesRequestMessage) SetContent(val MessagesMessageContent) {
 type MessagesRequestServiceTier string
 
 const (
+	MessagesRequestServiceTierEmpty   MessagesRequestServiceTier = ""
 	MessagesRequestServiceTierAuto    MessagesRequestServiceTier = "auto"
 	MessagesRequestServiceTierDefault MessagesRequestServiceTier = "default"
+	MessagesRequestServiceTierFlex    MessagesRequestServiceTier = "flex"
 )
 
 // AllValues returns all MessagesRequestServiceTier values.
 func (MessagesRequestServiceTier) AllValues() []MessagesRequestServiceTier {
 	return []MessagesRequestServiceTier{
+		MessagesRequestServiceTierEmpty,
 		MessagesRequestServiceTierAuto,
 		MessagesRequestServiceTierDefault,
+		MessagesRequestServiceTierFlex,
 	}
 }
 
 // MarshalText implements encoding.TextMarshaler.
 func (s MessagesRequestServiceTier) MarshalText() ([]byte, error) {
 	switch s {
+	case MessagesRequestServiceTierEmpty:
+		return []byte(s), nil
 	case MessagesRequestServiceTierAuto:
 		return []byte(s), nil
 	case MessagesRequestServiceTierDefault:
+		return []byte(s), nil
+	case MessagesRequestServiceTierFlex:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -2843,11 +3602,17 @@ func (s MessagesRequestServiceTier) MarshalText() ([]byte, error) {
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (s *MessagesRequestServiceTier) UnmarshalText(data []byte) error {
 	switch MessagesRequestServiceTier(data) {
+	case MessagesRequestServiceTierEmpty:
+		*s = MessagesRequestServiceTierEmpty
+		return nil
 	case MessagesRequestServiceTierAuto:
 		*s = MessagesRequestServiceTierAuto
 		return nil
 	case MessagesRequestServiceTierDefault:
 		*s = MessagesRequestServiceTierDefault
+		return nil
+	case MessagesRequestServiceTierFlex:
+		*s = MessagesRequestServiceTierFlex
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -2872,7 +3637,7 @@ type MessagesResponse struct {
 	// The reason the model stopped generating tokens.
 	StopReason OptMessagesResponseStopReason `json:"stop_reason"`
 	// The custom stop sequence that was generated, if any.
-	StopSequence OptString `json:"stop_sequence"`
+	StopSequence NilString `json:"stop_sequence"`
 	// Usage statistics for this request.
 	Usage OptMessagesUsage `json:"usage"`
 }
@@ -2913,7 +3678,7 @@ func (s *MessagesResponse) GetStopReason() OptMessagesResponseStopReason {
 }
 
 // GetStopSequence returns the value of StopSequence.
-func (s *MessagesResponse) GetStopSequence() OptString {
+func (s *MessagesResponse) GetStopSequence() NilString {
 	return s.StopSequence
 }
 
@@ -2958,7 +3723,7 @@ func (s *MessagesResponse) SetStopReason(val OptMessagesResponseStopReason) {
 }
 
 // SetStopSequence sets the value of StopSequence.
-func (s *MessagesResponse) SetStopSequence(val OptString) {
+func (s *MessagesResponse) SetStopSequence(val NilString) {
 	s.StopSequence = val
 }
 
@@ -4276,15 +5041,16 @@ func (s *MessagesResponseStreamMessageStart) SetMessage(val MessagesResponseStre
 
 // Ref: #/components/schemas/MessagesResponseStreamMessageStartMessage
 type MessagesResponseStreamMessageStartMessage struct {
-	Type          MessagesResponseStreamMessageStartMessageType `json:"type"`
-	ID            string                                        `json:"id"`
-	Role          MessagesResponseStreamMessageStartMessageRole `json:"role"`
-	Content       []jx.Raw                                      `json:"content"`
-	Model         string                                        `json:"model"`
-	ServiceStatus OptMessagesServiceStatus                      `json:"service_status"`
-	StopReason    NilMessagesResponseStopReason                 `json:"stop_reason"`
-	StopSequence  NilString                                     `json:"stop_sequence"`
-	Usage         NilMessagesUsage                              `json:"usage"`
+	Type MessagesResponseStreamMessageStartMessageType `json:"type"`
+	ID   string                                        `json:"id"`
+	Role MessagesResponseStreamMessageStartMessageRole `json:"role"`
+	// Content is initially empty; blocks arrive in subsequent stream events.
+	Content       []jx.Raw                      `json:"content"`
+	Model         string                        `json:"model"`
+	ServiceStatus OptMessagesServiceStatus      `json:"service_status"`
+	StopReason    NilMessagesResponseStopReason `json:"stop_reason"`
+	StopSequence  NilString                     `json:"stop_sequence"`
+	Usage         NilMessagesUsage              `json:"usage"`
 }
 
 // GetType returns the value of Type.
@@ -4563,54 +5329,7 @@ func (s *MessagesResponseType) UnmarshalText(data []byte) error {
 	}
 }
 
-// Ref: #/components/schemas/MessagesRole
 type MessagesRole string
-
-const (
-	MessagesRoleAssistant MessagesRole = "assistant"
-	MessagesRoleUser      MessagesRole = "user"
-	MessagesRoleSystem    MessagesRole = "system"
-)
-
-// AllValues returns all MessagesRole values.
-func (MessagesRole) AllValues() []MessagesRole {
-	return []MessagesRole{
-		MessagesRoleAssistant,
-		MessagesRoleUser,
-		MessagesRoleSystem,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s MessagesRole) MarshalText() ([]byte, error) {
-	switch s {
-	case MessagesRoleAssistant:
-		return []byte(s), nil
-	case MessagesRoleUser:
-		return []byte(s), nil
-	case MessagesRoleSystem:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *MessagesRole) UnmarshalText(data []byte) error {
-	switch MessagesRole(data) {
-	case MessagesRoleAssistant:
-		*s = MessagesRoleAssistant
-		return nil
-	case MessagesRoleUser:
-		*s = MessagesRoleUser
-		return nil
-	case MessagesRoleSystem:
-		*s = MessagesRoleSystem
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
 
 // Ref: #/components/schemas/MessagesServerToolCaller
 type MessagesServerToolCaller struct {
@@ -4671,13 +5390,15 @@ func (s *MessagesServiceStatus) SetModelFallback(val OptModelFallbackStatus) {
 	s.ModelFallback = val
 }
 
-// One stop sequence or up to four stop sequences.
+// One stop sequence or an array of stop sequences. The count limit is
+// model-dependent (default four); null is treated as an empty list.
 // Ref: #/components/schemas/MessagesStopSequences
 // MessagesStopSequences represents sum type.
 type MessagesStopSequences struct {
 	Type        MessagesStopSequencesType // switch on this field
 	String      string
 	StringArray []string
+	Null        struct{}
 }
 
 // MessagesStopSequencesType is oneOf type of MessagesStopSequences.
@@ -4687,6 +5408,7 @@ type MessagesStopSequencesType string
 const (
 	StringMessagesStopSequences      MessagesStopSequencesType = "string"
 	StringArrayMessagesStopSequences MessagesStopSequencesType = "[]string"
+	NullMessagesStopSequences        MessagesStopSequencesType = "struct{}"
 )
 
 // IsString reports whether MessagesStopSequences is string.
@@ -4696,6 +5418,9 @@ func (s MessagesStopSequences) IsString() bool { return s.Type == StringMessages
 func (s MessagesStopSequences) IsStringArray() bool {
 	return s.Type == StringArrayMessagesStopSequences
 }
+
+// IsNull reports whether MessagesStopSequences is struct{}.
+func (s MessagesStopSequences) IsNull() bool { return s.Type == NullMessagesStopSequences }
 
 // SetString sets MessagesStopSequences to string.
 func (s *MessagesStopSequences) SetString(v string) {
@@ -4736,6 +5461,27 @@ func (s MessagesStopSequences) GetStringArray() (v []string, ok bool) {
 func NewStringArrayMessagesStopSequences(v []string) MessagesStopSequences {
 	var s MessagesStopSequences
 	s.SetStringArray(v)
+	return s
+}
+
+// SetNull sets MessagesStopSequences to struct{}.
+func (s *MessagesStopSequences) SetNull(v struct{}) {
+	s.Type = NullMessagesStopSequences
+	s.Null = v
+}
+
+// GetNull returns struct{} and true boolean if MessagesStopSequences is struct{}.
+func (s MessagesStopSequences) GetNull() (v struct{}, ok bool) {
+	if !s.IsNull() {
+		return v, false
+	}
+	return s.Null, true
+}
+
+// NewNullMessagesStopSequences returns new MessagesStopSequences from struct{}.
+func NewNullMessagesStopSequences(v struct{}) MessagesStopSequences {
+	var s MessagesStopSequences
+	s.SetNull(v)
 	return s
 }
 
@@ -5122,6 +5868,8 @@ func (s *MessagesSystemTextPartType) UnmarshalText(data []byte) error {
 	}
 }
 
+type MessagesTemperature float64
+
 // Ref: #/components/schemas/MessagesThinking
 type MessagesThinking struct {
 	// Thinking mode requested from the model.
@@ -5141,27 +5889,28 @@ func (s *MessagesThinking) SetType(val string) {
 // Ref: #/components/schemas/MessagesTool
 type MessagesTool struct {
 	// A description of what the tool does and when the model should use it.
-	Description OptString `json:"description"`
+	Description OptNilString `json:"description"`
 	// The tool name.
 	Name string `json:"name"`
 	// The tool input, described as a JSON Schema object.
-	InputSchema OptMessagesToolInputSchema `json:"input_schema"`
+	InputSchema OptNilMessagesToolInputSchema `json:"input_schema"`
 	// Whether strict schema adherence is enabled for this tool.
-	Strict OptBool `json:"strict"`
-	// A server-managed tool version, such as `web_search_20250305`.
+	Strict OptNilBool `json:"strict"`
+	// A tool type. A non-empty type without a description denotes a server-managed
+	// tool; web search uses the name `web_search` and a `web_search_` type prefix.
 	Type OptString `json:"type"`
 	// Maximum number of times a server-managed tool may be dispatched.
-	MaxUses OptInt32 `json:"max_uses"`
-	// Domains that a server-managed web tool is allowed to access.
-	AllowedDomains []string `json:"allowed_domains"`
-	// Domains that a server-managed web tool must not access.
-	BlockedDomains []string `json:"blocked_domains"`
+	MaxUses OptNilMessagesMaxUses `json:"max_uses"`
+	// Allowed domains. Cannot be non-empty together with `blocked_domains`.
+	AllowedDomains OptNilStringArray `json:"allowed_domains"`
+	// Blocked domains. Cannot be non-empty together with `allowed_domains`.
+	BlockedDomains OptNilStringArray `json:"blocked_domains"`
 	// Optional user location supplied to a server-managed web tool.
-	UserLocation OptMessagesToolUserLocation `json:"user_location"`
+	UserLocation OptNilMessagesToolUserLocation `json:"user_location"`
 }
 
 // GetDescription returns the value of Description.
-func (s *MessagesTool) GetDescription() OptString {
+func (s *MessagesTool) GetDescription() OptNilString {
 	return s.Description
 }
 
@@ -5171,12 +5920,12 @@ func (s *MessagesTool) GetName() string {
 }
 
 // GetInputSchema returns the value of InputSchema.
-func (s *MessagesTool) GetInputSchema() OptMessagesToolInputSchema {
+func (s *MessagesTool) GetInputSchema() OptNilMessagesToolInputSchema {
 	return s.InputSchema
 }
 
 // GetStrict returns the value of Strict.
-func (s *MessagesTool) GetStrict() OptBool {
+func (s *MessagesTool) GetStrict() OptNilBool {
 	return s.Strict
 }
 
@@ -5186,27 +5935,27 @@ func (s *MessagesTool) GetType() OptString {
 }
 
 // GetMaxUses returns the value of MaxUses.
-func (s *MessagesTool) GetMaxUses() OptInt32 {
+func (s *MessagesTool) GetMaxUses() OptNilMessagesMaxUses {
 	return s.MaxUses
 }
 
 // GetAllowedDomains returns the value of AllowedDomains.
-func (s *MessagesTool) GetAllowedDomains() []string {
+func (s *MessagesTool) GetAllowedDomains() OptNilStringArray {
 	return s.AllowedDomains
 }
 
 // GetBlockedDomains returns the value of BlockedDomains.
-func (s *MessagesTool) GetBlockedDomains() []string {
+func (s *MessagesTool) GetBlockedDomains() OptNilStringArray {
 	return s.BlockedDomains
 }
 
 // GetUserLocation returns the value of UserLocation.
-func (s *MessagesTool) GetUserLocation() OptMessagesToolUserLocation {
+func (s *MessagesTool) GetUserLocation() OptNilMessagesToolUserLocation {
 	return s.UserLocation
 }
 
 // SetDescription sets the value of Description.
-func (s *MessagesTool) SetDescription(val OptString) {
+func (s *MessagesTool) SetDescription(val OptNilString) {
 	s.Description = val
 }
 
@@ -5216,12 +5965,12 @@ func (s *MessagesTool) SetName(val string) {
 }
 
 // SetInputSchema sets the value of InputSchema.
-func (s *MessagesTool) SetInputSchema(val OptMessagesToolInputSchema) {
+func (s *MessagesTool) SetInputSchema(val OptNilMessagesToolInputSchema) {
 	s.InputSchema = val
 }
 
 // SetStrict sets the value of Strict.
-func (s *MessagesTool) SetStrict(val OptBool) {
+func (s *MessagesTool) SetStrict(val OptNilBool) {
 	s.Strict = val
 }
 
@@ -5231,22 +5980,22 @@ func (s *MessagesTool) SetType(val OptString) {
 }
 
 // SetMaxUses sets the value of MaxUses.
-func (s *MessagesTool) SetMaxUses(val OptInt32) {
+func (s *MessagesTool) SetMaxUses(val OptNilMessagesMaxUses) {
 	s.MaxUses = val
 }
 
 // SetAllowedDomains sets the value of AllowedDomains.
-func (s *MessagesTool) SetAllowedDomains(val []string) {
+func (s *MessagesTool) SetAllowedDomains(val OptNilStringArray) {
 	s.AllowedDomains = val
 }
 
 // SetBlockedDomains sets the value of BlockedDomains.
-func (s *MessagesTool) SetBlockedDomains(val []string) {
+func (s *MessagesTool) SetBlockedDomains(val OptNilStringArray) {
 	s.BlockedDomains = val
 }
 
 // SetUserLocation sets the value of UserLocation.
-func (s *MessagesTool) SetUserLocation(val OptMessagesToolUserLocation) {
+func (s *MessagesTool) SetUserLocation(val OptNilMessagesToolUserLocation) {
 	s.UserLocation = val
 }
 
@@ -5268,7 +6017,7 @@ func (s *MessagesToolChoice) SetOneOf(val MessagesToolChoiceSum) {
 // Ref: #/components/schemas/MessagesToolChoiceAny
 type MessagesToolChoiceAny struct {
 	Type                   MessagesToolChoiceAnyType `json:"type"`
-	DisableParallelToolUse OptBool                   `json:"disable_parallel_tool_use"`
+	DisableParallelToolUse OptNilBool                `json:"disable_parallel_tool_use"`
 }
 
 // GetType returns the value of Type.
@@ -5277,7 +6026,7 @@ func (s *MessagesToolChoiceAny) GetType() MessagesToolChoiceAnyType {
 }
 
 // GetDisableParallelToolUse returns the value of DisableParallelToolUse.
-func (s *MessagesToolChoiceAny) GetDisableParallelToolUse() OptBool {
+func (s *MessagesToolChoiceAny) GetDisableParallelToolUse() OptNilBool {
 	return s.DisableParallelToolUse
 }
 
@@ -5287,7 +6036,7 @@ func (s *MessagesToolChoiceAny) SetType(val MessagesToolChoiceAnyType) {
 }
 
 // SetDisableParallelToolUse sets the value of DisableParallelToolUse.
-func (s *MessagesToolChoiceAny) SetDisableParallelToolUse(val OptBool) {
+func (s *MessagesToolChoiceAny) SetDisableParallelToolUse(val OptNilBool) {
 	s.DisableParallelToolUse = val
 }
 
@@ -5328,7 +6077,7 @@ func (s *MessagesToolChoiceAnyType) UnmarshalText(data []byte) error {
 // Ref: #/components/schemas/MessagesToolChoiceAuto
 type MessagesToolChoiceAuto struct {
 	Type                   MessagesToolChoiceAutoType `json:"type"`
-	DisableParallelToolUse OptBool                    `json:"disable_parallel_tool_use"`
+	DisableParallelToolUse OptNilBool                 `json:"disable_parallel_tool_use"`
 }
 
 // GetType returns the value of Type.
@@ -5337,7 +6086,7 @@ func (s *MessagesToolChoiceAuto) GetType() MessagesToolChoiceAutoType {
 }
 
 // GetDisableParallelToolUse returns the value of DisableParallelToolUse.
-func (s *MessagesToolChoiceAuto) GetDisableParallelToolUse() OptBool {
+func (s *MessagesToolChoiceAuto) GetDisableParallelToolUse() OptNilBool {
 	return s.DisableParallelToolUse
 }
 
@@ -5347,7 +6096,7 @@ func (s *MessagesToolChoiceAuto) SetType(val MessagesToolChoiceAutoType) {
 }
 
 // SetDisableParallelToolUse sets the value of DisableParallelToolUse.
-func (s *MessagesToolChoiceAuto) SetDisableParallelToolUse(val OptBool) {
+func (s *MessagesToolChoiceAuto) SetDisableParallelToolUse(val OptNilBool) {
 	s.DisableParallelToolUse = val
 }
 
@@ -5388,7 +6137,7 @@ func (s *MessagesToolChoiceAutoType) UnmarshalText(data []byte) error {
 // Ref: #/components/schemas/MessagesToolChoiceNone
 type MessagesToolChoiceNone struct {
 	Type                   MessagesToolChoiceNoneType `json:"type"`
-	DisableParallelToolUse OptBool                    `json:"disable_parallel_tool_use"`
+	DisableParallelToolUse OptNilBool                 `json:"disable_parallel_tool_use"`
 }
 
 // GetType returns the value of Type.
@@ -5397,7 +6146,7 @@ func (s *MessagesToolChoiceNone) GetType() MessagesToolChoiceNoneType {
 }
 
 // GetDisableParallelToolUse returns the value of DisableParallelToolUse.
-func (s *MessagesToolChoiceNone) GetDisableParallelToolUse() OptBool {
+func (s *MessagesToolChoiceNone) GetDisableParallelToolUse() OptNilBool {
 	return s.DisableParallelToolUse
 }
 
@@ -5407,7 +6156,7 @@ func (s *MessagesToolChoiceNone) SetType(val MessagesToolChoiceNoneType) {
 }
 
 // SetDisableParallelToolUse sets the value of DisableParallelToolUse.
-func (s *MessagesToolChoiceNone) SetDisableParallelToolUse(val OptBool) {
+func (s *MessagesToolChoiceNone) SetDisableParallelToolUse(val OptNilBool) {
 	s.DisableParallelToolUse = val
 }
 
@@ -5572,9 +6321,9 @@ func NewMessagesToolChoiceToolMessagesToolChoiceSum(v MessagesToolChoiceTool) Me
 // Ref: #/components/schemas/MessagesToolChoiceTool
 type MessagesToolChoiceTool struct {
 	Type                   MessagesToolChoiceToolType `json:"type"`
-	DisableParallelToolUse OptBool                    `json:"disable_parallel_tool_use"`
+	DisableParallelToolUse OptNilBool                 `json:"disable_parallel_tool_use"`
 	// The name of the tool the model must invoke.
-	Name string `json:"name"`
+	Name NilString `json:"name"`
 }
 
 // GetType returns the value of Type.
@@ -5583,12 +6332,12 @@ func (s *MessagesToolChoiceTool) GetType() MessagesToolChoiceToolType {
 }
 
 // GetDisableParallelToolUse returns the value of DisableParallelToolUse.
-func (s *MessagesToolChoiceTool) GetDisableParallelToolUse() OptBool {
+func (s *MessagesToolChoiceTool) GetDisableParallelToolUse() OptNilBool {
 	return s.DisableParallelToolUse
 }
 
 // GetName returns the value of Name.
-func (s *MessagesToolChoiceTool) GetName() string {
+func (s *MessagesToolChoiceTool) GetName() NilString {
 	return s.Name
 }
 
@@ -5598,12 +6347,12 @@ func (s *MessagesToolChoiceTool) SetType(val MessagesToolChoiceToolType) {
 }
 
 // SetDisableParallelToolUse sets the value of DisableParallelToolUse.
-func (s *MessagesToolChoiceTool) SetDisableParallelToolUse(val OptBool) {
+func (s *MessagesToolChoiceTool) SetDisableParallelToolUse(val OptNilBool) {
 	s.DisableParallelToolUse = val
 }
 
 // SetName sets the value of Name.
-func (s *MessagesToolChoiceTool) SetName(val string) {
+func (s *MessagesToolChoiceTool) SetName(val NilString) {
 	s.Name = val
 }
 
@@ -5641,7 +6390,6 @@ func (s *MessagesToolChoiceToolType) UnmarshalText(data []byte) error {
 	}
 }
 
-// The tool input, described as a JSON Schema object.
 type MessagesToolInputSchema map[string]jx.Raw
 
 func (s *MessagesToolInputSchema) init() MessagesToolInputSchema {
@@ -5832,6 +6580,7 @@ func NewMessagesContentPartToolReferenceMessagesToolResultContentPartSum(v Messa
 	return s
 }
 
+// Accepted for web-search compatibility; not currently forwarded to the search provider.
 // Ref: #/components/schemas/MessagesToolUserLocation
 type MessagesToolUserLocation struct {
 	Type     OptString `json:"type"`
@@ -5891,18 +6640,24 @@ func (s *MessagesToolUserLocation) SetTimezone(val OptString) {
 	s.Timezone = val
 }
 
+type MessagesTopLogprobs int32
+
+type MessagesTopP float64
+
 // Usage statistics for the Messages API.
 // Ref: #/components/schemas/MessagesUsage
 type MessagesUsage struct {
-	// Number of tokens in the prompt.
+	// Number of prompt tokens excluding tokens read from the prefill cache.
 	InputTokens OptInt32 `json:"input_tokens"`
 	// Number of tokens in the generated completion.
 	OutputTokens OptInt32 `json:"output_tokens"`
+	// Cache-creation tokens are not currently supported; this field is returned as zero.
+	CacheCreationInputTokens int32 `json:"cache_creation_input_tokens"`
 	// Number of prompt tokens read from the prefill cache.
 	CacheReadInputTokens OptInt32 `json:"cache_read_input_tokens"`
 	// Counts of requests dispatched by server-managed tools.
 	ServerToolUse OptMessagesServerToolUsage `json:"server_tool_use"`
-	// One token-usage record for each model iteration.
+	// One token-usage record per model iteration, included for multi-round requests.
 	Iterations []MessagesIterationUsage `json:"iterations"`
 }
 
@@ -5914,6 +6669,11 @@ func (s *MessagesUsage) GetInputTokens() OptInt32 {
 // GetOutputTokens returns the value of OutputTokens.
 func (s *MessagesUsage) GetOutputTokens() OptInt32 {
 	return s.OutputTokens
+}
+
+// GetCacheCreationInputTokens returns the value of CacheCreationInputTokens.
+func (s *MessagesUsage) GetCacheCreationInputTokens() int32 {
+	return s.CacheCreationInputTokens
 }
 
 // GetCacheReadInputTokens returns the value of CacheReadInputTokens.
@@ -5941,6 +6701,11 @@ func (s *MessagesUsage) SetOutputTokens(val OptInt32) {
 	s.OutputTokens = val
 }
 
+// SetCacheCreationInputTokens sets the value of CacheCreationInputTokens.
+func (s *MessagesUsage) SetCacheCreationInputTokens(val int32) {
+	s.CacheCreationInputTokens = val
+}
+
 // SetCacheReadInputTokens sets the value of CacheReadInputTokens.
 func (s *MessagesUsage) SetCacheReadInputTokens(val OptInt32) {
 	s.CacheReadInputTokens = val
@@ -5959,11 +6724,12 @@ func (s *MessagesUsage) SetIterations(val []MessagesIterationUsage) {
 // Ref: #/components/schemas/MessagesWebSearchResult
 type MessagesWebSearchResult struct {
 	// The type of the result. Always `web_search_result`.
-	Type             MessagesWebSearchResultType `json:"type"`
-	Title            string                      `json:"title"`
-	URL              string                      `json:"url"`
-	EncryptedContent string                      `json:"encrypted_content"`
-	PageAge          OptString                   `json:"page_age"`
+	Type  MessagesWebSearchResultType `json:"type"`
+	Title string                      `json:"title"`
+	URL   string                      `json:"url"`
+	// Opaque signed search content. Replay this value unchanged.
+	EncryptedContent string    `json:"encrypted_content"`
+	PageAge          OptString `json:"page_age"`
 }
 
 // GetType returns the value of Type.
@@ -6211,6 +6977,51 @@ func (s *ModelFallbackStatus) SetOriginalModel(val string) {
 	s.OriginalModel = val
 }
 
+// NewNilInt32 returns new NilInt32 with value set to v.
+func NewNilInt32(v int32) NilInt32 {
+	return NilInt32{
+		Value: v,
+	}
+}
+
+// NilInt32 is nullable int32.
+type NilInt32 struct {
+	Value int32
+	Null  bool
+}
+
+// SetTo sets value to v.
+func (o *NilInt32) SetTo(v int32) {
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o NilInt32) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *NilInt32) SetToNull() {
+	o.Null = true
+	var v int32
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o NilInt32) Get() (v int32, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o NilInt32) Or(d int32) int32 {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewNilMessagesResponseStopReason returns new NilMessagesResponseStopReason with value set to v.
 func NewNilMessagesResponseStopReason(v MessagesResponseStopReason) NilMessagesResponseStopReason {
 	return NilMessagesResponseStopReason{
@@ -6295,6 +7106,51 @@ func (o NilMessagesUsage) Get() (v MessagesUsage, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o NilMessagesUsage) Or(d MessagesUsage) MessagesUsage {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewNilMessagesWebSearchToolResultContent returns new NilMessagesWebSearchToolResultContent with value set to v.
+func NewNilMessagesWebSearchToolResultContent(v MessagesWebSearchToolResultContent) NilMessagesWebSearchToolResultContent {
+	return NilMessagesWebSearchToolResultContent{
+		Value: v,
+	}
+}
+
+// NilMessagesWebSearchToolResultContent is nullable MessagesWebSearchToolResultContent.
+type NilMessagesWebSearchToolResultContent struct {
+	Value MessagesWebSearchToolResultContent
+	Null  bool
+}
+
+// SetTo sets value to v.
+func (o *NilMessagesWebSearchToolResultContent) SetTo(v MessagesWebSearchToolResultContent) {
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o NilMessagesWebSearchToolResultContent) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *NilMessagesWebSearchToolResultContent) SetToNull() {
+	o.Null = true
+	var v MessagesWebSearchToolResultContent
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o NilMessagesWebSearchToolResultContent) Get() (v MessagesWebSearchToolResultContent, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o NilMessagesWebSearchToolResultContent) Or(d MessagesWebSearchToolResultContent) MessagesWebSearchToolResultContent {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -6392,38 +7248,38 @@ func (o OptBool) Or(d bool) bool {
 	return d
 }
 
-// NewOptFloat64 returns new OptFloat64 with value set to v.
-func NewOptFloat64(v float64) OptFloat64 {
-	return OptFloat64{
+// NewOptContentBlockStartContentBlockServerToolUseInput returns new OptContentBlockStartContentBlockServerToolUseInput with value set to v.
+func NewOptContentBlockStartContentBlockServerToolUseInput(v ContentBlockStartContentBlockServerToolUseInput) OptContentBlockStartContentBlockServerToolUseInput {
+	return OptContentBlockStartContentBlockServerToolUseInput{
 		Value: v,
 		Set:   true,
 	}
 }
 
-// OptFloat64 is optional float64.
-type OptFloat64 struct {
-	Value float64
+// OptContentBlockStartContentBlockServerToolUseInput is optional ContentBlockStartContentBlockServerToolUseInput.
+type OptContentBlockStartContentBlockServerToolUseInput struct {
+	Value ContentBlockStartContentBlockServerToolUseInput
 	Set   bool
 }
 
-// IsSet returns true if OptFloat64 was set.
-func (o OptFloat64) IsSet() bool { return o.Set }
+// IsSet returns true if OptContentBlockStartContentBlockServerToolUseInput was set.
+func (o OptContentBlockStartContentBlockServerToolUseInput) IsSet() bool { return o.Set }
 
 // Reset unsets value.
-func (o *OptFloat64) Reset() {
-	var v float64
+func (o *OptContentBlockStartContentBlockServerToolUseInput) Reset() {
+	var v ContentBlockStartContentBlockServerToolUseInput
 	o.Value = v
 	o.Set = false
 }
 
 // SetTo sets value to v.
-func (o *OptFloat64) SetTo(v float64) {
+func (o *OptContentBlockStartContentBlockServerToolUseInput) SetTo(v ContentBlockStartContentBlockServerToolUseInput) {
 	o.Set = true
 	o.Value = v
 }
 
 // Get returns value and boolean that denotes whether value was set.
-func (o OptFloat64) Get() (v float64, ok bool) {
+func (o OptContentBlockStartContentBlockServerToolUseInput) Get() (v ContentBlockStartContentBlockServerToolUseInput, ok bool) {
 	if !o.Set {
 		return v, false
 	}
@@ -6431,7 +7287,53 @@ func (o OptFloat64) Get() (v float64, ok bool) {
 }
 
 // Or returns value if set, or given parameter if does not.
-func (o OptFloat64) Or(d float64) float64 {
+func (o OptContentBlockStartContentBlockServerToolUseInput) Or(d ContentBlockStartContentBlockServerToolUseInput) ContentBlockStartContentBlockServerToolUseInput {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptContentBlockStartContentBlockToolUseInput returns new OptContentBlockStartContentBlockToolUseInput with value set to v.
+func NewOptContentBlockStartContentBlockToolUseInput(v ContentBlockStartContentBlockToolUseInput) OptContentBlockStartContentBlockToolUseInput {
+	return OptContentBlockStartContentBlockToolUseInput{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptContentBlockStartContentBlockToolUseInput is optional ContentBlockStartContentBlockToolUseInput.
+type OptContentBlockStartContentBlockToolUseInput struct {
+	Value ContentBlockStartContentBlockToolUseInput
+	Set   bool
+}
+
+// IsSet returns true if OptContentBlockStartContentBlockToolUseInput was set.
+func (o OptContentBlockStartContentBlockToolUseInput) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptContentBlockStartContentBlockToolUseInput) Reset() {
+	var v ContentBlockStartContentBlockToolUseInput
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptContentBlockStartContentBlockToolUseInput) SetTo(v ContentBlockStartContentBlockToolUseInput) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptContentBlockStartContentBlockToolUseInput) Get() (v ContentBlockStartContentBlockToolUseInput, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptContentBlockStartContentBlockToolUseInput) Or(d ContentBlockStartContentBlockToolUseInput) ContentBlockStartContentBlockToolUseInput {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -6478,420 +7380,6 @@ func (o OptInt32) Get() (v int32, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptInt32) Or(d int32) int32 {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessagesContextManagement returns new OptMessagesContextManagement with value set to v.
-func NewOptMessagesContextManagement(v MessagesContextManagement) OptMessagesContextManagement {
-	return OptMessagesContextManagement{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesContextManagement is optional MessagesContextManagement.
-type OptMessagesContextManagement struct {
-	Value MessagesContextManagement
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesContextManagement was set.
-func (o OptMessagesContextManagement) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesContextManagement) Reset() {
-	var v MessagesContextManagement
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesContextManagement) SetTo(v MessagesContextManagement) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesContextManagement) Get() (v MessagesContextManagement, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesContextManagement) Or(d MessagesContextManagement) MessagesContextManagement {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessagesContextManagementClearToolUsesTrigger returns new OptMessagesContextManagementClearToolUsesTrigger with value set to v.
-func NewOptMessagesContextManagementClearToolUsesTrigger(v MessagesContextManagementClearToolUsesTrigger) OptMessagesContextManagementClearToolUsesTrigger {
-	return OptMessagesContextManagementClearToolUsesTrigger{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesContextManagementClearToolUsesTrigger is optional MessagesContextManagementClearToolUsesTrigger.
-type OptMessagesContextManagementClearToolUsesTrigger struct {
-	Value MessagesContextManagementClearToolUsesTrigger
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesContextManagementClearToolUsesTrigger was set.
-func (o OptMessagesContextManagementClearToolUsesTrigger) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesContextManagementClearToolUsesTrigger) Reset() {
-	var v MessagesContextManagementClearToolUsesTrigger
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesContextManagementClearToolUsesTrigger) SetTo(v MessagesContextManagementClearToolUsesTrigger) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesContextManagementClearToolUsesTrigger) Get() (v MessagesContextManagementClearToolUsesTrigger, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesContextManagementClearToolUsesTrigger) Or(d MessagesContextManagementClearToolUsesTrigger) MessagesContextManagementClearToolUsesTrigger {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessagesContextManagementKeep returns new OptMessagesContextManagementKeep with value set to v.
-func NewOptMessagesContextManagementKeep(v MessagesContextManagementKeep) OptMessagesContextManagementKeep {
-	return OptMessagesContextManagementKeep{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesContextManagementKeep is optional MessagesContextManagementKeep.
-type OptMessagesContextManagementKeep struct {
-	Value MessagesContextManagementKeep
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesContextManagementKeep was set.
-func (o OptMessagesContextManagementKeep) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesContextManagementKeep) Reset() {
-	var v MessagesContextManagementKeep
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesContextManagementKeep) SetTo(v MessagesContextManagementKeep) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesContextManagementKeep) Get() (v MessagesContextManagementKeep, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesContextManagementKeep) Or(d MessagesContextManagementKeep) MessagesContextManagementKeep {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessagesMetadata returns new OptMessagesMetadata with value set to v.
-func NewOptMessagesMetadata(v MessagesMetadata) OptMessagesMetadata {
-	return OptMessagesMetadata{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesMetadata is optional MessagesMetadata.
-type OptMessagesMetadata struct {
-	Value MessagesMetadata
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesMetadata was set.
-func (o OptMessagesMetadata) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesMetadata) Reset() {
-	var v MessagesMetadata
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesMetadata) SetTo(v MessagesMetadata) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesMetadata) Get() (v MessagesMetadata, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesMetadata) Or(d MessagesMetadata) MessagesMetadata {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessagesOutputConfig returns new OptMessagesOutputConfig with value set to v.
-func NewOptMessagesOutputConfig(v MessagesOutputConfig) OptMessagesOutputConfig {
-	return OptMessagesOutputConfig{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesOutputConfig is optional MessagesOutputConfig.
-type OptMessagesOutputConfig struct {
-	Value MessagesOutputConfig
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesOutputConfig was set.
-func (o OptMessagesOutputConfig) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesOutputConfig) Reset() {
-	var v MessagesOutputConfig
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesOutputConfig) SetTo(v MessagesOutputConfig) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesOutputConfig) Get() (v MessagesOutputConfig, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesOutputConfig) Or(d MessagesOutputConfig) MessagesOutputConfig {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessagesOutputFormat returns new OptMessagesOutputFormat with value set to v.
-func NewOptMessagesOutputFormat(v MessagesOutputFormat) OptMessagesOutputFormat {
-	return OptMessagesOutputFormat{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesOutputFormat is optional MessagesOutputFormat.
-type OptMessagesOutputFormat struct {
-	Value MessagesOutputFormat
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesOutputFormat was set.
-func (o OptMessagesOutputFormat) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesOutputFormat) Reset() {
-	var v MessagesOutputFormat
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesOutputFormat) SetTo(v MessagesOutputFormat) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesOutputFormat) Get() (v MessagesOutputFormat, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesOutputFormat) Or(d MessagesOutputFormat) MessagesOutputFormat {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessagesOutputFormatSchema returns new OptMessagesOutputFormatSchema with value set to v.
-func NewOptMessagesOutputFormatSchema(v MessagesOutputFormatSchema) OptMessagesOutputFormatSchema {
-	return OptMessagesOutputFormatSchema{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesOutputFormatSchema is optional MessagesOutputFormatSchema.
-type OptMessagesOutputFormatSchema struct {
-	Value MessagesOutputFormatSchema
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesOutputFormatSchema was set.
-func (o OptMessagesOutputFormatSchema) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesOutputFormatSchema) Reset() {
-	var v MessagesOutputFormatSchema
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesOutputFormatSchema) SetTo(v MessagesOutputFormatSchema) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesOutputFormatSchema) Get() (v MessagesOutputFormatSchema, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesOutputFormatSchema) Or(d MessagesOutputFormatSchema) MessagesOutputFormatSchema {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessagesRequestLogitBias returns new OptMessagesRequestLogitBias with value set to v.
-func NewOptMessagesRequestLogitBias(v MessagesRequestLogitBias) OptMessagesRequestLogitBias {
-	return OptMessagesRequestLogitBias{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesRequestLogitBias is optional MessagesRequestLogitBias.
-type OptMessagesRequestLogitBias struct {
-	Value MessagesRequestLogitBias
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesRequestLogitBias was set.
-func (o OptMessagesRequestLogitBias) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesRequestLogitBias) Reset() {
-	var v MessagesRequestLogitBias
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesRequestLogitBias) SetTo(v MessagesRequestLogitBias) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesRequestLogitBias) Get() (v MessagesRequestLogitBias, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesRequestLogitBias) Or(d MessagesRequestLogitBias) MessagesRequestLogitBias {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessagesRequestServiceTier returns new OptMessagesRequestServiceTier with value set to v.
-func NewOptMessagesRequestServiceTier(v MessagesRequestServiceTier) OptMessagesRequestServiceTier {
-	return OptMessagesRequestServiceTier{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesRequestServiceTier is optional MessagesRequestServiceTier.
-type OptMessagesRequestServiceTier struct {
-	Value MessagesRequestServiceTier
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesRequestServiceTier was set.
-func (o OptMessagesRequestServiceTier) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesRequestServiceTier) Reset() {
-	var v MessagesRequestServiceTier
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesRequestServiceTier) SetTo(v MessagesRequestServiceTier) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesRequestServiceTier) Get() (v MessagesRequestServiceTier, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesRequestServiceTier) Or(d MessagesRequestServiceTier) MessagesRequestServiceTier {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -7128,282 +7616,6 @@ func (o OptMessagesStopSequences) Or(d MessagesStopSequences) MessagesStopSequen
 	return d
 }
 
-// NewOptMessagesStreamOptions returns new OptMessagesStreamOptions with value set to v.
-func NewOptMessagesStreamOptions(v MessagesStreamOptions) OptMessagesStreamOptions {
-	return OptMessagesStreamOptions{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesStreamOptions is optional MessagesStreamOptions.
-type OptMessagesStreamOptions struct {
-	Value MessagesStreamOptions
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesStreamOptions was set.
-func (o OptMessagesStreamOptions) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesStreamOptions) Reset() {
-	var v MessagesStreamOptions
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesStreamOptions) SetTo(v MessagesStreamOptions) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesStreamOptions) Get() (v MessagesStreamOptions, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesStreamOptions) Or(d MessagesStreamOptions) MessagesStreamOptions {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessagesSystem returns new OptMessagesSystem with value set to v.
-func NewOptMessagesSystem(v MessagesSystem) OptMessagesSystem {
-	return OptMessagesSystem{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesSystem is optional MessagesSystem.
-type OptMessagesSystem struct {
-	Value MessagesSystem
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesSystem was set.
-func (o OptMessagesSystem) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesSystem) Reset() {
-	var v MessagesSystem
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesSystem) SetTo(v MessagesSystem) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesSystem) Get() (v MessagesSystem, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesSystem) Or(d MessagesSystem) MessagesSystem {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessagesThinking returns new OptMessagesThinking with value set to v.
-func NewOptMessagesThinking(v MessagesThinking) OptMessagesThinking {
-	return OptMessagesThinking{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesThinking is optional MessagesThinking.
-type OptMessagesThinking struct {
-	Value MessagesThinking
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesThinking was set.
-func (o OptMessagesThinking) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesThinking) Reset() {
-	var v MessagesThinking
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesThinking) SetTo(v MessagesThinking) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesThinking) Get() (v MessagesThinking, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesThinking) Or(d MessagesThinking) MessagesThinking {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessagesToolChoice returns new OptMessagesToolChoice with value set to v.
-func NewOptMessagesToolChoice(v MessagesToolChoice) OptMessagesToolChoice {
-	return OptMessagesToolChoice{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesToolChoice is optional MessagesToolChoice.
-type OptMessagesToolChoice struct {
-	Value MessagesToolChoice
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesToolChoice was set.
-func (o OptMessagesToolChoice) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesToolChoice) Reset() {
-	var v MessagesToolChoice
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesToolChoice) SetTo(v MessagesToolChoice) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesToolChoice) Get() (v MessagesToolChoice, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesToolChoice) Or(d MessagesToolChoice) MessagesToolChoice {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessagesToolInputSchema returns new OptMessagesToolInputSchema with value set to v.
-func NewOptMessagesToolInputSchema(v MessagesToolInputSchema) OptMessagesToolInputSchema {
-	return OptMessagesToolInputSchema{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesToolInputSchema is optional MessagesToolInputSchema.
-type OptMessagesToolInputSchema struct {
-	Value MessagesToolInputSchema
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesToolInputSchema was set.
-func (o OptMessagesToolInputSchema) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesToolInputSchema) Reset() {
-	var v MessagesToolInputSchema
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesToolInputSchema) SetTo(v MessagesToolInputSchema) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesToolInputSchema) Get() (v MessagesToolInputSchema, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesToolInputSchema) Or(d MessagesToolInputSchema) MessagesToolInputSchema {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptMessagesToolUserLocation returns new OptMessagesToolUserLocation with value set to v.
-func NewOptMessagesToolUserLocation(v MessagesToolUserLocation) OptMessagesToolUserLocation {
-	return OptMessagesToolUserLocation{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMessagesToolUserLocation is optional MessagesToolUserLocation.
-type OptMessagesToolUserLocation struct {
-	Value MessagesToolUserLocation
-	Set   bool
-}
-
-// IsSet returns true if OptMessagesToolUserLocation was set.
-func (o OptMessagesToolUserLocation) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptMessagesToolUserLocation) Reset() {
-	var v MessagesToolUserLocation
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptMessagesToolUserLocation) SetTo(v MessagesToolUserLocation) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMessagesToolUserLocation) Get() (v MessagesToolUserLocation, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMessagesToolUserLocation) Or(d MessagesToolUserLocation) MessagesToolUserLocation {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
 // NewOptMessagesUsage returns new OptMessagesUsage with value set to v.
 func NewOptMessagesUsage(v MessagesUsage) OptMessagesUsage {
 	return OptMessagesUsage{
@@ -7444,6 +7656,52 @@ func (o OptMessagesUsage) Get() (v MessagesUsage, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptMessagesUsage) Or(d MessagesUsage) MessagesUsage {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptMessagesWebSearchToolResultContent returns new OptMessagesWebSearchToolResultContent with value set to v.
+func NewOptMessagesWebSearchToolResultContent(v MessagesWebSearchToolResultContent) OptMessagesWebSearchToolResultContent {
+	return OptMessagesWebSearchToolResultContent{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptMessagesWebSearchToolResultContent is optional MessagesWebSearchToolResultContent.
+type OptMessagesWebSearchToolResultContent struct {
+	Value MessagesWebSearchToolResultContent
+	Set   bool
+}
+
+// IsSet returns true if OptMessagesWebSearchToolResultContent was set.
+func (o OptMessagesWebSearchToolResultContent) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptMessagesWebSearchToolResultContent) Reset() {
+	var v MessagesWebSearchToolResultContent
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptMessagesWebSearchToolResultContent) SetTo(v MessagesWebSearchToolResultContent) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptMessagesWebSearchToolResultContent) Get() (v MessagesWebSearchToolResultContent, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptMessagesWebSearchToolResultContent) Or(d MessagesWebSearchToolResultContent) MessagesWebSearchToolResultContent {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -7496,6 +7754,1959 @@ func (o OptModelFallbackStatus) Or(d ModelFallbackStatus) ModelFallbackStatus {
 	return d
 }
 
+// NewOptNilBool returns new OptNilBool with value set to v.
+func NewOptNilBool(v bool) OptNilBool {
+	return OptNilBool{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilBool is optional nullable bool.
+type OptNilBool struct {
+	Value bool
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilBool was set.
+func (o OptNilBool) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilBool) Reset() {
+	var v bool
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilBool) SetTo(v bool) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilBool) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilBool) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v bool
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilBool) Get() (v bool, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilBool) Or(d bool) bool {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilInt32 returns new OptNilInt32 with value set to v.
+func NewOptNilInt32(v int32) OptNilInt32 {
+	return OptNilInt32{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilInt32 is optional nullable int32.
+type OptNilInt32 struct {
+	Value int32
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilInt32 was set.
+func (o OptNilInt32) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilInt32) Reset() {
+	var v int32
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilInt32) SetTo(v int32) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilInt32) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilInt32) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v int32
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilInt32) Get() (v int32, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilInt32) Or(d int32) int32 {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesContextManagement returns new OptNilMessagesContextManagement with value set to v.
+func NewOptNilMessagesContextManagement(v MessagesContextManagement) OptNilMessagesContextManagement {
+	return OptNilMessagesContextManagement{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesContextManagement is optional nullable MessagesContextManagement.
+type OptNilMessagesContextManagement struct {
+	Value MessagesContextManagement
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesContextManagement was set.
+func (o OptNilMessagesContextManagement) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesContextManagement) Reset() {
+	var v MessagesContextManagement
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesContextManagement) SetTo(v MessagesContextManagement) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesContextManagement) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesContextManagement) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesContextManagement
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesContextManagement) Get() (v MessagesContextManagement, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesContextManagement) Or(d MessagesContextManagement) MessagesContextManagement {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesContextManagementClearToolUsesTrigger returns new OptNilMessagesContextManagementClearToolUsesTrigger with value set to v.
+func NewOptNilMessagesContextManagementClearToolUsesTrigger(v MessagesContextManagementClearToolUsesTrigger) OptNilMessagesContextManagementClearToolUsesTrigger {
+	return OptNilMessagesContextManagementClearToolUsesTrigger{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesContextManagementClearToolUsesTrigger is optional nullable MessagesContextManagementClearToolUsesTrigger.
+type OptNilMessagesContextManagementClearToolUsesTrigger struct {
+	Value MessagesContextManagementClearToolUsesTrigger
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesContextManagementClearToolUsesTrigger was set.
+func (o OptNilMessagesContextManagementClearToolUsesTrigger) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesContextManagementClearToolUsesTrigger) Reset() {
+	var v MessagesContextManagementClearToolUsesTrigger
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesContextManagementClearToolUsesTrigger) SetTo(v MessagesContextManagementClearToolUsesTrigger) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesContextManagementClearToolUsesTrigger) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesContextManagementClearToolUsesTrigger) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesContextManagementClearToolUsesTrigger
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesContextManagementClearToolUsesTrigger) Get() (v MessagesContextManagementClearToolUsesTrigger, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesContextManagementClearToolUsesTrigger) Or(d MessagesContextManagementClearToolUsesTrigger) MessagesContextManagementClearToolUsesTrigger {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesContextManagementEditArray returns new OptNilMessagesContextManagementEditArray with value set to v.
+func NewOptNilMessagesContextManagementEditArray(v []MessagesContextManagementEdit) OptNilMessagesContextManagementEditArray {
+	return OptNilMessagesContextManagementEditArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesContextManagementEditArray is optional nullable []MessagesContextManagementEdit.
+type OptNilMessagesContextManagementEditArray struct {
+	Value []MessagesContextManagementEdit
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesContextManagementEditArray was set.
+func (o OptNilMessagesContextManagementEditArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesContextManagementEditArray) Reset() {
+	var v []MessagesContextManagementEdit
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesContextManagementEditArray) SetTo(v []MessagesContextManagementEdit) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesContextManagementEditArray) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesContextManagementEditArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []MessagesContextManagementEdit
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesContextManagementEditArray) Get() (v []MessagesContextManagementEdit, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesContextManagementEditArray) Or(d []MessagesContextManagementEdit) []MessagesContextManagementEdit {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesContextManagementKeep returns new OptNilMessagesContextManagementKeep with value set to v.
+func NewOptNilMessagesContextManagementKeep(v MessagesContextManagementKeep) OptNilMessagesContextManagementKeep {
+	return OptNilMessagesContextManagementKeep{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesContextManagementKeep is optional nullable MessagesContextManagementKeep.
+type OptNilMessagesContextManagementKeep struct {
+	Value MessagesContextManagementKeep
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesContextManagementKeep was set.
+func (o OptNilMessagesContextManagementKeep) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesContextManagementKeep) Reset() {
+	var v MessagesContextManagementKeep
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesContextManagementKeep) SetTo(v MessagesContextManagementKeep) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesContextManagementKeep) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesContextManagementKeep) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesContextManagementKeep
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesContextManagementKeep) Get() (v MessagesContextManagementKeep, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesContextManagementKeep) Or(d MessagesContextManagementKeep) MessagesContextManagementKeep {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesFrequencyPenalty returns new OptNilMessagesFrequencyPenalty with value set to v.
+func NewOptNilMessagesFrequencyPenalty(v MessagesFrequencyPenalty) OptNilMessagesFrequencyPenalty {
+	return OptNilMessagesFrequencyPenalty{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesFrequencyPenalty is optional nullable MessagesFrequencyPenalty.
+type OptNilMessagesFrequencyPenalty struct {
+	Value MessagesFrequencyPenalty
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesFrequencyPenalty was set.
+func (o OptNilMessagesFrequencyPenalty) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesFrequencyPenalty) Reset() {
+	var v MessagesFrequencyPenalty
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesFrequencyPenalty) SetTo(v MessagesFrequencyPenalty) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesFrequencyPenalty) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesFrequencyPenalty) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesFrequencyPenalty
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesFrequencyPenalty) Get() (v MessagesFrequencyPenalty, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesFrequencyPenalty) Or(d MessagesFrequencyPenalty) MessagesFrequencyPenalty {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesMaxTokens returns new OptNilMessagesMaxTokens with value set to v.
+func NewOptNilMessagesMaxTokens(v MessagesMaxTokens) OptNilMessagesMaxTokens {
+	return OptNilMessagesMaxTokens{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesMaxTokens is optional nullable MessagesMaxTokens.
+type OptNilMessagesMaxTokens struct {
+	Value MessagesMaxTokens
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesMaxTokens was set.
+func (o OptNilMessagesMaxTokens) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesMaxTokens) Reset() {
+	var v MessagesMaxTokens
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesMaxTokens) SetTo(v MessagesMaxTokens) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesMaxTokens) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesMaxTokens) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesMaxTokens
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesMaxTokens) Get() (v MessagesMaxTokens, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesMaxTokens) Or(d MessagesMaxTokens) MessagesMaxTokens {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesMaxUses returns new OptNilMessagesMaxUses with value set to v.
+func NewOptNilMessagesMaxUses(v MessagesMaxUses) OptNilMessagesMaxUses {
+	return OptNilMessagesMaxUses{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesMaxUses is optional nullable MessagesMaxUses.
+type OptNilMessagesMaxUses struct {
+	Value MessagesMaxUses
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesMaxUses was set.
+func (o OptNilMessagesMaxUses) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesMaxUses) Reset() {
+	var v MessagesMaxUses
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesMaxUses) SetTo(v MessagesMaxUses) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesMaxUses) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesMaxUses) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesMaxUses
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesMaxUses) Get() (v MessagesMaxUses, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesMaxUses) Or(d MessagesMaxUses) MessagesMaxUses {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesMessageContent returns new OptNilMessagesMessageContent with value set to v.
+func NewOptNilMessagesMessageContent(v MessagesMessageContent) OptNilMessagesMessageContent {
+	return OptNilMessagesMessageContent{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesMessageContent is optional nullable MessagesMessageContent.
+type OptNilMessagesMessageContent struct {
+	Value MessagesMessageContent
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesMessageContent was set.
+func (o OptNilMessagesMessageContent) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesMessageContent) Reset() {
+	var v MessagesMessageContent
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesMessageContent) SetTo(v MessagesMessageContent) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesMessageContent) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesMessageContent) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesMessageContent
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesMessageContent) Get() (v MessagesMessageContent, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesMessageContent) Or(d MessagesMessageContent) MessagesMessageContent {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesMetadata returns new OptNilMessagesMetadata with value set to v.
+func NewOptNilMessagesMetadata(v MessagesMetadata) OptNilMessagesMetadata {
+	return OptNilMessagesMetadata{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesMetadata is optional nullable MessagesMetadata.
+type OptNilMessagesMetadata struct {
+	Value MessagesMetadata
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesMetadata was set.
+func (o OptNilMessagesMetadata) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesMetadata) Reset() {
+	var v MessagesMetadata
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesMetadata) SetTo(v MessagesMetadata) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesMetadata) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesMetadata) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesMetadata
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesMetadata) Get() (v MessagesMetadata, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesMetadata) Or(d MessagesMetadata) MessagesMetadata {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesOutputConfig returns new OptNilMessagesOutputConfig with value set to v.
+func NewOptNilMessagesOutputConfig(v MessagesOutputConfig) OptNilMessagesOutputConfig {
+	return OptNilMessagesOutputConfig{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesOutputConfig is optional nullable MessagesOutputConfig.
+type OptNilMessagesOutputConfig struct {
+	Value MessagesOutputConfig
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesOutputConfig was set.
+func (o OptNilMessagesOutputConfig) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesOutputConfig) Reset() {
+	var v MessagesOutputConfig
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesOutputConfig) SetTo(v MessagesOutputConfig) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesOutputConfig) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesOutputConfig) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesOutputConfig
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesOutputConfig) Get() (v MessagesOutputConfig, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesOutputConfig) Or(d MessagesOutputConfig) MessagesOutputConfig {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesOutputFormat returns new OptNilMessagesOutputFormat with value set to v.
+func NewOptNilMessagesOutputFormat(v MessagesOutputFormat) OptNilMessagesOutputFormat {
+	return OptNilMessagesOutputFormat{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesOutputFormat is optional nullable MessagesOutputFormat.
+type OptNilMessagesOutputFormat struct {
+	Value MessagesOutputFormat
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesOutputFormat was set.
+func (o OptNilMessagesOutputFormat) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesOutputFormat) Reset() {
+	var v MessagesOutputFormat
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesOutputFormat) SetTo(v MessagesOutputFormat) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesOutputFormat) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesOutputFormat) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesOutputFormat
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesOutputFormat) Get() (v MessagesOutputFormat, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesOutputFormat) Or(d MessagesOutputFormat) MessagesOutputFormat {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesPresencePenalty returns new OptNilMessagesPresencePenalty with value set to v.
+func NewOptNilMessagesPresencePenalty(v MessagesPresencePenalty) OptNilMessagesPresencePenalty {
+	return OptNilMessagesPresencePenalty{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesPresencePenalty is optional nullable MessagesPresencePenalty.
+type OptNilMessagesPresencePenalty struct {
+	Value MessagesPresencePenalty
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesPresencePenalty was set.
+func (o OptNilMessagesPresencePenalty) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesPresencePenalty) Reset() {
+	var v MessagesPresencePenalty
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesPresencePenalty) SetTo(v MessagesPresencePenalty) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesPresencePenalty) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesPresencePenalty) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesPresencePenalty
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesPresencePenalty) Get() (v MessagesPresencePenalty, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesPresencePenalty) Or(d MessagesPresencePenalty) MessagesPresencePenalty {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesRepetitionPenalty returns new OptNilMessagesRepetitionPenalty with value set to v.
+func NewOptNilMessagesRepetitionPenalty(v MessagesRepetitionPenalty) OptNilMessagesRepetitionPenalty {
+	return OptNilMessagesRepetitionPenalty{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesRepetitionPenalty is optional nullable MessagesRepetitionPenalty.
+type OptNilMessagesRepetitionPenalty struct {
+	Value MessagesRepetitionPenalty
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesRepetitionPenalty was set.
+func (o OptNilMessagesRepetitionPenalty) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesRepetitionPenalty) Reset() {
+	var v MessagesRepetitionPenalty
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesRepetitionPenalty) SetTo(v MessagesRepetitionPenalty) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesRepetitionPenalty) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesRepetitionPenalty) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesRepetitionPenalty
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesRepetitionPenalty) Get() (v MessagesRepetitionPenalty, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesRepetitionPenalty) Or(d MessagesRepetitionPenalty) MessagesRepetitionPenalty {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesRequestLogitBias returns new OptNilMessagesRequestLogitBias with value set to v.
+func NewOptNilMessagesRequestLogitBias(v MessagesRequestLogitBias) OptNilMessagesRequestLogitBias {
+	return OptNilMessagesRequestLogitBias{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesRequestLogitBias is optional nullable MessagesRequestLogitBias.
+type OptNilMessagesRequestLogitBias struct {
+	Value MessagesRequestLogitBias
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesRequestLogitBias was set.
+func (o OptNilMessagesRequestLogitBias) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesRequestLogitBias) Reset() {
+	var v MessagesRequestLogitBias
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesRequestLogitBias) SetTo(v MessagesRequestLogitBias) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesRequestLogitBias) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesRequestLogitBias) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesRequestLogitBias
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesRequestLogitBias) Get() (v MessagesRequestLogitBias, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesRequestLogitBias) Or(d MessagesRequestLogitBias) MessagesRequestLogitBias {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesRequestServiceTier returns new OptNilMessagesRequestServiceTier with value set to v.
+func NewOptNilMessagesRequestServiceTier(v MessagesRequestServiceTier) OptNilMessagesRequestServiceTier {
+	return OptNilMessagesRequestServiceTier{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesRequestServiceTier is optional nullable MessagesRequestServiceTier.
+type OptNilMessagesRequestServiceTier struct {
+	Value MessagesRequestServiceTier
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesRequestServiceTier was set.
+func (o OptNilMessagesRequestServiceTier) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesRequestServiceTier) Reset() {
+	var v MessagesRequestServiceTier
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesRequestServiceTier) SetTo(v MessagesRequestServiceTier) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesRequestServiceTier) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesRequestServiceTier) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesRequestServiceTier
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesRequestServiceTier) Get() (v MessagesRequestServiceTier, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesRequestServiceTier) Or(d MessagesRequestServiceTier) MessagesRequestServiceTier {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesServerToolCaller returns new OptNilMessagesServerToolCaller with value set to v.
+func NewOptNilMessagesServerToolCaller(v MessagesServerToolCaller) OptNilMessagesServerToolCaller {
+	return OptNilMessagesServerToolCaller{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesServerToolCaller is optional nullable MessagesServerToolCaller.
+type OptNilMessagesServerToolCaller struct {
+	Value MessagesServerToolCaller
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesServerToolCaller was set.
+func (o OptNilMessagesServerToolCaller) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesServerToolCaller) Reset() {
+	var v MessagesServerToolCaller
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesServerToolCaller) SetTo(v MessagesServerToolCaller) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesServerToolCaller) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesServerToolCaller) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesServerToolCaller
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesServerToolCaller) Get() (v MessagesServerToolCaller, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesServerToolCaller) Or(d MessagesServerToolCaller) MessagesServerToolCaller {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesStreamOptions returns new OptNilMessagesStreamOptions with value set to v.
+func NewOptNilMessagesStreamOptions(v MessagesStreamOptions) OptNilMessagesStreamOptions {
+	return OptNilMessagesStreamOptions{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesStreamOptions is optional nullable MessagesStreamOptions.
+type OptNilMessagesStreamOptions struct {
+	Value MessagesStreamOptions
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesStreamOptions was set.
+func (o OptNilMessagesStreamOptions) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesStreamOptions) Reset() {
+	var v MessagesStreamOptions
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesStreamOptions) SetTo(v MessagesStreamOptions) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesStreamOptions) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesStreamOptions) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesStreamOptions
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesStreamOptions) Get() (v MessagesStreamOptions, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesStreamOptions) Or(d MessagesStreamOptions) MessagesStreamOptions {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesSystem returns new OptNilMessagesSystem with value set to v.
+func NewOptNilMessagesSystem(v MessagesSystem) OptNilMessagesSystem {
+	return OptNilMessagesSystem{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesSystem is optional nullable MessagesSystem.
+type OptNilMessagesSystem struct {
+	Value MessagesSystem
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesSystem was set.
+func (o OptNilMessagesSystem) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesSystem) Reset() {
+	var v MessagesSystem
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesSystem) SetTo(v MessagesSystem) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesSystem) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesSystem) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesSystem
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesSystem) Get() (v MessagesSystem, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesSystem) Or(d MessagesSystem) MessagesSystem {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesTemperature returns new OptNilMessagesTemperature with value set to v.
+func NewOptNilMessagesTemperature(v MessagesTemperature) OptNilMessagesTemperature {
+	return OptNilMessagesTemperature{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesTemperature is optional nullable MessagesTemperature.
+type OptNilMessagesTemperature struct {
+	Value MessagesTemperature
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesTemperature was set.
+func (o OptNilMessagesTemperature) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesTemperature) Reset() {
+	var v MessagesTemperature
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesTemperature) SetTo(v MessagesTemperature) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesTemperature) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesTemperature) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesTemperature
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesTemperature) Get() (v MessagesTemperature, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesTemperature) Or(d MessagesTemperature) MessagesTemperature {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesThinking returns new OptNilMessagesThinking with value set to v.
+func NewOptNilMessagesThinking(v MessagesThinking) OptNilMessagesThinking {
+	return OptNilMessagesThinking{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesThinking is optional nullable MessagesThinking.
+type OptNilMessagesThinking struct {
+	Value MessagesThinking
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesThinking was set.
+func (o OptNilMessagesThinking) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesThinking) Reset() {
+	var v MessagesThinking
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesThinking) SetTo(v MessagesThinking) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesThinking) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesThinking) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesThinking
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesThinking) Get() (v MessagesThinking, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesThinking) Or(d MessagesThinking) MessagesThinking {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesToolArray returns new OptNilMessagesToolArray with value set to v.
+func NewOptNilMessagesToolArray(v []MessagesTool) OptNilMessagesToolArray {
+	return OptNilMessagesToolArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesToolArray is optional nullable []MessagesTool.
+type OptNilMessagesToolArray struct {
+	Value []MessagesTool
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesToolArray was set.
+func (o OptNilMessagesToolArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesToolArray) Reset() {
+	var v []MessagesTool
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesToolArray) SetTo(v []MessagesTool) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesToolArray) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesToolArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []MessagesTool
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesToolArray) Get() (v []MessagesTool, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesToolArray) Or(d []MessagesTool) []MessagesTool {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesToolChoice returns new OptNilMessagesToolChoice with value set to v.
+func NewOptNilMessagesToolChoice(v MessagesToolChoice) OptNilMessagesToolChoice {
+	return OptNilMessagesToolChoice{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesToolChoice is optional nullable MessagesToolChoice.
+type OptNilMessagesToolChoice struct {
+	Value MessagesToolChoice
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesToolChoice was set.
+func (o OptNilMessagesToolChoice) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesToolChoice) Reset() {
+	var v MessagesToolChoice
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesToolChoice) SetTo(v MessagesToolChoice) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesToolChoice) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesToolChoice) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesToolChoice
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesToolChoice) Get() (v MessagesToolChoice, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesToolChoice) Or(d MessagesToolChoice) MessagesToolChoice {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesToolInputSchema returns new OptNilMessagesToolInputSchema with value set to v.
+func NewOptNilMessagesToolInputSchema(v MessagesToolInputSchema) OptNilMessagesToolInputSchema {
+	return OptNilMessagesToolInputSchema{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesToolInputSchema is optional nullable MessagesToolInputSchema.
+type OptNilMessagesToolInputSchema struct {
+	Value MessagesToolInputSchema
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesToolInputSchema was set.
+func (o OptNilMessagesToolInputSchema) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesToolInputSchema) Reset() {
+	var v MessagesToolInputSchema
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesToolInputSchema) SetTo(v MessagesToolInputSchema) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesToolInputSchema) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesToolInputSchema) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesToolInputSchema
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesToolInputSchema) Get() (v MessagesToolInputSchema, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesToolInputSchema) Or(d MessagesToolInputSchema) MessagesToolInputSchema {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesToolResultContent returns new OptNilMessagesToolResultContent with value set to v.
+func NewOptNilMessagesToolResultContent(v MessagesToolResultContent) OptNilMessagesToolResultContent {
+	return OptNilMessagesToolResultContent{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesToolResultContent is optional nullable MessagesToolResultContent.
+type OptNilMessagesToolResultContent struct {
+	Value MessagesToolResultContent
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesToolResultContent was set.
+func (o OptNilMessagesToolResultContent) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesToolResultContent) Reset() {
+	var v MessagesToolResultContent
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesToolResultContent) SetTo(v MessagesToolResultContent) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesToolResultContent) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesToolResultContent) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesToolResultContent
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesToolResultContent) Get() (v MessagesToolResultContent, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesToolResultContent) Or(d MessagesToolResultContent) MessagesToolResultContent {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesToolUserLocation returns new OptNilMessagesToolUserLocation with value set to v.
+func NewOptNilMessagesToolUserLocation(v MessagesToolUserLocation) OptNilMessagesToolUserLocation {
+	return OptNilMessagesToolUserLocation{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesToolUserLocation is optional nullable MessagesToolUserLocation.
+type OptNilMessagesToolUserLocation struct {
+	Value MessagesToolUserLocation
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesToolUserLocation was set.
+func (o OptNilMessagesToolUserLocation) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesToolUserLocation) Reset() {
+	var v MessagesToolUserLocation
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesToolUserLocation) SetTo(v MessagesToolUserLocation) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesToolUserLocation) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesToolUserLocation) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesToolUserLocation
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesToolUserLocation) Get() (v MessagesToolUserLocation, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesToolUserLocation) Or(d MessagesToolUserLocation) MessagesToolUserLocation {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesTopLogprobs returns new OptNilMessagesTopLogprobs with value set to v.
+func NewOptNilMessagesTopLogprobs(v MessagesTopLogprobs) OptNilMessagesTopLogprobs {
+	return OptNilMessagesTopLogprobs{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesTopLogprobs is optional nullable MessagesTopLogprobs.
+type OptNilMessagesTopLogprobs struct {
+	Value MessagesTopLogprobs
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesTopLogprobs was set.
+func (o OptNilMessagesTopLogprobs) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesTopLogprobs) Reset() {
+	var v MessagesTopLogprobs
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesTopLogprobs) SetTo(v MessagesTopLogprobs) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesTopLogprobs) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesTopLogprobs) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesTopLogprobs
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesTopLogprobs) Get() (v MessagesTopLogprobs, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesTopLogprobs) Or(d MessagesTopLogprobs) MessagesTopLogprobs {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMessagesTopP returns new OptNilMessagesTopP with value set to v.
+func NewOptNilMessagesTopP(v MessagesTopP) OptNilMessagesTopP {
+	return OptNilMessagesTopP{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMessagesTopP is optional nullable MessagesTopP.
+type OptNilMessagesTopP struct {
+	Value MessagesTopP
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMessagesTopP was set.
+func (o OptNilMessagesTopP) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMessagesTopP) Reset() {
+	var v MessagesTopP
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMessagesTopP) SetTo(v MessagesTopP) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMessagesTopP) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMessagesTopP) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MessagesTopP
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMessagesTopP) Get() (v MessagesTopP, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMessagesTopP) Or(d MessagesTopP) MessagesTopP {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilString returns new OptNilString with value set to v.
+func NewOptNilString(v string) OptNilString {
+	return OptNilString{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilString is optional nullable string.
+type OptNilString struct {
+	Value string
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilString was set.
+func (o OptNilString) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilString) Reset() {
+	var v string
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilString) SetTo(v string) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilString) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilString) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v string
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilString) Get() (v string, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilString) Or(d string) string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilStringArray returns new OptNilStringArray with value set to v.
+func NewOptNilStringArray(v []string) OptNilStringArray {
+	return OptNilStringArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilStringArray is optional nullable []string.
+type OptNilStringArray struct {
+	Value []string
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilStringArray was set.
+func (o OptNilStringArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilStringArray) Reset() {
+	var v []string
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilStringArray) SetTo(v []string) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilStringArray) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilStringArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []string
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilStringArray) Get() (v []string, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilStringArray) Or(d []string) []string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptString returns new OptString with value set to v.
 func NewOptString(v string) OptString {
 	return OptString{
@@ -7536,6 +9747,52 @@ func (o OptString) Get() (v string, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptString) Or(d string) string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptUint32 returns new OptUint32 with value set to v.
+func NewOptUint32(v uint32) OptUint32 {
+	return OptUint32{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptUint32 is optional uint32.
+type OptUint32 struct {
+	Value uint32
+	Set   bool
+}
+
+// IsSet returns true if OptUint32 was set.
+func (o OptUint32) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptUint32) Reset() {
+	var v uint32
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptUint32) SetTo(v uint32) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptUint32) Get() (v uint32, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptUint32) Or(d uint32) uint32 {
 	if v, ok := o.Get(); ok {
 		return v
 	}

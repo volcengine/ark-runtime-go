@@ -106,7 +106,7 @@ func (s *CreateVaultRequestMetadata) init() CreateVaultRequestMetadata {
 // 一条挂在 Vault 上的凭证。.
 // Ref: #/components/schemas/Credential
 type Credential struct {
-	// Credential ID。.
+	// Credential ID，形如 `vcrd-...`。.
 	ID string `json:"id"`
 	// 固定 `"vault_credential"`。.
 	Type CredentialType `json:"type"`
@@ -1996,7 +1996,7 @@ func (s *ValidationStatus) UnmarshalText(data []byte) error {
 // 凭证的逻辑容器。.
 // Ref: #/components/schemas/Vault
 type Vault struct {
-	// Vault ID。.
+	// Vault ID，形如 `vlt-...`。.
 	ID string `json:"id"`
 	// 固定 `"vault"`。.
 	Type VaultType `json:"type"`

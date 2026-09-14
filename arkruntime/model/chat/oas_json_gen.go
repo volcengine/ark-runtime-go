@@ -801,6 +801,54 @@ func (s *ChatCompletionContentPartImage) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes ChatCompletionContentPartImageImageURL as json.
+func (s ChatCompletionContentPartImageImageURL) Encode(e *jx.Encoder) {
+	switch s.Type {
+	case StringChatCompletionContentPartImageImageURL:
+		e.Str(s.String)
+	case ChatCompletionContentPartImageImageUrlChatCompletionContentPartImageImageURL:
+		s.ChatCompletionContentPartImageImageUrl.Encode(e)
+	}
+}
+
+// Decode decodes ChatCompletionContentPartImageImageURL from json.
+func (s *ChatCompletionContentPartImageImageURL) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ChatCompletionContentPartImageImageURL to nil")
+	}
+	// Sum type type_discriminator.
+	switch t := d.Next(); t {
+	case jx.Object:
+		if err := s.ChatCompletionContentPartImageImageUrl.Decode(d); err != nil {
+			return err
+		}
+		s.Type = ChatCompletionContentPartImageImageUrlChatCompletionContentPartImageImageURL
+	case jx.String:
+		v, err := d.Str()
+		s.String = string(v)
+		if err != nil {
+			return err
+		}
+		s.Type = StringChatCompletionContentPartImageImageURL
+	default:
+		return errors.Errorf("unexpected json type %q", t)
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ChatCompletionContentPartImageImageURL) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ChatCompletionContentPartImageImageURL) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode implements json.Marshaler.
 func (s *ChatCompletionContentPartImageImageUrl) Encode(e *jx.Encoder) {
 	e.ObjStart()
@@ -2825,9 +2873,9 @@ func (s *ChatCompletionRequestAssistantMessage) Decode(d *jx.Decoder) error {
 			}
 		case "tool_calls":
 			if err := func() error {
-				s.ToolCalls = make([]ChatCompletionMessageToolCall, 0)
+				s.ToolCalls = make([]ChatCompletionRequestMessageToolCall, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem ChatCompletionMessageToolCall
+					var elem ChatCompletionRequestMessageToolCall
 					if err := elem.Decode(d); err != nil {
 						return err
 					}
@@ -2940,6 +2988,170 @@ func (s ChatCompletionRequestAssistantMessageRole) MarshalJSON() ([]byte, error)
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *ChatCompletionRequestAssistantMessageRole) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *ChatCompletionRequestDeveloperMessage) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *ChatCompletionRequestDeveloperMessage) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("role")
+		s.Role.Encode(e)
+	}
+	{
+		e.FieldStart("content")
+		s.Content.Encode(e)
+	}
+	{
+		if s.Name.Set {
+			e.FieldStart("name")
+			s.Name.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfChatCompletionRequestDeveloperMessage = [3]string{
+	0: "role",
+	1: "content",
+	2: "name",
+}
+
+// Decode decodes ChatCompletionRequestDeveloperMessage from json.
+func (s *ChatCompletionRequestDeveloperMessage) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ChatCompletionRequestDeveloperMessage to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "role":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Role.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"role\"")
+			}
+		case "content":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.Content.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"content\"")
+			}
+		case "name":
+			if err := func() error {
+				s.Name.Reset()
+				if err := s.Name.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"name\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ChatCompletionRequestDeveloperMessage")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000011,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfChatCompletionRequestDeveloperMessage) {
+					name = jsonFieldsNameOfChatCompletionRequestDeveloperMessage[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *ChatCompletionRequestDeveloperMessage) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ChatCompletionRequestDeveloperMessage) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ChatCompletionRequestDeveloperMessageRole as json.
+func (s ChatCompletionRequestDeveloperMessageRole) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes ChatCompletionRequestDeveloperMessageRole from json.
+func (s *ChatCompletionRequestDeveloperMessageRole) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ChatCompletionRequestDeveloperMessageRole to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch ChatCompletionRequestDeveloperMessageRole(v) {
+	case ChatCompletionRequestDeveloperMessageRoleDeveloper:
+		*s = ChatCompletionRequestDeveloperMessageRoleDeveloper
+	default:
+		*s = ChatCompletionRequestDeveloperMessageRole(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ChatCompletionRequestDeveloperMessageRole) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ChatCompletionRequestDeveloperMessageRole) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -3065,8 +3277,10 @@ func (s ChatCompletionRequestMessageSum) encodeFields(e *jx.Encoder) {
 		{
 			s := s.ChatCompletionRequestUserMessage
 			{
-				e.FieldStart("content")
-				s.Content.Encode(e)
+				if s.Content.Set {
+					e.FieldStart("content")
+					s.Content.Encode(e)
+				}
 			}
 			{
 				if s.Name.Set {
@@ -3080,6 +3294,22 @@ func (s ChatCompletionRequestMessageSum) encodeFields(e *jx.Encoder) {
 		e.Str("system")
 		{
 			s := s.ChatCompletionRequestSystemMessage
+			{
+				e.FieldStart("content")
+				s.Content.Encode(e)
+			}
+			{
+				if s.Name.Set {
+					e.FieldStart("name")
+					s.Name.Encode(e)
+				}
+			}
+		}
+	case ChatCompletionRequestDeveloperMessageChatCompletionRequestMessageSum:
+		e.FieldStart("role")
+		e.Str("developer")
+		{
+			s := s.ChatCompletionRequestDeveloperMessage
 			{
 				e.FieldStart("content")
 				s.Content.Encode(e)
@@ -3137,12 +3367,16 @@ func (s ChatCompletionRequestMessageSum) encodeFields(e *jx.Encoder) {
 		{
 			s := s.ChatCompletionRequestToolMessage
 			{
-				e.FieldStart("content")
-				s.Content.Encode(e)
+				if s.Content.Set {
+					e.FieldStart("content")
+					s.Content.Encode(e)
+				}
 			}
 			{
-				e.FieldStart("tool_call_id")
-				e.Str(s.ToolCallID)
+				if s.ToolCallID.Set {
+					e.FieldStart("tool_call_id")
+					s.ToolCallID.Encode(e)
+				}
 			}
 			{
 				if s.Name.Set {
@@ -3183,6 +3417,9 @@ func (s *ChatCompletionRequestMessageSum) Decode(d *jx.Decoder) error {
 				case "system":
 					s.Type = ChatCompletionRequestSystemMessageChatCompletionRequestMessageSum
 					found = true
+				case "developer":
+					s.Type = ChatCompletionRequestDeveloperMessageChatCompletionRequestMessageSum
+					found = true
 				case "assistant":
 					s.Type = ChatCompletionRequestAssistantMessageChatCompletionRequestMessageSum
 					found = true
@@ -3211,6 +3448,10 @@ func (s *ChatCompletionRequestMessageSum) Decode(d *jx.Decoder) error {
 		if err := s.ChatCompletionRequestSystemMessage.Decode(d); err != nil {
 			return err
 		}
+	case ChatCompletionRequestDeveloperMessageChatCompletionRequestMessageSum:
+		if err := s.ChatCompletionRequestDeveloperMessage.Decode(d); err != nil {
+			return err
+		}
 	case ChatCompletionRequestAssistantMessageChatCompletionRequestMessageSum:
 		if err := s.ChatCompletionRequestAssistantMessage.Decode(d); err != nil {
 			return err
@@ -3234,6 +3475,245 @@ func (s ChatCompletionRequestMessageSum) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *ChatCompletionRequestMessageSum) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *ChatCompletionRequestMessageToolCall) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *ChatCompletionRequestMessageToolCall) encodeFields(e *jx.Encoder) {
+	{
+		if s.ID.Set {
+			e.FieldStart("id")
+			s.ID.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
+		e.FieldStart("function")
+		s.Function.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfChatCompletionRequestMessageToolCall = [3]string{
+	0: "id",
+	1: "type",
+	2: "function",
+}
+
+// Decode decodes ChatCompletionRequestMessageToolCall from json.
+func (s *ChatCompletionRequestMessageToolCall) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ChatCompletionRequestMessageToolCall to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "id":
+			if err := func() error {
+				s.ID.Reset()
+				if err := s.ID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"id\"")
+			}
+		case "type":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "function":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				if err := s.Function.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"function\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ChatCompletionRequestMessageToolCall")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000110,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfChatCompletionRequestMessageToolCall) {
+					name = jsonFieldsNameOfChatCompletionRequestMessageToolCall[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *ChatCompletionRequestMessageToolCall) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ChatCompletionRequestMessageToolCall) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *ChatCompletionRequestMessageToolCallFunction) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *ChatCompletionRequestMessageToolCallFunction) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("name")
+		e.Str(s.Name)
+	}
+	{
+		if s.Arguments.Set {
+			e.FieldStart("arguments")
+			s.Arguments.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfChatCompletionRequestMessageToolCallFunction = [2]string{
+	0: "name",
+	1: "arguments",
+}
+
+// Decode decodes ChatCompletionRequestMessageToolCallFunction from json.
+func (s *ChatCompletionRequestMessageToolCallFunction) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ChatCompletionRequestMessageToolCallFunction to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "name":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.Name = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "arguments":
+			if err := func() error {
+				s.Arguments.Reset()
+				if err := s.Arguments.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"arguments\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ChatCompletionRequestMessageToolCallFunction")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfChatCompletionRequestMessageToolCallFunction) {
+					name = jsonFieldsNameOfChatCompletionRequestMessageToolCallFunction[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *ChatCompletionRequestMessageToolCallFunction) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ChatCompletionRequestMessageToolCallFunction) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -3416,12 +3896,16 @@ func (s *ChatCompletionRequestToolMessage) encodeFields(e *jx.Encoder) {
 		s.Role.Encode(e)
 	}
 	{
-		e.FieldStart("content")
-		s.Content.Encode(e)
+		if s.Content.Set {
+			e.FieldStart("content")
+			s.Content.Encode(e)
+		}
 	}
 	{
-		e.FieldStart("tool_call_id")
-		e.Str(s.ToolCallID)
+		if s.ToolCallID.Set {
+			e.FieldStart("tool_call_id")
+			s.ToolCallID.Encode(e)
+		}
 	}
 	{
 		if s.Name.Set {
@@ -3458,8 +3942,8 @@ func (s *ChatCompletionRequestToolMessage) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"role\"")
 			}
 		case "content":
-			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
+				s.Content.Reset()
 				if err := s.Content.Decode(d); err != nil {
 					return err
 				}
@@ -3468,11 +3952,9 @@ func (s *ChatCompletionRequestToolMessage) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"content\"")
 			}
 		case "tool_call_id":
-			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
-				v, err := d.Str()
-				s.ToolCallID = string(v)
-				if err != nil {
+				s.ToolCallID.Reset()
+				if err := s.ToolCallID.Decode(d); err != nil {
 					return err
 				}
 				return nil
@@ -3499,7 +3981,7 @@ func (s *ChatCompletionRequestToolMessage) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00000001,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -3597,8 +4079,10 @@ func (s *ChatCompletionRequestUserMessage) encodeFields(e *jx.Encoder) {
 		s.Role.Encode(e)
 	}
 	{
-		e.FieldStart("content")
-		s.Content.Encode(e)
+		if s.Content.Set {
+			e.FieldStart("content")
+			s.Content.Encode(e)
+		}
 	}
 	{
 		if s.Name.Set {
@@ -3634,8 +4118,8 @@ func (s *ChatCompletionRequestUserMessage) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"role\"")
 			}
 		case "content":
-			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
+				s.Content.Reset()
 				if err := s.Content.Decode(d); err != nil {
 					return err
 				}
@@ -3663,7 +4147,7 @@ func (s *ChatCompletionRequestUserMessage) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000011,
+		0b00000001,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -4228,9 +4712,9 @@ func (s *ChatCompletionResponseFormatJsonSchema) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
-		if s.Schema.Set {
+		if len(s.Schema) != 0 {
 			e.FieldStart("schema")
-			s.Schema.Encode(e)
+			e.Raw(s.Schema)
 		}
 	}
 	{
@@ -4281,8 +4765,9 @@ func (s *ChatCompletionResponseFormatJsonSchema) Decode(d *jx.Decoder) error {
 			}
 		case "schema":
 			if err := func() error {
-				s.Schema.Reset()
-				if err := s.Schema.Decode(d); err != nil {
+				v, err := d.RawAppend(nil)
+				s.Schema = jx.Raw(v)
+				if err != nil {
 					return err
 				}
 				return nil
@@ -4351,64 +4836,6 @@ func (s *ChatCompletionResponseFormatJsonSchema) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *ChatCompletionResponseFormatJsonSchema) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode implements json.Marshaler.
-func (s ChatCompletionResponseFormatJsonSchemaSchema) Encode(e *jx.Encoder) {
-	e.ObjStart()
-	s.encodeFields(e)
-	e.ObjEnd()
-}
-
-// encodeFields implements json.Marshaler.
-func (s ChatCompletionResponseFormatJsonSchemaSchema) encodeFields(e *jx.Encoder) {
-	for k, elem := range s {
-		e.FieldStart(k)
-
-		if len(elem) != 0 {
-			e.Raw(elem)
-		}
-	}
-}
-
-// Decode decodes ChatCompletionResponseFormatJsonSchemaSchema from json.
-func (s *ChatCompletionResponseFormatJsonSchemaSchema) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode ChatCompletionResponseFormatJsonSchemaSchema to nil")
-	}
-	m := s.init()
-	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
-		var elem jx.Raw
-		if err := func() error {
-			v, err := d.RawAppend(nil)
-			elem = jx.Raw(v)
-			if err != nil {
-				return err
-			}
-			return nil
-		}(); err != nil {
-			return errors.Wrapf(err, "decode field %q", k)
-		}
-		m[string(k)] = elem
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "decode ChatCompletionResponseFormatJsonSchemaSchema")
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s ChatCompletionResponseFormatJsonSchemaSchema) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *ChatCompletionResponseFormatJsonSchemaSchema) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -4742,6 +5169,9 @@ func (s ChatCompletionStop) Encode(e *jx.Encoder) {
 			e.Str(elem)
 		}
 		e.ArrEnd()
+	case NullChatCompletionStop:
+		_ = s.Null
+		e.Null()
 	}
 }
 
@@ -4767,6 +5197,11 @@ func (s *ChatCompletionStop) Decode(d *jx.Decoder) error {
 			return err
 		}
 		s.Type = StringArrayChatCompletionStop
+	case jx.Null:
+		if err := d.Null(); err != nil {
+			return err
+		}
+		s.Type = NullChatCompletionStop
 	case jx.String:
 		v, err := d.Str()
 		s.String = string(v)
@@ -5573,11 +6008,15 @@ func (s *ChatCompletionTokenLogprob) encodeFields(e *jx.Encoder) {
 	}
 	{
 		e.FieldStart("top_logprobs")
-		e.ArrStart()
-		for _, elem := range s.TopLogprobs {
-			elem.Encode(e)
+		if s.TopLogprobs == nil {
+			e.Null()
+		} else {
+			e.ArrStart()
+			for _, elem := range s.TopLogprobs {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
 		}
-		e.ArrEnd()
 	}
 }
 
@@ -5651,16 +6090,23 @@ func (s *ChatCompletionTokenLogprob) Decode(d *jx.Decoder) error {
 		case "top_logprobs":
 			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
-				s.TopLogprobs = make([]ChatCompletionTokenLogprobTopLogprob, 0)
-				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem ChatCompletionTokenLogprobTopLogprob
-					if err := elem.Decode(d); err != nil {
+				switch tt := d.Next(); tt {
+				case jx.Null:
+					if err := d.Skip(); err != nil {
 						return err
 					}
-					s.TopLogprobs = append(s.TopLogprobs, elem)
-					return nil
-				}); err != nil {
-					return err
+				default:
+					s.TopLogprobs = make([]ChatCompletionTokenLogprobTopLogprob, 0)
+					if err := d.Arr(func(d *jx.Decoder) error {
+						var elem ChatCompletionTokenLogprobTopLogprob
+						if err := elem.Decode(d); err != nil {
+							return err
+						}
+						s.TopLogprobs = append(s.TopLogprobs, elem)
+						return nil
+					}); err != nil {
+						return err
+					}
 				}
 				return nil
 			}(); err != nil {
@@ -5741,11 +6187,15 @@ func (s *ChatCompletionTokenLogprobTopLogprob) encodeFields(e *jx.Encoder) {
 	}
 	{
 		e.FieldStart("bytes")
-		e.ArrStart()
-		for _, elem := range s.Bytes {
-			e.Int32(elem)
+		if s.Bytes == nil {
+			e.Null()
+		} else {
+			e.ArrStart()
+			for _, elem := range s.Bytes {
+				e.Int32(elem)
+			}
+			e.ArrEnd()
 		}
-		e.ArrEnd()
 	}
 }
 
@@ -5791,18 +6241,25 @@ func (s *ChatCompletionTokenLogprobTopLogprob) Decode(d *jx.Decoder) error {
 		case "bytes":
 			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
-				s.Bytes = make([]int32, 0)
-				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem int32
-					v, err := d.Int32()
-					elem = int32(v)
-					if err != nil {
+				switch tt := d.Next(); tt {
+				case jx.Null:
+					if err := d.Skip(); err != nil {
 						return err
 					}
-					s.Bytes = append(s.Bytes, elem)
-					return nil
-				}); err != nil {
-					return err
+				default:
+					s.Bytes = make([]int32, 0)
+					if err := d.Arr(func(d *jx.Decoder) error {
+						var elem int32
+						v, err := d.Int32()
+						elem = int32(v)
+						if err != nil {
+							return err
+						}
+						s.Bytes = append(s.Bytes, elem)
+						return nil
+					}); err != nil {
+						return err
+					}
 				}
 				return nil
 			}(); err != nil {
@@ -6128,10 +6585,17 @@ func (s *CompletionTokensDetails) encodeFields(e *jx.Encoder) {
 		e.FieldStart("reasoning_tokens")
 		e.Int32(s.ReasoningTokens)
 	}
+	{
+		if s.ProvisionedTokens.Set {
+			e.FieldStart("provisioned_tokens")
+			s.ProvisionedTokens.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfCompletionTokensDetails = [1]string{
+var jsonFieldsNameOfCompletionTokensDetails = [2]string{
 	0: "reasoning_tokens",
+	1: "provisioned_tokens",
 }
 
 // Decode decodes CompletionTokensDetails from json.
@@ -6154,6 +6618,16 @@ func (s *CompletionTokensDetails) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"reasoning_tokens\"")
+			}
+		case "provisioned_tokens":
+			if err := func() error {
+				s.ProvisionedTokens.Reset()
+				if err := s.ProvisionedTokens.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"provisioned_tokens\"")
 			}
 		default:
 			return d.Skip()
@@ -7020,39 +7494,6 @@ func (s *OptBool) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
-// Encode encodes ChatCompletionMessageContent as json.
-func (o OptChatCompletionMessageContent) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes ChatCompletionMessageContent from json.
-func (o *OptChatCompletionMessageContent) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptChatCompletionMessageContent to nil")
-	}
-	o.Set = true
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptChatCompletionMessageContent) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptChatCompletionMessageContent) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
 // Encode encodes ChatCompletionMessageToolCallChunkFunction as json.
 func (o OptChatCompletionMessageToolCallChunkFunction) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -7182,40 +7623,6 @@ func (s OptChatCompletionResponseFormatJsonSchema) MarshalJSON() ([]byte, error)
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptChatCompletionResponseFormatJsonSchema) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes ChatCompletionResponseFormatJsonSchemaSchema as json.
-func (o OptChatCompletionResponseFormatJsonSchemaSchema) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes ChatCompletionResponseFormatJsonSchemaSchema from json.
-func (o *OptChatCompletionResponseFormatJsonSchemaSchema) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptChatCompletionResponseFormatJsonSchemaSchema to nil")
-	}
-	o.Set = true
-	o.Value = make(ChatCompletionResponseFormatJsonSchemaSchema)
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptChatCompletionResponseFormatJsonSchemaSchema) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptChatCompletionResponseFormatJsonSchemaSchema) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -7722,6 +8129,106 @@ func (s *OptModerationHitType) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes ChatCompletionMessageContent as json.
+func (o OptNilChatCompletionMessageContent) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes ChatCompletionMessageContent from json.
+func (o *OptNilChatCompletionMessageContent) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilChatCompletionMessageContent to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v ChatCompletionMessageContent
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilChatCompletionMessageContent) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilChatCompletionMessageContent) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes string as json.
+func (o OptNilString) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	e.Str(string(o.Value))
+}
+
+// Decode decodes string from json.
+func (o *OptNilString) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilString to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v string
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	v, err := d.Str()
+	if err != nil {
+		return err
+	}
+	o.Value = string(v)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilString) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilString) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes ReasoningEffort as json.
 func (o OptReasoningEffort) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -8014,6 +8521,12 @@ func (s *PromptTokensDetails) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.ProvisionedTokens.Set {
+			e.FieldStart("provisioned_tokens")
+			s.ProvisionedTokens.Encode(e)
+		}
+	}
+	{
 		if s.AudioTokens.Set {
 			e.FieldStart("audio_tokens")
 			s.AudioTokens.Encode(e)
@@ -8027,12 +8540,13 @@ func (s *PromptTokensDetails) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfPromptTokensDetails = [5]string{
+var jsonFieldsNameOfPromptTokensDetails = [6]string{
 	0: "cached_tokens",
 	1: "text_tokens",
 	2: "image_tokens",
-	3: "audio_tokens",
-	4: "audio_cached_tokens",
+	3: "provisioned_tokens",
+	4: "audio_tokens",
+	5: "audio_cached_tokens",
 }
 
 // Decode decodes PromptTokensDetails from json.
@@ -8075,6 +8589,16 @@ func (s *PromptTokensDetails) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"image_tokens\"")
+			}
+		case "provisioned_tokens":
+			if err := func() error {
+				s.ProvisionedTokens.Reset()
+				if err := s.ProvisionedTokens.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"provisioned_tokens\"")
 			}
 		case "audio_tokens":
 			if err := func() error {
@@ -8224,6 +8748,8 @@ func (s *RequestServiceTier) Decode(d *jx.Decoder) error {
 		*s = RequestServiceTierDefault
 	case RequestServiceTierFast:
 		*s = RequestServiceTierFast
+	case RequestServiceTierFlex:
+		*s = RequestServiceTierFlex
 	default:
 		*s = RequestServiceTier(v)
 	}
@@ -8308,6 +8834,8 @@ func (s *ResponseServiceTier) Decode(d *jx.Decoder) error {
 		*s = ResponseServiceTierScale
 	case ResponseServiceTierFast:
 		*s = ResponseServiceTierFast
+	case ResponseServiceTierFlex:
+		*s = ResponseServiceTierFlex
 	default:
 		*s = ResponseServiceTier(v)
 	}

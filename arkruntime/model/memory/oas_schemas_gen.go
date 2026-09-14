@@ -400,7 +400,7 @@ func (s *ListMemoryStoresResponse) SetNextPage(val OptString) {
 // 一条记忆（store 内一个文件）。`content` 仅 Get 单条时返回。.
 // Ref: #/components/schemas/Memory
 type Memory struct {
-	// Memory ID。.
+	// Memory ID，形如 `mem-...`。.
 	ID string `json:"id"`
 	// 固定 `"memory"`。.
 	Type MemoryType `json:"type"`
@@ -697,7 +697,7 @@ func (s *MemoryListItemType) UnmarshalText(data []byte) error {
 // 一个记忆库。.
 // Ref: #/components/schemas/MemoryStore
 type MemoryStore struct {
-	// MemoryStore ID。.
+	// MemoryStore ID，形如 `memstore-...`。.
 	ID string `json:"id"`
 	// 固定 `"memory_store"`。.
 	Type MemoryStoreType `json:"type"`

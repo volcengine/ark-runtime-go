@@ -630,11 +630,11 @@ func (s PermissionPolicyType) Validate() error {
 
 func (s SkillRefType) Validate() error {
 	switch s {
-	case "anthropic":
-		return nil
 	case "custom":
 		return nil
 	case "skill_hub":
+		return nil
+	case "ark":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)

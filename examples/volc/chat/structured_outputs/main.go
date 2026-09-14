@@ -7,7 +7,7 @@
 //
 // Run with:
 //
-//	ARK_API_KEY=... go run ./examples/chat/structured_outputs
+//	cd examples && ARK_API_KEY=... go run ./volc/chat/structured_outputs
 package main
 
 import (
@@ -16,7 +16,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/go-faster/jx"
 	"github.com/invopop/jsonschema" // requires go1.18+
 
 	"github.com/volcengine/ark-runtime-go/arkruntime"
@@ -36,30 +35,14 @@ type Origin struct {
 	Organization string `json:"organization" jsonschema_description:"The organization that was in charge of its development"`
 }
 
-// generateSchema reflects T into a JSON Schema, then renders it to the new
-// SDK's ChatCompletionResponseFormatJsonSchemaSchema (which is
-// map[string]jx.Raw) by round-tripping through encoding/json.
-func generateSchema[T any]() chat.ChatCompletionResponseFormatJsonSchemaSchema {
+// generateSchema reflects T into a JSON Schema object.
+func generateSchema[T any]() *jsonschema.Schema {
 	reflector := jsonschema.Reflector{
 		AllowAdditionalProperties: false,
 		DoNotReference:            true,
 	}
 	var v T
-	schema := reflector.Reflect(v)
-
-	raw, err := json.Marshal(schema)
-	if err != nil {
-		panic(err)
-	}
-	var m map[string]json.RawMessage
-	if err := json.Unmarshal(raw, &m); err != nil {
-		panic(err)
-	}
-	out := chat.ChatCompletionResponseFormatJsonSchemaSchema{}
-	for k, v := range m {
-		out[k] = jx.Raw(v)
-	}
-	return out
+	return reflector.Reflect(v)
 }
 
 var historicalComputerSchema = generateSchema[HistoricalComputer]()
@@ -71,15 +54,6 @@ func main() {
 	question := "What computer ran the first neural network?"
 	fmt.Printf("> %s\n", question)
 
-	js := chat.ChatCompletionResponseFormatJsonSchema{Name: "biography"}
-	js.Description.SetTo("Notable information about a person")
-	js.Schema.SetTo(historicalComputerSchema)
-	js.Strict.SetTo(true)
-
-	rf := chat.ChatCompletionResponseFormat{}
-	rf.Type.SetTo(chat.ResponseFormatTypeJSONSchema)
-	rf.JSONSchema.SetTo(js)
-
 	req := &chat.ChatCompletionRequest{
 		Model: "doubao-seed-2-1-pro-260628",
 		Messages: []chat.ChatCompletionRequestMessage{
@@ -87,12 +61,26 @@ func main() {
 				OneOf: chat.NewChatCompletionRequestUserMessageChatCompletionRequestMessageSum(
 					chat.ChatCompletionRequestUserMessage{
 						Role:    chat.ChatCompletionRequestUserMessageRoleUser,
-						Content: chat.NewStringChatCompletionMessageContent(question),
+						Content: chat.NewOptNilChatCompletionMessageContent(chat.NewStringChatCompletionMessageContent(question)),
 					},
 				),
 			},
 		},
 	}
+
+	schemaJSON, err := json.Marshal(historicalComputerSchema)
+	if err != nil {
+		panic(err)
+	}
+	js := chat.ChatCompletionResponseFormatJsonSchema{
+		Name:   "historical_computer",
+		Schema: schemaJSON,
+	}
+	js.Description.SetTo("Information about a historical computer")
+	js.Strict.SetTo(true)
+	rf := chat.ChatCompletionResponseFormat{}
+	rf.Type.SetTo(chat.ResponseFormatTypeJSONSchema)
+	rf.JSONSchema.SetTo(js)
 	req.ResponseFormat.SetTo(rf)
 
 	resp, err := client.CreateChatCompletion(ctx, req)

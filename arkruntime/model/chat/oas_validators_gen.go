@@ -173,6 +173,20 @@ func (s *ChatCompletionContentPartImage) Validate() error {
 	return nil
 }
 
+func (s ChatCompletionContentPartImageImageURL) Validate() error {
+	switch s.Type {
+	case StringChatCompletionContentPartImageImageURL:
+		return nil // no validation needed
+	case ChatCompletionContentPartImageImageUrlChatCompletionContentPartImageImageURL:
+		if err := s.ChatCompletionContentPartImageImageUrl.Validate(); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return errors.Errorf("invalid type %q", s.Type)
+	}
+}
+
 func (s *ChatCompletionContentPartImageImageUrl) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -809,6 +823,49 @@ func (s ChatCompletionRequestAssistantMessageRole) Validate() error {
 	}
 }
 
+func (s *ChatCompletionRequestDeveloperMessage) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Role.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "role",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Content.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "content",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ChatCompletionRequestDeveloperMessageRole) Validate() error {
+	switch s {
+	case "developer":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
 func (s ChatCompletionRequestLogitBias) Validate() error {
 	var failures []validate.FieldError
 	for key, elem := range s {
@@ -866,6 +923,11 @@ func (s ChatCompletionRequestMessageSum) Validate() error {
 			return err
 		}
 		return nil
+	case ChatCompletionRequestDeveloperMessageChatCompletionRequestMessageSum:
+		if err := s.ChatCompletionRequestDeveloperMessage.Validate(); err != nil {
+			return err
+		}
+		return nil
 	case ChatCompletionRequestAssistantMessageChatCompletionRequestMessageSum:
 		if err := s.ChatCompletionRequestAssistantMessage.Validate(); err != nil {
 			return err
@@ -879,6 +941,29 @@ func (s ChatCompletionRequestMessageSum) Validate() error {
 	default:
 		return errors.Errorf("invalid type %q", s.Type)
 	}
+}
+
+func (s *ChatCompletionRequestMessageToolCall) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
 }
 
 func (s *ChatCompletionRequestSystemMessage) Validate() error {
@@ -942,8 +1027,15 @@ func (s *ChatCompletionRequestToolMessage) Validate() error {
 		})
 	}
 	if err := func() error {
-		if err := s.Content.Validate(); err != nil {
-			return err
+		if value, ok := s.Content.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
 		}
 		return nil
 	}(); err != nil {
@@ -985,8 +1077,15 @@ func (s *ChatCompletionRequestUserMessage) Validate() error {
 		})
 	}
 	if err := func() error {
-		if err := s.Content.Validate(); err != nil {
-			return err
+		if value, ok := s.Content.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
 		}
 		return nil
 	}(); err != nil {
@@ -1260,6 +1359,8 @@ func (s ChatCompletionStop) Validate() error {
 			return errors.New("nil is invalid value")
 		}
 		return nil
+	case NullChatCompletionStop:
+		return nil // no validation needed
 	default:
 		return errors.Errorf("invalid type %q", s.Type)
 	}
@@ -1467,9 +1568,6 @@ func (s *ChatCompletionTokenLogprob) Validate() error {
 		})
 	}
 	if err := func() error {
-		if s.TopLogprobs == nil {
-			return errors.New("nil is invalid value")
-		}
 		var failures []validate.FieldError
 		for i, elem := range s.TopLogprobs {
 			if err := func() error {
@@ -1514,17 +1612,6 @@ func (s *ChatCompletionTokenLogprobTopLogprob) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "logprob",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if s.Bytes == nil {
-			return errors.New("nil is invalid value")
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "bytes",
 			Error: err,
 		})
 	}
@@ -1644,6 +1731,8 @@ func (s RequestServiceTier) Validate() error {
 		return nil
 	case "fast":
 		return nil
+	case "flex":
+		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
@@ -1669,6 +1758,8 @@ func (s ResponseServiceTier) Validate() error {
 	case "scale":
 		return nil
 	case "fast":
+		return nil
+	case "flex":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)

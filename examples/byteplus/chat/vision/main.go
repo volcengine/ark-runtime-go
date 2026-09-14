@@ -34,9 +34,9 @@ func main() {
 		OneOf: chat.NewChatCompletionContentPartImageChatCompletionContentPartSum(
 			chat.ChatCompletionContentPartImage{
 				Type: chat.ChatCompletionContentPartImageTypeImageURL,
-				ImageURL: chat.ChatCompletionContentPartImageImageUrl{
+				ImageURL: chat.NewChatCompletionContentPartImageImageUrlChatCompletionContentPartImageImageURL(chat.ChatCompletionContentPartImageImageUrl{
 					URL: chat.NewOptString("https://ark-project.tos-cn-beijing.volces.com/images/view.jpeg"),
-				},
+				}),
 			},
 		),
 	}
@@ -48,7 +48,7 @@ func main() {
 				OneOf: chat.NewChatCompletionRequestUserMessageChatCompletionRequestMessageSum(
 					chat.ChatCompletionRequestUserMessage{
 						Role:    chat.ChatCompletionRequestUserMessageRoleUser,
-						Content: chat.NewChatCompletionContentPartArrayChatCompletionMessageContent([]chat.ChatCompletionContentPart{textPart, imagePart}),
+						Content: chat.NewOptNilChatCompletionMessageContent(chat.NewChatCompletionContentPartArrayChatCompletionMessageContent([]chat.ChatCompletionContentPart{textPart, imagePart})),
 					},
 				),
 			},
