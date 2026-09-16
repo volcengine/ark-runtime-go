@@ -38,6 +38,9 @@ type AgentsRemoveParams struct {
 // AgentsRetrieveParams is parameters of Agents_retrieve operation.
 type AgentsRetrieveParams struct {
 	AgentId string
+	// 可选 Agent 版本号；省略返回当前最新版本，传入正整数返回
+	// 该历史版本的冻结视图；版本不存在返回 404。.
+	Version OptInt32 `json:",omitempty,omitzero" query:"version"`
 }
 
 // AgentsUpdateParams is parameters of Agents_update operation.
