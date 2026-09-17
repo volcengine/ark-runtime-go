@@ -100,3 +100,23 @@ func TestSessionFileToolResultStoreSanitizesSessionID(t *testing.T) {
 		t.Fatalf("store dir escaped base: %q", store.dir)
 	}
 }
+
+func TestFileToolResultStoreDiscardRemovesRecoveredRecord(t *testing.T) {
+	store, err := NewSessionFileToolResultStore(t.TempDir(), "session-a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.Begin("call-id", Event{ID: "call-id", Type: EventTypeAgentToolUse}); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Discard("call-id"); err != nil {
+		t.Fatal(err)
+	}
+	pending, processed, err := store.Recover()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(pending) != 0 || len(processed) != 0 {
+		t.Fatalf("pending=%v processed=%v", pending, processed)
+	}
+}

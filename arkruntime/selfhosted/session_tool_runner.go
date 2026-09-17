@@ -50,6 +50,11 @@ type ToolResultStore interface {
 	MarkSent(callID string) error
 }
 
+// ToolResultStoreDiscarder 可选地从持久化 store 中删除不再属于当前 session 阻塞集合的恢复结果。
+type ToolResultStoreDiscarder interface {
+	Discard(callID string) error
+}
+
 // SessionToolRunnerOptions 配置单 session 的 tool event loop。
 type SessionToolRunnerOptions struct {
 	WorkID string
@@ -180,15 +185,19 @@ func (r *SessionToolRunner) runLoop() error {
 		return errors.New("session tool runner tools must not be nil")
 	}
 	state := &toolRunnerState{
-		runner:         r,
-		page:           r.opts.EventPage,
-		processed:      map[string]bool{},
-		seen:           map[string]bool{},
-		answered:       map[string]bool{},
-		pendingResults: map[string]Event{},
-		pendingAsk:     map[string]Event{},
-		confirmations:  map[string]Event{},
-		externalTools:  map[string]Event{},
+		runner:              r,
+		page:                r.opts.EventPage,
+		processed:           map[string]bool{},
+		seen:                map[string]bool{},
+		answered:            map[string]bool{},
+		pendingResults:      map[string]Event{},
+		recoveredResults:    map[string]bool{},
+		pendingAsk:          map[string]Event{},
+		confirmations:       map[string]Event{},
+		externalTools:       map[string]Event{},
+		sessionToolUses:     map[string]bool{},
+		toolUsesSinceStatus: map[string]bool{},
+		blockingEventIDs:    map[string]bool{},
 	}
 	if r.opts.ResultStore != nil {
 		pending, processed, err := r.opts.ResultStore.Recover()
@@ -196,6 +205,9 @@ func (r *SessionToolRunner) runLoop() error {
 			return fmt.Errorf("recover tool result store: %w", err)
 		}
 		state.pendingResults = pending
+		for id := range pending {
+			state.recoveredResults[id] = true
+		}
 		state.processed = processed
 		for id := range processed {
 			state.answered[id] = true
@@ -219,17 +231,22 @@ func (r *SessionToolRunner) runLoop() error {
 }
 
 type toolRunnerState struct {
-	runner         *SessionToolRunner
-	page           string
-	processed      map[string]bool
-	seen           map[string]bool
-	answered       map[string]bool
-	pendingResults map[string]Event
-	pendingAsk     map[string]Event
-	confirmations  map[string]Event
-	externalTools  map[string]Event
-	idleArmedAt    time.Time
-	idleArmPending bool
+	runner              *SessionToolRunner
+	page                string
+	processed           map[string]bool
+	seen                map[string]bool
+	answered            map[string]bool
+	pendingResults      map[string]Event
+	recoveredResults    map[string]bool
+	pendingAsk          map[string]Event
+	confirmations       map[string]Event
+	externalTools       map[string]Event
+	sessionToolUses     map[string]bool
+	toolUsesSinceStatus map[string]bool
+	blockingEventIDs    map[string]bool
+	blockingEventsKnown bool
+	idleArmedAt         time.Time
+	idleArmPending      bool
 }
 
 type pendingToolEvent struct {
@@ -470,9 +487,6 @@ func (s *toolRunnerState) consumeList(ctx context.Context) error {
 		}
 	}
 	for {
-		if err := s.flushResults(ctx); err != nil {
-			s.runner.logger.Warn("send pending tool result failed", "err", err)
-		}
 		var events []Event
 		page := s.page
 		listed := false
@@ -503,6 +517,11 @@ func (s *toolRunnerState) consumeList(ctx context.Context) error {
 		if len(events) > 0 {
 			if err := s.processListedEvents(ctx, events, false); err != nil {
 				return err
+			}
+		}
+		if listed && !listFailed {
+			if err := s.flushResults(ctx); err != nil {
+				s.runner.logger.Warn("send pending tool result failed", "err", err)
 			}
 		}
 		if listed && !listFailed && page == "" {
@@ -539,6 +558,7 @@ func (s *toolRunnerState) processListedEvents(ctx context.Context, events []Even
 		if !reconcile && !seenNow {
 			continue
 		}
+		s.observeSessionState(event)
 		if event.Type != EventTypeUserToolConfirmation {
 			touchedIdle = true
 			lastWasEndTurn = event.Type == EventTypeSessionStatusIdle &&
@@ -565,11 +585,13 @@ func (s *toolRunnerState) processListedEvents(ctx context.Context, events []Even
 			return ErrSessionTerminated
 		}
 	}
+	s.reconcileRecoveredResults()
 	if touchedIdle {
 		s.disarmIdle()
 	}
 	for _, toolEvent := range pending {
-		if s.isAnswered(toolUseCallID(toolEvent.event)) {
+		callID := toolUseCallID(toolEvent.event)
+		if s.isAnswered(callID) || !s.shouldHandleToolUse(callID) {
 			continue
 		}
 		if err := s.handleToolUse(ctx, toolEvent.event, toolEvent.custom); err != nil {
@@ -589,6 +611,13 @@ func (s *toolRunnerState) processListedEvents(ctx context.Context, events []Even
 	return nil
 }
 
+func (s *toolRunnerState) shouldHandleToolUse(callID string) bool {
+	if !s.blockingEventsKnown {
+		return true
+	}
+	return s.blockingEventIDs[callID] || s.toolUsesSinceStatus[callID]
+}
+
 func (s *toolRunnerState) noteIdleEvent(event Event) {
 	if event.Type == EventTypeUserToolConfirmation {
 		return
@@ -604,6 +633,8 @@ func (s *toolRunnerState) handleStreamEvent(ctx context.Context, event Event) er
 	if !s.markEventSeen(event) {
 		return nil
 	}
+	s.observeSessionState(event)
+	s.reconcileRecoveredResults()
 	s.noteIdleEvent(event)
 	return s.handleEvent(ctx, event)
 }
@@ -681,6 +712,7 @@ func (s *toolRunnerState) markAnswered(callID string) {
 	s.answered[callID] = true
 	s.processed[callID] = true
 	delete(s.pendingResults, callID)
+	delete(s.recoveredResults, callID)
 	delete(s.pendingAsk, callID)
 	delete(s.externalTools, callID)
 	s.maybeArmPendingIdle()
@@ -716,7 +748,7 @@ func (s *toolRunnerState) releaseConfirmedToolUses(ctx context.Context) error {
 func (s *toolRunnerState) hasUnblockedOutstandingTool(pending []pendingToolEvent) bool {
 	for _, toolEvent := range pending {
 		callID := toolUseCallID(toolEvent.event)
-		if callID == "" || s.isAnswered(callID) {
+		if callID == "" || s.isAnswered(callID) || !s.shouldHandleToolUse(callID) {
 			continue
 		}
 		if _, ok := s.pendingAsk[callID]; ok {
@@ -736,6 +768,9 @@ func (s *toolRunnerState) handleToolUse(ctx context.Context, event Event, custom
 		return nil
 	}
 	if pending := s.pendingResults[callID]; pending.ID != "" {
+		if s.recoveredResults[callID] {
+			return nil
+		}
 		return s.sendResult(ctx, callID, event, custom, "", pending)
 	}
 	if !s.ownsTool(event, custom) {
@@ -945,6 +980,9 @@ func (s *toolRunnerState) skipExternalToolUse(ctx context.Context, event Event, 
 func (s *toolRunnerState) flushResults(ctx context.Context) error {
 	var first error
 	for callID, event := range s.pendingResults {
+		if s.recoveredResults[callID] {
+			continue
+		}
 		req := SendEventRequest{
 			SessionID: s.runner.session,
 			Event:     event,
@@ -965,6 +1003,70 @@ func (s *toolRunnerState) flushResults(ctx context.Context) error {
 	}
 	s.maybeArmPendingIdle()
 	return first
+}
+
+func (s *toolRunnerState) observeSessionState(event Event) {
+	s.ensureRecoveryMaps()
+	switch event.Type {
+	case EventTypeAgentToolUse, EventTypeAgentCustomToolUse:
+		callID := toolUseCallID(event)
+		if callID != "" {
+			s.sessionToolUses[callID] = true
+			s.toolUsesSinceStatus[callID] = true
+		}
+	case EventTypeSessionStatusIdle:
+		s.blockingEventsKnown = true
+		s.blockingEventIDs = map[string]bool{}
+		if event.StopReasonType() == SessionStopReasonRequiresAction && event.StopReason != nil {
+			for _, eventID := range event.StopReason.EventIDs {
+				s.blockingEventIDs[eventID] = true
+			}
+		}
+		s.toolUsesSinceStatus = map[string]bool{}
+	case EventTypeSessionStatusRunning, EventTypeSessionStatusRescheduled:
+		s.blockingEventsKnown = true
+		s.blockingEventIDs = map[string]bool{}
+		s.toolUsesSinceStatus = map[string]bool{}
+	}
+}
+
+func (s *toolRunnerState) ensureRecoveryMaps() {
+	if s.recoveredResults == nil {
+		s.recoveredResults = map[string]bool{}
+	}
+	if s.sessionToolUses == nil {
+		s.sessionToolUses = map[string]bool{}
+	}
+	if s.toolUsesSinceStatus == nil {
+		s.toolUsesSinceStatus = map[string]bool{}
+	}
+	if s.blockingEventIDs == nil {
+		s.blockingEventIDs = map[string]bool{}
+	}
+}
+
+func (s *toolRunnerState) reconcileRecoveredResults() {
+	if !s.blockingEventsKnown {
+		return
+	}
+	for callID := range s.recoveredResults {
+		if s.blockingEventIDs[callID] && s.sessionToolUses[callID] {
+			delete(s.recoveredResults, callID)
+			continue
+		}
+		if s.toolUsesSinceStatus[callID] {
+			continue
+		}
+		delete(s.recoveredResults, callID)
+		delete(s.pendingResults, callID)
+		s.runner.logger.Warn("discard stale recovered tool result", "tool_use_id", callID)
+		if discarder, ok := s.runner.opts.ResultStore.(ToolResultStoreDiscarder); ok {
+			if err := discarder.Discard(callID); err != nil {
+				s.runner.logger.Warn("discard persisted tool result failed", "tool_use_id", callID, "err", err)
+			}
+		}
+	}
+	s.maybeArmPendingIdle()
 }
 
 func (s *toolRunnerState) retrySendEvent(ctx context.Context, req SendEventRequest, callID string) (bool, error) {

@@ -178,6 +178,22 @@ func (s *FileToolResultStore) MarkSent(callID string) error {
 	return s.write(record)
 }
 
+// Discard 删除不再属于当前 session 阻塞集合的恢复记录。
+func (s *FileToolResultStore) Discard(callID string) error {
+	if callID == "" {
+		return errors.New("call id must not be empty")
+	}
+	if err := os.Remove(s.path(callID)); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	dir, err := os.Open(s.dir)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = dir.Close() }()
+	return dir.Sync()
+}
+
 func (s *FileToolResultStore) read(callID string) (fileToolResultRecord, error) {
 	return s.readPath(s.path(callID))
 }
@@ -255,3 +271,4 @@ func unknownToolExecutionResult(callID string, event Event) Event {
 }
 
 var _ ToolResultStore = (*FileToolResultStore)(nil)
+var _ ToolResultStoreDiscarder = (*FileToolResultStore)(nil)

@@ -29,6 +29,10 @@ const (
 	EventTypeUserCustomToolResult = "user.custom_tool_result"
 	// EventTypeSessionStatusIdle 表示 session 已经进入空闲状态。
 	EventTypeSessionStatusIdle = "session.status_idle"
+	// EventTypeSessionStatusRunning 表示 session 正在运行。
+	EventTypeSessionStatusRunning = "session.status_running"
+	// EventTypeSessionStatusRescheduled 表示 session 正在重新调度。
+	EventTypeSessionStatusRescheduled = "session.status_rescheduled"
 	// EventTypeSessionStatusTerminated 表示 session 已经终止。
 	EventTypeSessionStatusTerminated = "session.status_terminated"
 	// EventTypeSessionDeleted 表示 session 已经删除。
