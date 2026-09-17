@@ -37,6 +37,22 @@ func (s *CreateSkillRequest) SetProtectionEnabled(val OptBool) {
 	s.ProtectionEnabled = val
 }
 
+// Ref: #/components/schemas/CreateSkillVersionRequest
+type CreateSkillVersionRequest struct {
+	// Skill 版本展示名。.
+	DisplayTitle OptString `json:"display_title" form:"display_title"`
+}
+
+// GetDisplayTitle returns the value of DisplayTitle.
+func (s *CreateSkillVersionRequest) GetDisplayTitle() OptString {
+	return s.DisplayTitle
+}
+
+// SetDisplayTitle sets the value of DisplayTitle.
+func (s *CreateSkillVersionRequest) SetDisplayTitle(val OptString) {
+	s.DisplayTitle = val
+}
+
 // NewOptBool returns new OptBool with value set to v.
 func NewOptBool(v bool) OptBool {
 	return OptBool{
@@ -292,6 +308,97 @@ func (s *SkillObject) UnmarshalText(data []byte) error {
 	}
 }
 
+// Skill 版本摘要。
+// CreateSkillVersion / ListSkillVersions / GetSkillVersion 返回该对象；主
+// Skill 的 latest_version 会由服务端在新版本创建成功后推进。.
+// Ref: #/components/schemas/SkillVersion
+type SkillVersion struct {
+	// SkillVersion ID，形如 `skillver-...`。.
+	ID string `json:"id"`
+	// 固定 `"skill_version"`。.
+	Type SkillVersionType `json:"type"`
+	// 归属 Skill ID。.
+	SkillID string `json:"skill_id"`
+	// 版本号，服务端按字符串形式自增，例如 `"1"`、`"2"`。.
+	Version string `json:"version"`
+	// 该版本的展示名。.
+	DisplayTitle string `json:"display_title"`
+	// 该版本的描述信息。.
+	Description OptString `json:"description"`
+	// 创建时间，RFC 3339 UTC 秒级精度。.
+	CreatedAt string `json:"created_at"`
+}
+
+// GetID returns the value of ID.
+func (s *SkillVersion) GetID() string {
+	return s.ID
+}
+
+// GetType returns the value of Type.
+func (s *SkillVersion) GetType() SkillVersionType {
+	return s.Type
+}
+
+// GetSkillID returns the value of SkillID.
+func (s *SkillVersion) GetSkillID() string {
+	return s.SkillID
+}
+
+// GetVersion returns the value of Version.
+func (s *SkillVersion) GetVersion() string {
+	return s.Version
+}
+
+// GetDisplayTitle returns the value of DisplayTitle.
+func (s *SkillVersion) GetDisplayTitle() string {
+	return s.DisplayTitle
+}
+
+// GetDescription returns the value of Description.
+func (s *SkillVersion) GetDescription() OptString {
+	return s.Description
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *SkillVersion) GetCreatedAt() string {
+	return s.CreatedAt
+}
+
+// SetID sets the value of ID.
+func (s *SkillVersion) SetID(val string) {
+	s.ID = val
+}
+
+// SetType sets the value of Type.
+func (s *SkillVersion) SetType(val SkillVersionType) {
+	s.Type = val
+}
+
+// SetSkillID sets the value of SkillID.
+func (s *SkillVersion) SetSkillID(val string) {
+	s.SkillID = val
+}
+
+// SetVersion sets the value of Version.
+func (s *SkillVersion) SetVersion(val string) {
+	s.Version = val
+}
+
+// SetDisplayTitle sets the value of DisplayTitle.
+func (s *SkillVersion) SetDisplayTitle(val string) {
+	s.DisplayTitle = val
+}
+
+// SetDescription sets the value of Description.
+func (s *SkillVersion) SetDescription(val OptString) {
+	s.Description = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *SkillVersion) SetCreatedAt(val string) {
+	s.CreatedAt = val
+}
+
 // SkillVersionContentDownloadFound is response for SkillVersionContentDownload operation.
 type SkillVersionContentDownloadFound struct {
 	Location string
@@ -305,4 +412,39 @@ func (s *SkillVersionContentDownloadFound) GetLocation() string {
 // SetLocation sets the value of Location.
 func (s *SkillVersionContentDownloadFound) SetLocation(val string) {
 	s.Location = val
+}
+
+// 固定 `"skill_version"`。.
+type SkillVersionType string
+
+const (
+	SkillVersionTypeSkillVersion SkillVersionType = "skill_version"
+)
+
+// AllValues returns all SkillVersionType values.
+func (SkillVersionType) AllValues() []SkillVersionType {
+	return []SkillVersionType{
+		SkillVersionTypeSkillVersion,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s SkillVersionType) MarshalText() ([]byte, error) {
+	switch s {
+	case SkillVersionTypeSkillVersion:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *SkillVersionType) UnmarshalText(data []byte) error {
+	switch SkillVersionType(data) {
+	case SkillVersionTypeSkillVersion:
+		*s = SkillVersionTypeSkillVersion
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
