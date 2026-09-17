@@ -82,7 +82,7 @@ func userMsg(content string) chat.ChatCompletionRequestMessage {
 		OneOf: chat.NewChatCompletionRequestUserMessageChatCompletionRequestMessageSum(
 			chat.ChatCompletionRequestUserMessage{
 				Role:    chat.ChatCompletionRequestUserMessageRoleUser,
-				Content: chat.NewStringChatCompletionMessageContent(content),
+				Content: chat.NewOptNilChatCompletionMessageContent(chat.NewStringChatCompletionMessageContent(content)),
 			},
 		),
 	}

@@ -14,6 +14,46 @@ import (
 	"github.com/volcengine/ark-runtime-go/arkruntime/internal/validate"
 )
 
+// Encode encodes Description as json.
+func (s Description) Encode(e *jx.Encoder) {
+	unwrapped := string(s)
+
+	e.Str(unwrapped)
+}
+
+// Decode decodes Description from json.
+func (s *Description) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode Description to nil")
+	}
+	var unwrapped string
+	if err := func() error {
+		v, err := d.Str()
+		unwrapped = string(v)
+		if err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = Description(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s Description) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *Description) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode implements json.Marshaler.
 func (s *FileCreateRequest) Encode(e *jx.Encoder) {
 	e.ObjStart()
@@ -26,6 +66,18 @@ func (s *FileCreateRequest) encodeFields(e *jx.Encoder) {
 	{
 		e.FieldStart("purpose")
 		s.Purpose.Encode(e)
+	}
+	{
+		if s.Model.Set {
+			e.FieldStart("model")
+			s.Model.Encode(e)
+		}
+	}
+	{
+		if s.Description.Set {
+			e.FieldStart("description")
+			s.Description.Encode(e)
+		}
 	}
 	{
 		if s.PreprocessConfigs.Set {
@@ -53,12 +105,14 @@ func (s *FileCreateRequest) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfFileCreateRequest = [5]string{
+var jsonFieldsNameOfFileCreateRequest = [7]string{
 	0: "purpose",
-	1: "preprocess_configs",
-	2: "expire_at",
-	3: "url",
-	4: "tos",
+	1: "model",
+	2: "description",
+	3: "preprocess_configs",
+	4: "expire_at",
+	5: "url",
+	6: "tos",
 }
 
 // Decode decodes FileCreateRequest from json.
@@ -79,6 +133,26 @@ func (s *FileCreateRequest) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"purpose\"")
+			}
+		case "model":
+			if err := func() error {
+				s.Model.Reset()
+				if err := s.Model.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"model\"")
+			}
+		case "description":
+			if err := func() error {
+				s.Description.Reset()
+				if err := s.Description.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"description\"")
 			}
 		case "preprocess_configs":
 			if err := func() error {
@@ -721,6 +795,18 @@ func (s *FileObject) encodeFields(e *jx.Encoder) {
 		s.Purpose.Encode(e)
 	}
 	{
+		if s.Model.Set {
+			e.FieldStart("model")
+			s.Model.Encode(e)
+		}
+	}
+	{
+		if s.Description.Set {
+			e.FieldStart("description")
+			s.Description.Encode(e)
+		}
+	}
+	{
 		e.FieldStart("filename")
 		e.Str(s.Filename)
 	}
@@ -768,19 +854,21 @@ func (s *FileObject) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfFileObject = [12]string{
+var jsonFieldsNameOfFileObject = [14]string{
 	0:  "object",
 	1:  "id",
 	2:  "purpose",
-	3:  "filename",
-	4:  "bytes",
-	5:  "mime_type",
-	6:  "created_at",
-	7:  "expire_at",
-	8:  "status",
-	9:  "download_url",
-	10: "error",
-	11: "preprocess_configs",
+	3:  "model",
+	4:  "description",
+	5:  "filename",
+	6:  "bytes",
+	7:  "mime_type",
+	8:  "created_at",
+	9:  "expire_at",
+	10: "status",
+	11: "download_url",
+	12: "error",
+	13: "preprocess_configs",
 }
 
 // Decode decodes FileObject from json.
@@ -824,8 +912,28 @@ func (s *FileObject) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"purpose\"")
 			}
+		case "model":
+			if err := func() error {
+				s.Model.Reset()
+				if err := s.Model.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"model\"")
+			}
+		case "description":
+			if err := func() error {
+				s.Description.Reset()
+				if err := s.Description.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"description\"")
+			}
 		case "filename":
-			requiredBitSet[0] |= 1 << 3
+			requiredBitSet[0] |= 1 << 5
 			if err := func() error {
 				v, err := d.Str()
 				s.Filename = string(v)
@@ -857,7 +965,7 @@ func (s *FileObject) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"mime_type\"")
 			}
 		case "created_at":
-			requiredBitSet[0] |= 1 << 6
+			requiredBitSet[1] |= 1 << 0
 			if err := func() error {
 				v, err := d.Int64()
 				s.CreatedAt = int64(v)
@@ -869,7 +977,7 @@ func (s *FileObject) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"created_at\"")
 			}
 		case "expire_at":
-			requiredBitSet[0] |= 1 << 7
+			requiredBitSet[1] |= 1 << 1
 			if err := func() error {
 				v, err := d.Int64()
 				s.ExpireAt = int64(v)
@@ -881,7 +989,7 @@ func (s *FileObject) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"expire_at\"")
 			}
 		case "status":
-			requiredBitSet[1] |= 1 << 0
+			requiredBitSet[1] |= 1 << 2
 			if err := func() error {
 				if err := s.Status.Decode(d); err != nil {
 					return err
@@ -930,8 +1038,8 @@ func (s *FileObject) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [2]uint8{
-		0b11001111,
-		0b00000001,
+		0b00100111,
+		0b00000111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -1011,6 +1119,39 @@ func (s FileObjectObject) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *FileObjectObject) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes Description as json.
+func (o OptDescription) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes Description from json.
+func (o *OptDescription) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptDescription to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptDescription) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptDescription) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -1335,6 +1476,8 @@ func (s *Purpose) Decode(d *jx.Decoder) error {
 		*s = PurposeUserData
 	case PurposeAgent:
 		*s = PurposeAgent
+	case PurposeVoice:
+		*s = PurposeVoice
 	default:
 		*s = Purpose(v)
 	}

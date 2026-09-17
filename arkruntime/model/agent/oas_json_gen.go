@@ -2987,12 +2987,12 @@ func (s *SkillRefType) Decode(d *jx.Decoder) error {
 	}
 	// Try to use constant string.
 	switch SkillRefType(v) {
-	case SkillRefTypeAnthropic:
-		*s = SkillRefTypeAnthropic
 	case SkillRefTypeCustom:
 		*s = SkillRefTypeCustom
 	case SkillRefTypeSkillHub:
 		*s = SkillRefTypeSkillHub
+	case SkillRefTypeArk:
+		*s = SkillRefTypeArk
 	default:
 		*s = SkillRefType(v)
 	}

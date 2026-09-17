@@ -2604,9 +2604,7 @@ type ManagedAgentsUserDefineOutcomeEventParams struct {
 	// 目标描述。.
 	Description string `json:"description"`
 	// Outcome id（客户端自定义 unique key）；缺省时由服务端在事件入库前 stamp
-	// 一个 `outc-<ts>-<rand>` 形态的 id 出来（见 ark-agent-event
-	// eventservice.go::ensureUserEventID 的 envelope-level mint 逻辑），
-	// 因此 wire 上此字段是 optional，不是 required。.
+	// 一个 `outc-...` 形态的 id，因此 wire 上此字段是 optional，不是 required。.
 	OutcomeID OptString `json:"outcome_id"`
 	// 评测 rubric。.
 	Rubric ManagedAgentsRubric `json:"rubric"`
@@ -4440,7 +4438,7 @@ func (s *SendSessionEventsResponseDataItem) init() SendSessionEventsResponseData
 // 需要强类型时可自行反序列化到 agent 包的 `Agent`。.
 // Ref: #/components/schemas/Session
 type Session struct {
-	// Session ID。.
+	// Session ID，形如 `sesn-...`。.
 	ID string `json:"id"`
 	// 固定 `"session"`。.
 	Type SessionType `json:"type"`
@@ -4642,7 +4640,7 @@ func (s *SessionEnvironment) init() SessionEnvironment {
 // `mount_path` 描述在 sandbox 中的挂载点，各类型都可用。.
 // Ref: #/components/schemas/SessionResource
 type SessionResource struct {
-	// SessionResource ID。.
+	// SessionResource ID，形如 `sesrsc-...`。.
 	ID OptString `json:"id"`
 	// 资源类型。.
 	Type SessionResourceType `json:"type"`

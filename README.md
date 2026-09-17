@@ -102,7 +102,7 @@ func main() {
                 OneOf: chat.NewChatCompletionRequestUserMessageChatCompletionRequestMessageSum(
                     chat.ChatCompletionRequestUserMessage{
                         Role:    chat.ChatCompletionRequestUserMessageRoleUser,
-                        Content: chat.NewStringChatCompletionMessageContent("What is the capital of France?"),
+                        Content: chat.NewOptNilChatCompletionMessageContent(chat.NewStringChatCompletionMessageContent("What is the capital of France?")),
                     },
                 ),
             },
@@ -287,7 +287,8 @@ MCP examples are provided for both clouds and show the required `ark-beta-mcp: t
 Run any example with:
 
 ```bash
-ARK_API_KEY=your-key go run examples/volc/responses/basic/main.go
+cd examples
+ARK_API_KEY=your-key go run ./volc/responses/basic
 ```
 
 ## Requirements

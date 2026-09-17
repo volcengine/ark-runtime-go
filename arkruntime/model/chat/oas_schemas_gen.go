@@ -272,8 +272,9 @@ func (s *ChatCompletionContentPartFileType) UnmarshalText(data []byte) error {
 // Ref: #/components/schemas/ChatCompletionContentPartImage
 type ChatCompletionContentPartImage struct {
 	// The type of the content part. Always `image_url`.
-	Type     ChatCompletionContentPartImageType     `json:"type"`
-	ImageURL ChatCompletionContentPartImageImageUrl `json:"image_url"`
+	Type ChatCompletionContentPartImageType `json:"type"`
+	// An image URL or base64 data string, or an object with image options.
+	ImageURL ChatCompletionContentPartImageImageURL `json:"image_url"`
 }
 
 // GetType returns the value of Type.
@@ -282,7 +283,7 @@ func (s *ChatCompletionContentPartImage) GetType() ChatCompletionContentPartImag
 }
 
 // GetImageURL returns the value of ImageURL.
-func (s *ChatCompletionContentPartImage) GetImageURL() ChatCompletionContentPartImageImageUrl {
+func (s *ChatCompletionContentPartImage) GetImageURL() ChatCompletionContentPartImageImageURL {
 	return s.ImageURL
 }
 
@@ -292,8 +293,77 @@ func (s *ChatCompletionContentPartImage) SetType(val ChatCompletionContentPartIm
 }
 
 // SetImageURL sets the value of ImageURL.
-func (s *ChatCompletionContentPartImage) SetImageURL(val ChatCompletionContentPartImageImageUrl) {
+func (s *ChatCompletionContentPartImage) SetImageURL(val ChatCompletionContentPartImageImageURL) {
 	s.ImageURL = val
+}
+
+// An image URL or base64 data string, or an object with image options.
+// ChatCompletionContentPartImageImageURL represents sum type.
+type ChatCompletionContentPartImageImageURL struct {
+	Type                                   ChatCompletionContentPartImageImageURLType // switch on this field
+	String                                 string
+	ChatCompletionContentPartImageImageUrl ChatCompletionContentPartImageImageUrl
+}
+
+// ChatCompletionContentPartImageImageURLType is oneOf type of ChatCompletionContentPartImageImageURL.
+type ChatCompletionContentPartImageImageURLType string
+
+// Possible values for ChatCompletionContentPartImageImageURLType.
+const (
+	StringChatCompletionContentPartImageImageURL                                 ChatCompletionContentPartImageImageURLType = "string"
+	ChatCompletionContentPartImageImageUrlChatCompletionContentPartImageImageURL ChatCompletionContentPartImageImageURLType = "ChatCompletionContentPartImageImageUrl"
+)
+
+// IsString reports whether ChatCompletionContentPartImageImageURL is string.
+func (s ChatCompletionContentPartImageImageURL) IsString() bool {
+	return s.Type == StringChatCompletionContentPartImageImageURL
+}
+
+// IsChatCompletionContentPartImageImageUrl reports whether ChatCompletionContentPartImageImageURL is ChatCompletionContentPartImageImageUrl.
+func (s ChatCompletionContentPartImageImageURL) IsChatCompletionContentPartImageImageUrl() bool {
+	return s.Type == ChatCompletionContentPartImageImageUrlChatCompletionContentPartImageImageURL
+}
+
+// SetString sets ChatCompletionContentPartImageImageURL to string.
+func (s *ChatCompletionContentPartImageImageURL) SetString(v string) {
+	s.Type = StringChatCompletionContentPartImageImageURL
+	s.String = v
+}
+
+// GetString returns string and true boolean if ChatCompletionContentPartImageImageURL is string.
+func (s ChatCompletionContentPartImageImageURL) GetString() (v string, ok bool) {
+	if !s.IsString() {
+		return v, false
+	}
+	return s.String, true
+}
+
+// NewStringChatCompletionContentPartImageImageURL returns new ChatCompletionContentPartImageImageURL from string.
+func NewStringChatCompletionContentPartImageImageURL(v string) ChatCompletionContentPartImageImageURL {
+	var s ChatCompletionContentPartImageImageURL
+	s.SetString(v)
+	return s
+}
+
+// SetChatCompletionContentPartImageImageUrl sets ChatCompletionContentPartImageImageURL to ChatCompletionContentPartImageImageUrl.
+func (s *ChatCompletionContentPartImageImageURL) SetChatCompletionContentPartImageImageUrl(v ChatCompletionContentPartImageImageUrl) {
+	s.Type = ChatCompletionContentPartImageImageUrlChatCompletionContentPartImageImageURL
+	s.ChatCompletionContentPartImageImageUrl = v
+}
+
+// GetChatCompletionContentPartImageImageUrl returns ChatCompletionContentPartImageImageUrl and true boolean if ChatCompletionContentPartImageImageURL is ChatCompletionContentPartImageImageUrl.
+func (s ChatCompletionContentPartImageImageURL) GetChatCompletionContentPartImageImageUrl() (v ChatCompletionContentPartImageImageUrl, ok bool) {
+	if !s.IsChatCompletionContentPartImageImageUrl() {
+		return v, false
+	}
+	return s.ChatCompletionContentPartImageImageUrl, true
+}
+
+// NewChatCompletionContentPartImageImageUrlChatCompletionContentPartImageImageURL returns new ChatCompletionContentPartImageImageURL from ChatCompletionContentPartImageImageUrl.
+func NewChatCompletionContentPartImageImageUrlChatCompletionContentPartImageImageURL(v ChatCompletionContentPartImageImageUrl) ChatCompletionContentPartImageImageURL {
+	var s ChatCompletionContentPartImageImageURL
+	s.SetChatCompletionContentPartImageImageUrl(v)
+	return s
 }
 
 // Ref: #/components/schemas/ChatCompletionContentPartImageImageUrl
@@ -1005,7 +1075,7 @@ func (s *ChatCompletionNamedToolChoiceType) UnmarshalText(data []byte) error {
 
 // Ref: #/components/schemas/ChatCompletionRequest
 type ChatCompletionRequest struct {
-	// A list of messages comprising the conversation so far.
+	// A non-empty list of messages comprising the conversation so far.
 	Messages []ChatCompletionRequestMessage `json:"messages"`
 	// ID of the model to use.
 	Model string `json:"model"`
@@ -1024,20 +1094,20 @@ type ChatCompletionRequest struct {
 	// Whether to return log probabilities of the output tokens.
 	Logprobs OptBool `json:"logprobs"`
 	// Number of most-likely tokens to return at each position when
-	// `logprobs` is true. Range 0-20.
+	// `logprobs` is true. The allowed range is model-dependent (default 0-20).
 	TopLogprobs OptInt32 `json:"top_logprobs"`
-	// The maximum number of tokens that can be generated in the
-	// completion.
+	// The non-negative maximum number of tokens that can be generated in
+	// the completion.
 	MaxTokens OptInt32 `json:"max_tokens"`
-	// Upper bound on completion tokens, including reasoning tokens.
+	// Non-negative upper bound on completion tokens, including reasoning tokens.
 	MaxCompletionTokens OptInt32 `json:"max_completion_tokens"`
 	// How many chat completion choices to generate for each input
 	// message. Range 1-5.
 	N OptInt32 `json:"n"`
 	// An object specifying the format that the model must output.
 	ResponseFormat OptChatCompletionResponseFormat `json:"response_format"`
-	// Up to 4 sequences where the API will stop generating further
-	// tokens.
+	// Sequences where the API will stop generating further tokens. The
+	// count limit is model-dependent (default 4). Null means no stop sequences.
 	Stop OptChatCompletionStop `json:"stop"`
 	// If set, partial message deltas will be sent as data-only
 	// server-sent events.
@@ -1308,16 +1378,16 @@ func (s *ChatCompletionRequest) SetThinking(val OptThinking) {
 type ChatCompletionRequestAssistantMessage struct {
 	// The role of the messages author. Always `assistant`.
 	Role ChatCompletionRequestAssistantMessageRole `json:"role"`
-	// The contents of the assistant message. Required unless `tool_calls`
-	// is specified.
-	Content OptChatCompletionMessageContent `json:"content"`
+	// The contents of the assistant message. Missing, null, or empty content
+	// is normalized to an empty string, including when no tools are called.
+	Content OptNilChatCompletionMessageContent `json:"content"`
 	// The reasoning content emitted by the assistant alongside `content`.
-	ReasoningContent OptChatCompletionMessageContent `json:"reasoning_content"`
+	ReasoningContent OptNilChatCompletionMessageContent `json:"reasoning_content"`
 	// Encrypted form of the reasoning content, when redaction is enabled.
 	EncryptedContent OptString `json:"encrypted_content"`
 	// The tool calls generated by the model, such as function calls.
-	ToolCalls []ChatCompletionMessageToolCall `json:"tool_calls"`
-	Name      OptString                       `json:"name"`
+	ToolCalls []ChatCompletionRequestMessageToolCall `json:"tool_calls"`
+	Name      OptString                              `json:"name"`
 }
 
 // GetRole returns the value of Role.
@@ -1326,12 +1396,12 @@ func (s *ChatCompletionRequestAssistantMessage) GetRole() ChatCompletionRequestA
 }
 
 // GetContent returns the value of Content.
-func (s *ChatCompletionRequestAssistantMessage) GetContent() OptChatCompletionMessageContent {
+func (s *ChatCompletionRequestAssistantMessage) GetContent() OptNilChatCompletionMessageContent {
 	return s.Content
 }
 
 // GetReasoningContent returns the value of ReasoningContent.
-func (s *ChatCompletionRequestAssistantMessage) GetReasoningContent() OptChatCompletionMessageContent {
+func (s *ChatCompletionRequestAssistantMessage) GetReasoningContent() OptNilChatCompletionMessageContent {
 	return s.ReasoningContent
 }
 
@@ -1341,7 +1411,7 @@ func (s *ChatCompletionRequestAssistantMessage) GetEncryptedContent() OptString 
 }
 
 // GetToolCalls returns the value of ToolCalls.
-func (s *ChatCompletionRequestAssistantMessage) GetToolCalls() []ChatCompletionMessageToolCall {
+func (s *ChatCompletionRequestAssistantMessage) GetToolCalls() []ChatCompletionRequestMessageToolCall {
 	return s.ToolCalls
 }
 
@@ -1356,12 +1426,12 @@ func (s *ChatCompletionRequestAssistantMessage) SetRole(val ChatCompletionReques
 }
 
 // SetContent sets the value of Content.
-func (s *ChatCompletionRequestAssistantMessage) SetContent(val OptChatCompletionMessageContent) {
+func (s *ChatCompletionRequestAssistantMessage) SetContent(val OptNilChatCompletionMessageContent) {
 	s.Content = val
 }
 
 // SetReasoningContent sets the value of ReasoningContent.
-func (s *ChatCompletionRequestAssistantMessage) SetReasoningContent(val OptChatCompletionMessageContent) {
+func (s *ChatCompletionRequestAssistantMessage) SetReasoningContent(val OptNilChatCompletionMessageContent) {
 	s.ReasoningContent = val
 }
 
@@ -1371,7 +1441,7 @@ func (s *ChatCompletionRequestAssistantMessage) SetEncryptedContent(val OptStrin
 }
 
 // SetToolCalls sets the value of ToolCalls.
-func (s *ChatCompletionRequestAssistantMessage) SetToolCalls(val []ChatCompletionMessageToolCall) {
+func (s *ChatCompletionRequestAssistantMessage) SetToolCalls(val []ChatCompletionRequestMessageToolCall) {
 	s.ToolCalls = val
 }
 
@@ -1415,6 +1485,81 @@ func (s *ChatCompletionRequestAssistantMessageRole) UnmarshalText(data []byte) e
 	}
 }
 
+// Developer instructions are treated as system messages.
+// Ref: #/components/schemas/ChatCompletionRequestDeveloperMessage
+type ChatCompletionRequestDeveloperMessage struct {
+	// The role of the message author. Always `developer`.
+	Role ChatCompletionRequestDeveloperMessageRole `json:"role"`
+	// The contents of the developer message.
+	Content ChatCompletionMessageContent `json:"content"`
+	Name    OptString                    `json:"name"`
+}
+
+// GetRole returns the value of Role.
+func (s *ChatCompletionRequestDeveloperMessage) GetRole() ChatCompletionRequestDeveloperMessageRole {
+	return s.Role
+}
+
+// GetContent returns the value of Content.
+func (s *ChatCompletionRequestDeveloperMessage) GetContent() ChatCompletionMessageContent {
+	return s.Content
+}
+
+// GetName returns the value of Name.
+func (s *ChatCompletionRequestDeveloperMessage) GetName() OptString {
+	return s.Name
+}
+
+// SetRole sets the value of Role.
+func (s *ChatCompletionRequestDeveloperMessage) SetRole(val ChatCompletionRequestDeveloperMessageRole) {
+	s.Role = val
+}
+
+// SetContent sets the value of Content.
+func (s *ChatCompletionRequestDeveloperMessage) SetContent(val ChatCompletionMessageContent) {
+	s.Content = val
+}
+
+// SetName sets the value of Name.
+func (s *ChatCompletionRequestDeveloperMessage) SetName(val OptString) {
+	s.Name = val
+}
+
+// The role of the message author. Always `developer`.
+type ChatCompletionRequestDeveloperMessageRole string
+
+const (
+	ChatCompletionRequestDeveloperMessageRoleDeveloper ChatCompletionRequestDeveloperMessageRole = "developer"
+)
+
+// AllValues returns all ChatCompletionRequestDeveloperMessageRole values.
+func (ChatCompletionRequestDeveloperMessageRole) AllValues() []ChatCompletionRequestDeveloperMessageRole {
+	return []ChatCompletionRequestDeveloperMessageRole{
+		ChatCompletionRequestDeveloperMessageRoleDeveloper,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ChatCompletionRequestDeveloperMessageRole) MarshalText() ([]byte, error) {
+	switch s {
+	case ChatCompletionRequestDeveloperMessageRoleDeveloper:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ChatCompletionRequestDeveloperMessageRole) UnmarshalText(data []byte) error {
+	switch ChatCompletionRequestDeveloperMessageRole(data) {
+	case ChatCompletionRequestDeveloperMessageRoleDeveloper:
+		*s = ChatCompletionRequestDeveloperMessageRoleDeveloper
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Modify the likelihood of specified tokens appearing in the
 // completion. Maps token IDs (as strings) to a bias from -100 to 100.
 type ChatCompletionRequestLogitBias map[string]float32
@@ -1448,6 +1593,7 @@ type ChatCompletionRequestMessageSum struct {
 	Type                                  ChatCompletionRequestMessageSumType // switch on this field
 	ChatCompletionRequestUserMessage      ChatCompletionRequestUserMessage
 	ChatCompletionRequestSystemMessage    ChatCompletionRequestSystemMessage
+	ChatCompletionRequestDeveloperMessage ChatCompletionRequestDeveloperMessage
 	ChatCompletionRequestAssistantMessage ChatCompletionRequestAssistantMessage
 	ChatCompletionRequestToolMessage      ChatCompletionRequestToolMessage
 }
@@ -1459,6 +1605,7 @@ type ChatCompletionRequestMessageSumType string
 const (
 	ChatCompletionRequestUserMessageChatCompletionRequestMessageSum      ChatCompletionRequestMessageSumType = "user"
 	ChatCompletionRequestSystemMessageChatCompletionRequestMessageSum    ChatCompletionRequestMessageSumType = "system"
+	ChatCompletionRequestDeveloperMessageChatCompletionRequestMessageSum ChatCompletionRequestMessageSumType = "developer"
 	ChatCompletionRequestAssistantMessageChatCompletionRequestMessageSum ChatCompletionRequestMessageSumType = "assistant"
 	ChatCompletionRequestToolMessageChatCompletionRequestMessageSum      ChatCompletionRequestMessageSumType = "tool"
 )
@@ -1471,6 +1618,11 @@ func (s ChatCompletionRequestMessageSum) IsChatCompletionRequestUserMessage() bo
 // IsChatCompletionRequestSystemMessage reports whether ChatCompletionRequestMessageSum is ChatCompletionRequestSystemMessage.
 func (s ChatCompletionRequestMessageSum) IsChatCompletionRequestSystemMessage() bool {
 	return s.Type == ChatCompletionRequestSystemMessageChatCompletionRequestMessageSum
+}
+
+// IsChatCompletionRequestDeveloperMessage reports whether ChatCompletionRequestMessageSum is ChatCompletionRequestDeveloperMessage.
+func (s ChatCompletionRequestMessageSum) IsChatCompletionRequestDeveloperMessage() bool {
+	return s.Type == ChatCompletionRequestDeveloperMessageChatCompletionRequestMessageSum
 }
 
 // IsChatCompletionRequestAssistantMessage reports whether ChatCompletionRequestMessageSum is ChatCompletionRequestAssistantMessage.
@@ -1525,6 +1677,27 @@ func NewChatCompletionRequestSystemMessageChatCompletionRequestMessageSum(v Chat
 	return s
 }
 
+// SetChatCompletionRequestDeveloperMessage sets ChatCompletionRequestMessageSum to ChatCompletionRequestDeveloperMessage.
+func (s *ChatCompletionRequestMessageSum) SetChatCompletionRequestDeveloperMessage(v ChatCompletionRequestDeveloperMessage) {
+	s.Type = ChatCompletionRequestDeveloperMessageChatCompletionRequestMessageSum
+	s.ChatCompletionRequestDeveloperMessage = v
+}
+
+// GetChatCompletionRequestDeveloperMessage returns ChatCompletionRequestDeveloperMessage and true boolean if ChatCompletionRequestMessageSum is ChatCompletionRequestDeveloperMessage.
+func (s ChatCompletionRequestMessageSum) GetChatCompletionRequestDeveloperMessage() (v ChatCompletionRequestDeveloperMessage, ok bool) {
+	if !s.IsChatCompletionRequestDeveloperMessage() {
+		return v, false
+	}
+	return s.ChatCompletionRequestDeveloperMessage, true
+}
+
+// NewChatCompletionRequestDeveloperMessageChatCompletionRequestMessageSum returns new ChatCompletionRequestMessageSum from ChatCompletionRequestDeveloperMessage.
+func NewChatCompletionRequestDeveloperMessageChatCompletionRequestMessageSum(v ChatCompletionRequestDeveloperMessage) ChatCompletionRequestMessageSum {
+	var s ChatCompletionRequestMessageSum
+	s.SetChatCompletionRequestDeveloperMessage(v)
+	return s
+}
+
 // SetChatCompletionRequestAssistantMessage sets ChatCompletionRequestMessageSum to ChatCompletionRequestAssistantMessage.
 func (s *ChatCompletionRequestMessageSum) SetChatCompletionRequestAssistantMessage(v ChatCompletionRequestAssistantMessage) {
 	s.Type = ChatCompletionRequestAssistantMessageChatCompletionRequestMessageSum
@@ -1565,6 +1738,76 @@ func NewChatCompletionRequestToolMessageChatCompletionRequestMessageSum(v ChatCo
 	var s ChatCompletionRequestMessageSum
 	s.SetChatCompletionRequestToolMessage(v)
 	return s
+}
+
+// Ref: #/components/schemas/ChatCompletionRequestMessageToolCall
+type ChatCompletionRequestMessageToolCall struct {
+	// The ID of the tool call. Missing or null IDs are normalized to an
+	// empty string.
+	ID OptNilString `json:"id"`
+	// The type of the tool. Currently, only `function` is supported.
+	Type ToolType `json:"type"`
+	// The function called in a previous assistant message.
+	Function ChatCompletionRequestMessageToolCallFunction `json:"function"`
+}
+
+// GetID returns the value of ID.
+func (s *ChatCompletionRequestMessageToolCall) GetID() OptNilString {
+	return s.ID
+}
+
+// GetType returns the value of Type.
+func (s *ChatCompletionRequestMessageToolCall) GetType() ToolType {
+	return s.Type
+}
+
+// GetFunction returns the value of Function.
+func (s *ChatCompletionRequestMessageToolCall) GetFunction() ChatCompletionRequestMessageToolCallFunction {
+	return s.Function
+}
+
+// SetID sets the value of ID.
+func (s *ChatCompletionRequestMessageToolCall) SetID(val OptNilString) {
+	s.ID = val
+}
+
+// SetType sets the value of Type.
+func (s *ChatCompletionRequestMessageToolCall) SetType(val ToolType) {
+	s.Type = val
+}
+
+// SetFunction sets the value of Function.
+func (s *ChatCompletionRequestMessageToolCall) SetFunction(val ChatCompletionRequestMessageToolCallFunction) {
+	s.Function = val
+}
+
+// Ref: #/components/schemas/ChatCompletionRequestMessageToolCallFunction
+type ChatCompletionRequestMessageToolCallFunction struct {
+	// The name of the function to call.
+	Name string `json:"name"`
+	// The JSON-encoded function arguments. When omitted, the backend uses
+	// an empty string.
+	Arguments OptString `json:"arguments"`
+}
+
+// GetName returns the value of Name.
+func (s *ChatCompletionRequestMessageToolCallFunction) GetName() string {
+	return s.Name
+}
+
+// GetArguments returns the value of Arguments.
+func (s *ChatCompletionRequestMessageToolCallFunction) GetArguments() OptString {
+	return s.Arguments
+}
+
+// SetName sets the value of Name.
+func (s *ChatCompletionRequestMessageToolCallFunction) SetName(val string) {
+	s.Name = val
+}
+
+// SetArguments sets the value of Arguments.
+func (s *ChatCompletionRequestMessageToolCallFunction) SetArguments(val OptString) {
+	s.Arguments = val
 }
 
 // Ref: #/components/schemas/ChatCompletionRequestSystemMessage
@@ -1645,11 +1888,13 @@ func (s *ChatCompletionRequestSystemMessageRole) UnmarshalText(data []byte) erro
 type ChatCompletionRequestToolMessage struct {
 	// The role of the messages author. Always `tool`.
 	Role ChatCompletionRequestToolMessageRole `json:"role"`
-	// The contents of the tool message.
-	Content ChatCompletionMessageContent `json:"content"`
-	// Tool call that this message is responding to.
-	ToolCallID string    `json:"tool_call_id"`
-	Name       OptString `json:"name"`
+	// The contents of the tool message. Missing or null content is
+	// normalized to an empty string.
+	Content OptNilChatCompletionMessageContent `json:"content"`
+	// Tool call that this message is responding to. Missing or null IDs
+	// are normalized to an empty string.
+	ToolCallID OptNilString `json:"tool_call_id"`
+	Name       OptString    `json:"name"`
 }
 
 // GetRole returns the value of Role.
@@ -1658,12 +1903,12 @@ func (s *ChatCompletionRequestToolMessage) GetRole() ChatCompletionRequestToolMe
 }
 
 // GetContent returns the value of Content.
-func (s *ChatCompletionRequestToolMessage) GetContent() ChatCompletionMessageContent {
+func (s *ChatCompletionRequestToolMessage) GetContent() OptNilChatCompletionMessageContent {
 	return s.Content
 }
 
 // GetToolCallID returns the value of ToolCallID.
-func (s *ChatCompletionRequestToolMessage) GetToolCallID() string {
+func (s *ChatCompletionRequestToolMessage) GetToolCallID() OptNilString {
 	return s.ToolCallID
 }
 
@@ -1678,12 +1923,12 @@ func (s *ChatCompletionRequestToolMessage) SetRole(val ChatCompletionRequestTool
 }
 
 // SetContent sets the value of Content.
-func (s *ChatCompletionRequestToolMessage) SetContent(val ChatCompletionMessageContent) {
+func (s *ChatCompletionRequestToolMessage) SetContent(val OptNilChatCompletionMessageContent) {
 	s.Content = val
 }
 
 // SetToolCallID sets the value of ToolCallID.
-func (s *ChatCompletionRequestToolMessage) SetToolCallID(val string) {
+func (s *ChatCompletionRequestToolMessage) SetToolCallID(val OptNilString) {
 	s.ToolCallID = val
 }
 
@@ -1731,8 +1976,9 @@ func (s *ChatCompletionRequestToolMessageRole) UnmarshalText(data []byte) error 
 type ChatCompletionRequestUserMessage struct {
 	// The role of the messages author. Always `user`.
 	Role ChatCompletionRequestUserMessageRole `json:"role"`
-	// The contents of the user message.
-	Content ChatCompletionMessageContent `json:"content"`
+	// The contents of the user message. Missing, null, or empty content is
+	// normalized to an empty string.
+	Content OptNilChatCompletionMessageContent `json:"content"`
 	// An optional name for the participant. Provides the model information
 	// to differentiate between participants of the same role.
 	Name OptString `json:"name"`
@@ -1744,7 +1990,7 @@ func (s *ChatCompletionRequestUserMessage) GetRole() ChatCompletionRequestUserMe
 }
 
 // GetContent returns the value of Content.
-func (s *ChatCompletionRequestUserMessage) GetContent() ChatCompletionMessageContent {
+func (s *ChatCompletionRequestUserMessage) GetContent() OptNilChatCompletionMessageContent {
 	return s.Content
 }
 
@@ -1759,7 +2005,7 @@ func (s *ChatCompletionRequestUserMessage) SetRole(val ChatCompletionRequestUser
 }
 
 // SetContent sets the value of Content.
-func (s *ChatCompletionRequestUserMessage) SetContent(val ChatCompletionMessageContent) {
+func (s *ChatCompletionRequestUserMessage) SetContent(val OptNilChatCompletionMessageContent) {
 	s.Content = val
 }
 
@@ -1973,8 +2219,7 @@ func (s *ChatCompletionResponseChoice) SetLogprobs(val NilChatCompletionChoiceLo
 type ChatCompletionResponseFormat struct {
 	// The type of the response format.
 	Type OptResponseFormatType `json:"type"`
-	// Structured Outputs configuration; required when `type` is
-	// `json_schema`.
+	// Structured Outputs configuration for `json_schema` responses.
 	JSONSchema OptChatCompletionResponseFormatJsonSchema `json:"json_schema"`
 }
 
@@ -2000,13 +2245,12 @@ func (s *ChatCompletionResponseFormat) SetJSONSchema(val OptChatCompletionRespon
 
 // Ref: #/components/schemas/ChatCompletionResponseFormatJsonSchema
 type ChatCompletionResponseFormatJsonSchema struct {
-	// The name of the response format.
+	// The non-empty name of the response format.
 	Name string `json:"name"`
 	// A description of what the response format is for.
 	Description OptString `json:"description"`
-	// The schema for the response format, described as a JSON Schema
-	// object.
-	Schema OptChatCompletionResponseFormatJsonSchemaSchema `json:"schema"`
+	// The JSON Schema value for the response format, preserved as raw JSON.
+	Schema jx.Raw `json:"schema"`
 	// Whether to enable strict schema adherence when generating the
 	// output.
 	Strict OptBool `json:"strict"`
@@ -2023,7 +2267,7 @@ func (s *ChatCompletionResponseFormatJsonSchema) GetDescription() OptString {
 }
 
 // GetSchema returns the value of Schema.
-func (s *ChatCompletionResponseFormatJsonSchema) GetSchema() OptChatCompletionResponseFormatJsonSchemaSchema {
+func (s *ChatCompletionResponseFormatJsonSchema) GetSchema() jx.Raw {
 	return s.Schema
 }
 
@@ -2043,26 +2287,13 @@ func (s *ChatCompletionResponseFormatJsonSchema) SetDescription(val OptString) {
 }
 
 // SetSchema sets the value of Schema.
-func (s *ChatCompletionResponseFormatJsonSchema) SetSchema(val OptChatCompletionResponseFormatJsonSchemaSchema) {
+func (s *ChatCompletionResponseFormatJsonSchema) SetSchema(val jx.Raw) {
 	s.Schema = val
 }
 
 // SetStrict sets the value of Strict.
 func (s *ChatCompletionResponseFormatJsonSchema) SetStrict(val OptBool) {
 	s.Strict = val
-}
-
-// The schema for the response format, described as a JSON Schema
-// object.
-type ChatCompletionResponseFormatJsonSchemaSchema map[string]jx.Raw
-
-func (s *ChatCompletionResponseFormatJsonSchemaSchema) init() ChatCompletionResponseFormatJsonSchemaSchema {
-	m := *s
-	if m == nil {
-		m = map[string]jx.Raw{}
-		*s = m
-	}
-	return m
 }
 
 // Ref: #/components/schemas/ChatCompletionResponseMessage
@@ -2241,6 +2472,7 @@ type ChatCompletionStop struct {
 	Type        ChatCompletionStopType // switch on this field
 	String      string
 	StringArray []string
+	Null        struct{}
 }
 
 // ChatCompletionStopType is oneOf type of ChatCompletionStop.
@@ -2250,6 +2482,7 @@ type ChatCompletionStopType string
 const (
 	StringChatCompletionStop      ChatCompletionStopType = "string"
 	StringArrayChatCompletionStop ChatCompletionStopType = "[]string"
+	NullChatCompletionStop        ChatCompletionStopType = "struct{}"
 )
 
 // IsString reports whether ChatCompletionStop is string.
@@ -2257,6 +2490,9 @@ func (s ChatCompletionStop) IsString() bool { return s.Type == StringChatComplet
 
 // IsStringArray reports whether ChatCompletionStop is []string.
 func (s ChatCompletionStop) IsStringArray() bool { return s.Type == StringArrayChatCompletionStop }
+
+// IsNull reports whether ChatCompletionStop is struct{}.
+func (s ChatCompletionStop) IsNull() bool { return s.Type == NullChatCompletionStop }
 
 // SetString sets ChatCompletionStop to string.
 func (s *ChatCompletionStop) SetString(v string) {
@@ -2297,6 +2533,27 @@ func (s ChatCompletionStop) GetStringArray() (v []string, ok bool) {
 func NewStringArrayChatCompletionStop(v []string) ChatCompletionStop {
 	var s ChatCompletionStop
 	s.SetStringArray(v)
+	return s
+}
+
+// SetNull sets ChatCompletionStop to struct{}.
+func (s *ChatCompletionStop) SetNull(v struct{}) {
+	s.Type = NullChatCompletionStop
+	s.Null = v
+}
+
+// GetNull returns struct{} and true boolean if ChatCompletionStop is struct{}.
+func (s ChatCompletionStop) GetNull() (v struct{}, ok bool) {
+	if !s.IsNull() {
+		return v, false
+	}
+	return s.Null, true
+}
+
+// NewNullChatCompletionStop returns new ChatCompletionStop from struct{}.
+func NewNullChatCompletionStop(v struct{}) ChatCompletionStop {
+	var s ChatCompletionStop
+	s.SetNull(v)
 	return s
 }
 
@@ -2605,7 +2862,8 @@ type ChatCompletionTokenLogprob struct {
 	Logprob float64 `json:"logprob"`
 	// A list of integers representing the UTF-8 bytes representation of
 	// the token. May be `null` if there is no bytes representation.
-	Bytes       []int32                                `json:"bytes"`
+	Bytes []int32 `json:"bytes"`
+	// The most likely tokens at this position, or `null` when none are returned.
 	TopLogprobs []ChatCompletionTokenLogprobTopLogprob `json:"top_logprobs"`
 }
 
@@ -2653,7 +2911,8 @@ func (s *ChatCompletionTokenLogprob) SetTopLogprobs(val []ChatCompletionTokenLog
 type ChatCompletionTokenLogprobTopLogprob struct {
 	Token   string  `json:"token"`
 	Logprob float64 `json:"logprob"`
-	Bytes   []int32 `json:"bytes"`
+	// UTF-8 bytes for the token, or `null` when no byte representation exists.
+	Bytes []int32 `json:"bytes"`
 }
 
 // GetToken returns the value of Token.
@@ -2801,6 +3060,8 @@ func (s *ChatCompletionToolChoiceFunction) SetName(val string) {
 type CompletionTokensDetails struct {
 	// Reasoning tokens emitted by the model.
 	ReasoningTokens int32 `json:"reasoning_tokens"`
+	// Completion tokens charged against provisioned throughput after conversion.
+	ProvisionedTokens OptInt32 `json:"provisioned_tokens"`
 }
 
 // GetReasoningTokens returns the value of ReasoningTokens.
@@ -2808,9 +3069,19 @@ func (s *CompletionTokensDetails) GetReasoningTokens() int32 {
 	return s.ReasoningTokens
 }
 
+// GetProvisionedTokens returns the value of ProvisionedTokens.
+func (s *CompletionTokensDetails) GetProvisionedTokens() OptInt32 {
+	return s.ProvisionedTokens
+}
+
 // SetReasoningTokens sets the value of ReasoningTokens.
 func (s *CompletionTokensDetails) SetReasoningTokens(val int32) {
 	s.ReasoningTokens = val
+}
+
+// SetProvisionedTokens sets the value of ProvisionedTokens.
+func (s *CompletionTokensDetails) SetProvisionedTokens(val OptInt32) {
+	s.ProvisionedTokens = val
 }
 
 // Ref: #/components/schemas/CompletionUsage
@@ -3292,52 +3563,6 @@ func (o OptBool) Or(d bool) bool {
 	return d
 }
 
-// NewOptChatCompletionMessageContent returns new OptChatCompletionMessageContent with value set to v.
-func NewOptChatCompletionMessageContent(v ChatCompletionMessageContent) OptChatCompletionMessageContent {
-	return OptChatCompletionMessageContent{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptChatCompletionMessageContent is optional ChatCompletionMessageContent.
-type OptChatCompletionMessageContent struct {
-	Value ChatCompletionMessageContent
-	Set   bool
-}
-
-// IsSet returns true if OptChatCompletionMessageContent was set.
-func (o OptChatCompletionMessageContent) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptChatCompletionMessageContent) Reset() {
-	var v ChatCompletionMessageContent
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptChatCompletionMessageContent) SetTo(v ChatCompletionMessageContent) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptChatCompletionMessageContent) Get() (v ChatCompletionMessageContent, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptChatCompletionMessageContent) Or(d ChatCompletionMessageContent) ChatCompletionMessageContent {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
 // NewOptChatCompletionMessageToolCallChunkFunction returns new OptChatCompletionMessageToolCallChunkFunction with value set to v.
 func NewOptChatCompletionMessageToolCallChunkFunction(v ChatCompletionMessageToolCallChunkFunction) OptChatCompletionMessageToolCallChunkFunction {
 	return OptChatCompletionMessageToolCallChunkFunction{
@@ -3516,52 +3741,6 @@ func (o OptChatCompletionResponseFormatJsonSchema) Get() (v ChatCompletionRespon
 
 // Or returns value if set, or given parameter if does not.
 func (o OptChatCompletionResponseFormatJsonSchema) Or(d ChatCompletionResponseFormatJsonSchema) ChatCompletionResponseFormatJsonSchema {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptChatCompletionResponseFormatJsonSchemaSchema returns new OptChatCompletionResponseFormatJsonSchemaSchema with value set to v.
-func NewOptChatCompletionResponseFormatJsonSchemaSchema(v ChatCompletionResponseFormatJsonSchemaSchema) OptChatCompletionResponseFormatJsonSchemaSchema {
-	return OptChatCompletionResponseFormatJsonSchemaSchema{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptChatCompletionResponseFormatJsonSchemaSchema is optional ChatCompletionResponseFormatJsonSchemaSchema.
-type OptChatCompletionResponseFormatJsonSchemaSchema struct {
-	Value ChatCompletionResponseFormatJsonSchemaSchema
-	Set   bool
-}
-
-// IsSet returns true if OptChatCompletionResponseFormatJsonSchemaSchema was set.
-func (o OptChatCompletionResponseFormatJsonSchemaSchema) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptChatCompletionResponseFormatJsonSchemaSchema) Reset() {
-	var v ChatCompletionResponseFormatJsonSchemaSchema
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptChatCompletionResponseFormatJsonSchemaSchema) SetTo(v ChatCompletionResponseFormatJsonSchemaSchema) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptChatCompletionResponseFormatJsonSchemaSchema) Get() (v ChatCompletionResponseFormatJsonSchemaSchema, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptChatCompletionResponseFormatJsonSchemaSchema) Or(d ChatCompletionResponseFormatJsonSchemaSchema) ChatCompletionResponseFormatJsonSchemaSchema {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -4258,6 +4437,132 @@ func (o OptModerationHitType) Or(d ModerationHitType) ModerationHitType {
 	return d
 }
 
+// NewOptNilChatCompletionMessageContent returns new OptNilChatCompletionMessageContent with value set to v.
+func NewOptNilChatCompletionMessageContent(v ChatCompletionMessageContent) OptNilChatCompletionMessageContent {
+	return OptNilChatCompletionMessageContent{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilChatCompletionMessageContent is optional nullable ChatCompletionMessageContent.
+type OptNilChatCompletionMessageContent struct {
+	Value ChatCompletionMessageContent
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilChatCompletionMessageContent was set.
+func (o OptNilChatCompletionMessageContent) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilChatCompletionMessageContent) Reset() {
+	var v ChatCompletionMessageContent
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilChatCompletionMessageContent) SetTo(v ChatCompletionMessageContent) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilChatCompletionMessageContent) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilChatCompletionMessageContent) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v ChatCompletionMessageContent
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilChatCompletionMessageContent) Get() (v ChatCompletionMessageContent, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilChatCompletionMessageContent) Or(d ChatCompletionMessageContent) ChatCompletionMessageContent {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilString returns new OptNilString with value set to v.
+func NewOptNilString(v string) OptNilString {
+	return OptNilString{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilString is optional nullable string.
+type OptNilString struct {
+	Value string
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilString was set.
+func (o OptNilString) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilString) Reset() {
+	var v string
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilString) SetTo(v string) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilString) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilString) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v string
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilString) Get() (v string, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilString) Or(d string) string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptReasoningEffort returns new OptReasoningEffort with value set to v.
 func NewOptReasoningEffort(v ReasoningEffort) OptReasoningEffort {
 	return OptReasoningEffort{
@@ -4634,6 +4939,8 @@ type PromptTokensDetails struct {
 	TextTokens OptInt32 `json:"text_tokens"`
 	// Prompt tokens consumed by image inputs.
 	ImageTokens OptInt32 `json:"image_tokens"`
+	// Prompt tokens charged against provisioned throughput after conversion.
+	ProvisionedTokens OptInt32 `json:"provisioned_tokens"`
 	// Prompt tokens consumed by audio inputs.
 	AudioTokens OptInt32 `json:"audio_tokens"`
 	// Cached prompt tokens consumed by audio inputs.
@@ -4653,6 +4960,11 @@ func (s *PromptTokensDetails) GetTextTokens() OptInt32 {
 // GetImageTokens returns the value of ImageTokens.
 func (s *PromptTokensDetails) GetImageTokens() OptInt32 {
 	return s.ImageTokens
+}
+
+// GetProvisionedTokens returns the value of ProvisionedTokens.
+func (s *PromptTokensDetails) GetProvisionedTokens() OptInt32 {
+	return s.ProvisionedTokens
 }
 
 // GetAudioTokens returns the value of AudioTokens.
@@ -4678,6 +4990,11 @@ func (s *PromptTokensDetails) SetTextTokens(val OptInt32) {
 // SetImageTokens sets the value of ImageTokens.
 func (s *PromptTokensDetails) SetImageTokens(val OptInt32) {
 	s.ImageTokens = val
+}
+
+// SetProvisionedTokens sets the value of ProvisionedTokens.
+func (s *PromptTokensDetails) SetProvisionedTokens(val OptInt32) {
+	s.ProvisionedTokens = val
 }
 
 // SetAudioTokens sets the value of AudioTokens.
@@ -4774,6 +5091,7 @@ const (
 	RequestServiceTierAuto    RequestServiceTier = "auto"
 	RequestServiceTierDefault RequestServiceTier = "default"
 	RequestServiceTierFast    RequestServiceTier = "fast"
+	RequestServiceTierFlex    RequestServiceTier = "flex"
 )
 
 // AllValues returns all RequestServiceTier values.
@@ -4782,6 +5100,7 @@ func (RequestServiceTier) AllValues() []RequestServiceTier {
 		RequestServiceTierAuto,
 		RequestServiceTierDefault,
 		RequestServiceTierFast,
+		RequestServiceTierFlex,
 	}
 }
 
@@ -4793,6 +5112,8 @@ func (s RequestServiceTier) MarshalText() ([]byte, error) {
 	case RequestServiceTierDefault:
 		return []byte(s), nil
 	case RequestServiceTierFast:
+		return []byte(s), nil
+	case RequestServiceTierFlex:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -4810,6 +5131,9 @@ func (s *RequestServiceTier) UnmarshalText(data []byte) error {
 		return nil
 	case RequestServiceTierFast:
 		*s = RequestServiceTierFast
+		return nil
+	case RequestServiceTierFlex:
+		*s = RequestServiceTierFlex
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -4872,6 +5196,7 @@ const (
 	ResponseServiceTierDefault ResponseServiceTier = "default"
 	ResponseServiceTierScale   ResponseServiceTier = "scale"
 	ResponseServiceTierFast    ResponseServiceTier = "fast"
+	ResponseServiceTierFlex    ResponseServiceTier = "flex"
 )
 
 // AllValues returns all ResponseServiceTier values.
@@ -4880,6 +5205,7 @@ func (ResponseServiceTier) AllValues() []ResponseServiceTier {
 		ResponseServiceTierDefault,
 		ResponseServiceTierScale,
 		ResponseServiceTierFast,
+		ResponseServiceTierFlex,
 	}
 }
 
@@ -4891,6 +5217,8 @@ func (s ResponseServiceTier) MarshalText() ([]byte, error) {
 	case ResponseServiceTierScale:
 		return []byte(s), nil
 	case ResponseServiceTierFast:
+		return []byte(s), nil
+	case ResponseServiceTierFlex:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -4908,6 +5236,9 @@ func (s *ResponseServiceTier) UnmarshalText(data []byte) error {
 		return nil
 	case ResponseServiceTierFast:
 		*s = ResponseServiceTierFast
+		return nil
+	case ResponseServiceTierFlex:
+		*s = ResponseServiceTierFlex
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

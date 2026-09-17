@@ -14,7 +14,7 @@ import (
 // （模型 + System Prompt + Tools + MCP servers + Skills 的可复用、版本化配置）。.
 // Ref: #/components/schemas/Agent
 type Agent struct {
-	// Agent ID，格式 `agent_<opaque>`。对外暴露给 session 引用。.
+	// Agent ID，形如 `agent-...`。对外暴露给 session 引用。.
 	ID string `json:"id"`
 	// 固定 `"agent"`。.
 	Type AgentType `json:"type"`
@@ -405,7 +405,7 @@ func (s *AgentRefType) UnmarshalText(data []byte) error {
 type AgentSkillRef struct {
 	// Skill 引用类型。一期仅支持 `skill_hub`。.
 	Type SkillRefType `json:"type"`
-	// Skill ID，形如 `skill_01XJ5...`。.
+	// Skill ID，形如 `skill-...`。.
 	SkillID OptString `json:"skill_id"`
 	// Skill 版本号，可选；不传走最新。.
 	Version OptString `json:"version"`
@@ -828,7 +828,7 @@ func (s *MCPServerType) UnmarshalText(data []byte) error {
 // Agent 引用的模型配置。.
 // Ref: #/components/schemas/ModelConfig
 type ModelConfig struct {
-	// 模型 ID，例如 `claude-opus-4-7` / `claude-sonnet-4-6` / `claude-haiku-4-5`。.
+	// 模型 ID，例如 `doubao-seed-2-1`。.
 	ID string `json:"id"`
 	// 速度档位。空字符串走默认（并非所有模型都支持 `fast`）。.
 	Speed OptModelSpeed `json:"speed"`
@@ -1778,28 +1778,28 @@ func (s *PermissionPolicyType) UnmarshalText(data []byte) error {
 type SkillRefType string
 
 const (
-	SkillRefTypeAnthropic SkillRefType = "anthropic"
-	SkillRefTypeCustom    SkillRefType = "custom"
-	SkillRefTypeSkillHub  SkillRefType = "skill_hub"
+	SkillRefTypeCustom   SkillRefType = "custom"
+	SkillRefTypeSkillHub SkillRefType = "skill_hub"
+	SkillRefTypeArk      SkillRefType = "ark"
 )
 
 // AllValues returns all SkillRefType values.
 func (SkillRefType) AllValues() []SkillRefType {
 	return []SkillRefType{
-		SkillRefTypeAnthropic,
 		SkillRefTypeCustom,
 		SkillRefTypeSkillHub,
+		SkillRefTypeArk,
 	}
 }
 
 // MarshalText implements encoding.TextMarshaler.
 func (s SkillRefType) MarshalText() ([]byte, error) {
 	switch s {
-	case SkillRefTypeAnthropic:
-		return []byte(s), nil
 	case SkillRefTypeCustom:
 		return []byte(s), nil
 	case SkillRefTypeSkillHub:
+		return []byte(s), nil
+	case SkillRefTypeArk:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -1809,14 +1809,14 @@ func (s SkillRefType) MarshalText() ([]byte, error) {
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (s *SkillRefType) UnmarshalText(data []byte) error {
 	switch SkillRefType(data) {
-	case SkillRefTypeAnthropic:
-		*s = SkillRefTypeAnthropic
-		return nil
 	case SkillRefTypeCustom:
 		*s = SkillRefTypeCustom
 		return nil
 	case SkillRefTypeSkillHub:
 		*s = SkillRefTypeSkillHub
+		return nil
+	case SkillRefTypeArk:
+		*s = SkillRefTypeArk
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

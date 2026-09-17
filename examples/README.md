@@ -7,7 +7,8 @@ Run commands from the repository root:
 ```bash
 export ARK_API_KEY=...
 export ARK_MODEL=...
-go run examples/volc/responses/basic/main.go
+cd examples
+go run ./volc/responses/basic
 ```
 
 Cloud-specific examples are grouped by cloud:
@@ -22,3 +23,5 @@ MCP is available in both clouds and its examples explicitly send `ark-beta-mcp: 
 The [`self_hosted_worker/`](./self_hosted_worker) example runs a local Managed Agents worker for an existing self-hosted environment. It requires `MA_ENVIRONMENT_ID`; the client defaults to `https://ark.cn-beijing.volces.com/api/v3`.
 
 The [`self_hosted_mcp_worker/`](./self_hosted_mcp_worker) example discovers tools from a local MCP server, prints their schemas as Agent custom tool declarations for manual configuration, and executes calls through a self-hosted worker. It is an isolated Go 1.23 module so MCP dependencies do not change the core SDK or the other examples.
+
+Compile all cloud examples without making API calls with `cd examples && go build ./...`. The structured-output Chat examples marshal the JSON Schema into the generated `Schema` field.

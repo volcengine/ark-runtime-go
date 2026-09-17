@@ -250,7 +250,7 @@ func (s *EnvConfigType) UnmarshalText(data []byte) error {
 // ARK Managed Agents 控制面 Environment 资源。.
 // Ref: #/components/schemas/Environment
 type Environment struct {
-	// Environment ID。.
+	// Environment ID，形如 `env-...`。.
 	ID string `json:"id"`
 	// 固定 `"environment"`。.
 	Type EnvironmentType `json:"type"`

@@ -9,14 +9,22 @@ import (
 	"github.com/go-faster/errors"
 )
 
+type Description string
+
 // Ref: #/components/schemas/FileCreateRequest
 type FileCreateRequest struct {
 	// The intended purpose of the uploaded file.
 	Purpose Purpose `json:"purpose" form:"purpose"`
+	// Model identifier used to preprocess the file. This top-level field is
+	// required and only takes effect when `purpose` is `voice`.
+	Model OptString `json:"model" form:"model"`
+	// Human-readable file description, limited to 500 characters.
+	Description OptDescription `json:"description" form:"description"`
 	// Preprocessing configuration to apply at upload time.
 	PreprocessConfigs OptPreprocessConfigs `json:"preprocess_configs" form:"preprocess_configs"`
-	// Unix timestamp (seconds) after which the file should be purged.
-	// Defaults to 7 days from upload when omitted.
+	// Unix timestamp (seconds) after which the file should be purged. A value
+	// of `-1` keeps the file permanently. Defaults to 7 days from upload when
+	// omitted.
 	ExpireAt OptInt64 `json:"expire_at" form:"expire_at"`
 	// Alternative file source. Accepts http/https or `tos://` schemes.
 	// Mutually exclusive with the binary `file` part.
@@ -29,6 +37,16 @@ type FileCreateRequest struct {
 // GetPurpose returns the value of Purpose.
 func (s *FileCreateRequest) GetPurpose() Purpose {
 	return s.Purpose
+}
+
+// GetModel returns the value of Model.
+func (s *FileCreateRequest) GetModel() OptString {
+	return s.Model
+}
+
+// GetDescription returns the value of Description.
+func (s *FileCreateRequest) GetDescription() OptDescription {
+	return s.Description
 }
 
 // GetPreprocessConfigs returns the value of PreprocessConfigs.
@@ -54,6 +72,16 @@ func (s *FileCreateRequest) GetTos() OptTosStorage {
 // SetPurpose sets the value of Purpose.
 func (s *FileCreateRequest) SetPurpose(val Purpose) {
 	s.Purpose = val
+}
+
+// SetModel sets the value of Model.
+func (s *FileCreateRequest) SetModel(val OptString) {
+	s.Model = val
+}
+
+// SetDescription sets the value of Description.
+func (s *FileCreateRequest) SetDescription(val OptDescription) {
+	s.Description = val
 }
 
 // SetPreprocessConfigs sets the value of PreprocessConfigs.
@@ -318,6 +346,10 @@ type FileObject struct {
 	ID string `json:"id"`
 	// The intended purpose of the uploaded file.
 	Purpose Purpose `json:"purpose"`
+	// Model identifier used to preprocess the file, when one was provided.
+	Model OptString `json:"model"`
+	// User-provided description for the file, when one was provided.
+	Description OptDescription `json:"description"`
 	// Original filename of the uploaded file.
 	Filename string `json:"filename"`
 	// Size of the file in bytes.
@@ -326,7 +358,7 @@ type FileObject struct {
 	MimeType OptString `json:"mime_type"`
 	// Unix timestamp (seconds) when the file was created.
 	CreatedAt int64 `json:"created_at"`
-	// Unix timestamp (seconds) after which the file is purged.
+	// Unix timestamp (seconds) after which the file is purged; `-1` means permanent.
 	ExpireAt int64 `json:"expire_at"`
 	// Lifecycle status of the file.
 	Status Status `json:"status"`
@@ -351,6 +383,16 @@ func (s *FileObject) GetID() string {
 // GetPurpose returns the value of Purpose.
 func (s *FileObject) GetPurpose() Purpose {
 	return s.Purpose
+}
+
+// GetModel returns the value of Model.
+func (s *FileObject) GetModel() OptString {
+	return s.Model
+}
+
+// GetDescription returns the value of Description.
+func (s *FileObject) GetDescription() OptDescription {
+	return s.Description
 }
 
 // GetFilename returns the value of Filename.
@@ -411,6 +453,16 @@ func (s *FileObject) SetID(val string) {
 // SetPurpose sets the value of Purpose.
 func (s *FileObject) SetPurpose(val Purpose) {
 	s.Purpose = val
+}
+
+// SetModel sets the value of Model.
+func (s *FileObject) SetModel(val OptString) {
+	s.Model = val
+}
+
+// SetDescription sets the value of Description.
+func (s *FileObject) SetDescription(val OptDescription) {
+	s.Description = val
 }
 
 // SetFilename sets the value of Filename.
@@ -491,6 +543,52 @@ func (s *FileObjectObject) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
+}
+
+// NewOptDescription returns new OptDescription with value set to v.
+func NewOptDescription(v Description) OptDescription {
+	return OptDescription{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptDescription is optional Description.
+type OptDescription struct {
+	Value Description
+	Set   bool
+}
+
+// IsSet returns true if OptDescription was set.
+func (o OptDescription) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptDescription) Reset() {
+	var v Description
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptDescription) SetTo(v Description) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptDescription) Get() (v Description, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptDescription) Or(d Description) Description {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
 }
 
 // NewOptFileError returns new OptFileError with value set to v.
@@ -974,6 +1072,7 @@ type Purpose string
 const (
 	PurposeUserData Purpose = "user_data"
 	PurposeAgent    Purpose = "agent"
+	PurposeVoice    Purpose = "voice"
 )
 
 // AllValues returns all Purpose values.
@@ -981,6 +1080,7 @@ func (Purpose) AllValues() []Purpose {
 	return []Purpose{
 		PurposeUserData,
 		PurposeAgent,
+		PurposeVoice,
 	}
 }
 
@@ -990,6 +1090,8 @@ func (s Purpose) MarshalText() ([]byte, error) {
 	case PurposeUserData:
 		return []byte(s), nil
 	case PurposeAgent:
+		return []byte(s), nil
+	case PurposeVoice:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -1004,6 +1106,9 @@ func (s *Purpose) UnmarshalText(data []byte) error {
 		return nil
 	case PurposeAgent:
 		*s = PurposeAgent
+		return nil
+	case PurposeVoice:
+		*s = PurposeVoice
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

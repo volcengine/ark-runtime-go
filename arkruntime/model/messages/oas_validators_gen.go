@@ -69,35 +69,213 @@ func (s *ContentBlockStartContentBlock) Validate() error {
 	return nil
 }
 
+func (s *ContentBlockStartContentBlockServerToolUse) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ContentBlockStartContentBlockServerToolUseType) Validate() error {
+	switch s {
+	case "server_tool_use":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
 func (s ContentBlockStartContentBlockSum) Validate() error {
 	switch s.Type {
-	case MessagesResponseContentPartTextContentBlockStartContentBlockSum:
-		if err := s.MessagesResponseContentPartText.Validate(); err != nil {
+	case ContentBlockStartContentBlockTextContentBlockStartContentBlockSum:
+		if err := s.ContentBlockStartContentBlockText.Validate(); err != nil {
 			return err
 		}
 		return nil
-	case MessagesResponseContentPartThinkingContentBlockStartContentBlockSum:
-		if err := s.MessagesResponseContentPartThinking.Validate(); err != nil {
+	case ContentBlockStartContentBlockThinkingContentBlockStartContentBlockSum:
+		if err := s.ContentBlockStartContentBlockThinking.Validate(); err != nil {
 			return err
 		}
 		return nil
-	case MessagesResponseContentPartToolUseContentBlockStartContentBlockSum:
-		if err := s.MessagesResponseContentPartToolUse.Validate(); err != nil {
+	case ContentBlockStartContentBlockToolUseContentBlockStartContentBlockSum:
+		if err := s.ContentBlockStartContentBlockToolUse.Validate(); err != nil {
 			return err
 		}
 		return nil
-	case MessagesResponseContentPartServerToolUseContentBlockStartContentBlockSum:
-		if err := s.MessagesResponseContentPartServerToolUse.Validate(); err != nil {
+	case ContentBlockStartContentBlockServerToolUseContentBlockStartContentBlockSum:
+		if err := s.ContentBlockStartContentBlockServerToolUse.Validate(); err != nil {
 			return err
 		}
 		return nil
-	case MessagesResponseContentPartWebSearchToolResultContentBlockStartContentBlockSum:
-		if err := s.MessagesResponseContentPartWebSearchToolResult.Validate(); err != nil {
+	case ContentBlockStartContentBlockWebSearchToolResultContentBlockStartContentBlockSum:
+		if err := s.ContentBlockStartContentBlockWebSearchToolResult.Validate(); err != nil {
 			return err
 		}
 		return nil
 	default:
 		return errors.Errorf("invalid type %q", s.Type)
+	}
+}
+
+func (s *ContentBlockStartContentBlockText) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ContentBlockStartContentBlockTextType) Validate() error {
+	switch s {
+	case "text":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *ContentBlockStartContentBlockThinking) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ContentBlockStartContentBlockThinkingType) Validate() error {
+	switch s {
+	case "thinking":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *ContentBlockStartContentBlockToolUse) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ContentBlockStartContentBlockToolUseType) Validate() error {
+	switch s {
+	case "tool_use":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *ContentBlockStartContentBlockWebSearchToolResult) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.Content.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "content",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ContentBlockStartContentBlockWebSearchToolResultType) Validate() error {
+	switch s {
+	case "web_search_tool_result":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
 	}
 }
 
@@ -110,27 +288,51 @@ func (s ContentBlockStartType) Validate() error {
 	}
 }
 
-func (s *MessagesContentPart) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.OneOf.Validate(); err != nil {
+func (s MessagesContentPart) Validate() error {
+	switch s.Type {
+	case MessagesContentPartTextMessagesContentPart:
+		if err := s.MessagesContentPartText.Validate(); err != nil {
 			return err
 		}
 		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "OneOf",
-			Error: err,
-		})
+	case MessagesContentPartThinkingMessagesContentPart:
+		if err := s.MessagesContentPartThinking.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case MessagesContentPartImageMessagesContentPart:
+		if err := s.MessagesContentPartImage.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case MessagesContentPartDocumentMessagesContentPart:
+		if err := s.MessagesContentPartDocument.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case MessagesContentPartToolUseMessagesContentPart:
+		if err := s.MessagesContentPartToolUse.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case MessagesContentPartToolResultMessagesContentPart:
+		if err := s.MessagesContentPartToolResult.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case MessagesContentPartServerToolUseMessagesContentPart:
+		if err := s.MessagesContentPartServerToolUse.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case MessagesContentPartWebSearchToolResultMessagesContentPart:
+		if err := s.MessagesContentPartWebSearchToolResult.Validate(); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return errors.Errorf("invalid type %q", s.Type)
 	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
 }
 
 func (s *MessagesContentPartDocument) Validate() error {
@@ -174,6 +376,29 @@ func (s *MessagesContentPartDocumentSource) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
+		if err := s.OneOf.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "OneOf",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s *MessagesContentPartDocumentSourceBase64) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
 		if err := s.Type.Validate(); err != nil {
 			return err
 		}
@@ -185,16 +410,63 @@ func (s *MessagesContentPartDocumentSource) Validate() error {
 		})
 	}
 	if err := func() error {
-		if s.Content == nil {
-			return nil // optional
+		if err := (validate.String{
+			MinLength:     1,
+			MinLengthSet:  true,
+			MaxLength:     0,
+			MaxLengthSet:  false,
+			Email:         false,
+			Hostname:      false,
+			Regex:         nil,
+			MinNumeric:    0,
+			MinNumericSet: false,
+			MaxNumeric:    0,
+			MaxNumericSet: false,
+		}).Validate(string(s.Data)); err != nil {
+			return errors.Wrap(err, "string")
 		}
-		if err := func() error {
-			if err := s.Content.Validate(); err != nil {
-				return err
-			}
-			return nil
-		}(); err != nil {
-			return errors.Wrap(err, "pointer")
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "data",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s MessagesContentPartDocumentSourceBase64Type) Validate() error {
+	switch s {
+	case "base64":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *MessagesContentPartDocumentSourceContent) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Content.Validate(); err != nil {
+			return err
 		}
 		return nil
 	}(); err != nil {
@@ -207,6 +479,152 @@ func (s *MessagesContentPartDocumentSource) Validate() error {
 		return &validate.Error{Fields: failures}
 	}
 	return nil
+}
+
+func (s MessagesContentPartDocumentSourceContentType) Validate() error {
+	switch s {
+	case "content":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s MessagesContentPartDocumentSourceSum) Validate() error {
+	switch s.Type {
+	case MessagesContentPartDocumentSourceBase64MessagesContentPartDocumentSourceSum:
+		if err := s.MessagesContentPartDocumentSourceBase64.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case MessagesContentPartDocumentSourceTextMessagesContentPartDocumentSourceSum:
+		if err := s.MessagesContentPartDocumentSourceText.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case MessagesContentPartDocumentSourceUrlMessagesContentPartDocumentSourceSum:
+		if err := s.MessagesContentPartDocumentSourceUrl.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case MessagesContentPartDocumentSourceContentMessagesContentPartDocumentSourceSum:
+		if err := s.MessagesContentPartDocumentSourceContent.Validate(); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return errors.Errorf("invalid type %q", s.Type)
+	}
+}
+
+func (s *MessagesContentPartDocumentSourceText) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := (validate.String{
+			MinLength:     1,
+			MinLengthSet:  true,
+			MaxLength:     0,
+			MaxLengthSet:  false,
+			Email:         false,
+			Hostname:      false,
+			Regex:         nil,
+			MinNumeric:    0,
+			MinNumericSet: false,
+			MaxNumeric:    0,
+			MaxNumericSet: false,
+		}).Validate(string(s.Data)); err != nil {
+			return errors.Wrap(err, "string")
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "data",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s MessagesContentPartDocumentSourceTextType) Validate() error {
+	switch s {
+	case "text":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *MessagesContentPartDocumentSourceUrl) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := (validate.String{
+			MinLength:     1,
+			MinLengthSet:  true,
+			MaxLength:     0,
+			MaxLengthSet:  false,
+			Email:         false,
+			Hostname:      false,
+			Regex:         nil,
+			MinNumeric:    0,
+			MinNumericSet: false,
+			MaxNumeric:    0,
+			MaxNumericSet: false,
+		}).Validate(string(s.URL)); err != nil {
+			return errors.Wrap(err, "string")
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "url",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s MessagesContentPartDocumentSourceUrlType) Validate() error {
+	switch s {
+	case "url":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
 }
 
 func (s MessagesContentPartDocumentType) Validate() error {
@@ -301,6 +719,29 @@ func (s *MessagesContentPartServerToolUse) Validate() error {
 			Error: err,
 		})
 	}
+	if err := func() error {
+		if err := (validate.String{
+			MinLength:     1,
+			MinLengthSet:  true,
+			MaxLength:     0,
+			MaxLengthSet:  false,
+			Email:         false,
+			Hostname:      false,
+			Regex:         nil,
+			MinNumeric:    0,
+			MinNumericSet: false,
+			MaxNumeric:    0,
+			MaxNumericSet: false,
+		}).Validate(string(s.ID)); err != nil {
+			return errors.Wrap(err, "string")
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "id",
+			Error: err,
+		})
+	}
 	if len(failures) > 0 {
 		return &validate.Error{Fields: failures}
 	}
@@ -313,53 +754,6 @@ func (s MessagesContentPartServerToolUseType) Validate() error {
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)
-	}
-}
-
-func (s MessagesContentPartSum) Validate() error {
-	switch s.Type {
-	case MessagesContentPartTextMessagesContentPartSum:
-		if err := s.MessagesContentPartText.Validate(); err != nil {
-			return err
-		}
-		return nil
-	case MessagesContentPartThinkingMessagesContentPartSum:
-		if err := s.MessagesContentPartThinking.Validate(); err != nil {
-			return err
-		}
-		return nil
-	case MessagesContentPartImageMessagesContentPartSum:
-		if err := s.MessagesContentPartImage.Validate(); err != nil {
-			return err
-		}
-		return nil
-	case MessagesContentPartDocumentMessagesContentPartSum:
-		if err := s.MessagesContentPartDocument.Validate(); err != nil {
-			return err
-		}
-		return nil
-	case MessagesContentPartToolUseMessagesContentPartSum:
-		if err := s.MessagesContentPartToolUse.Validate(); err != nil {
-			return err
-		}
-		return nil
-	case MessagesContentPartToolResultMessagesContentPartSum:
-		if err := s.MessagesContentPartToolResult.Validate(); err != nil {
-			return err
-		}
-		return nil
-	case MessagesContentPartServerToolUseMessagesContentPartSum:
-		if err := s.MessagesContentPartServerToolUse.Validate(); err != nil {
-			return err
-		}
-		return nil
-	case MessagesContentPartWebSearchToolResultMessagesContentPartSum:
-		if err := s.MessagesContentPartWebSearchToolResult.Validate(); err != nil {
-			return err
-		}
-		return nil
-	default:
-		return errors.Errorf("invalid type %q", s.Type)
 	}
 }
 
@@ -477,8 +871,15 @@ func (s *MessagesContentPartToolResult) Validate() error {
 		})
 	}
 	if err := func() error {
-		if err := s.Content.Validate(); err != nil {
-			return err
+		if value, ok := s.Content.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
 		}
 		return nil
 	}(); err != nil {
@@ -552,8 +953,15 @@ func (s *MessagesContentPartWebSearchToolResult) Validate() error {
 		})
 	}
 	if err := func() error {
-		if err := s.Content.Validate(); err != nil {
-			return err
+		if value, ok := s.Content.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
 		}
 		return nil
 	}(); err != nil {
@@ -584,22 +992,32 @@ func (s *MessagesContextManagement) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		var failures []validate.FieldError
-		for i, elem := range s.Edits {
+		if value, ok := s.Edits.Get(); ok {
 			if err := func() error {
-				if err := elem.Validate(); err != nil {
-					return err
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				var failures []validate.FieldError
+				for i, elem := range value {
+					if err := func() error {
+						if err := elem.Validate(); err != nil {
+							return err
+						}
+						return nil
+					}(); err != nil {
+						failures = append(failures, validate.FieldError{
+							Name:  fmt.Sprintf("[%d]", i),
+							Error: err,
+						})
+					}
+				}
+				if len(failures) > 0 {
+					return &validate.Error{Fields: failures}
 				}
 				return nil
 			}(); err != nil {
-				failures = append(failures, validate.FieldError{
-					Name:  fmt.Sprintf("[%d]", i),
-					Error: err,
-				})
+				return err
 			}
-		}
-		if len(failures) > 0 {
-			return &validate.Error{Fields: failures}
 		}
 		return nil
 	}(); err != nil {
@@ -614,156 +1032,6 @@ func (s *MessagesContextManagement) Validate() error {
 	return nil
 }
 
-func (s *MessagesContextManagementClearThinking) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if value, ok := s.Keep.Get(); ok {
-			if err := func() error {
-				if err := value.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "keep",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s MessagesContextManagementClearThinkingType) Validate() error {
-	switch s {
-	case "clear_thinking":
-		return nil
-	default:
-		return errors.Errorf("invalid value: %v", s)
-	}
-}
-
-func (s *MessagesContextManagementClearToolUses) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if value, ok := s.Keep.Get(); ok {
-			if err := func() error {
-				if err := value.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "keep",
-			Error: err,
-		})
-	}
-	if err := func() error {
-		if value, ok := s.Trigger.Get(); ok {
-			if err := func() error {
-				if err := value.Validate(); err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return err
-			}
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "trigger",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s *MessagesContextManagementClearToolUsesTrigger) Validate() error {
-	if s == nil {
-		return validate.ErrNilPointer
-	}
-
-	var failures []validate.FieldError
-	if err := func() error {
-		if err := s.Type.Validate(); err != nil {
-			return err
-		}
-		return nil
-	}(); err != nil {
-		failures = append(failures, validate.FieldError{
-			Name:  "type",
-			Error: err,
-		})
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
-	}
-	return nil
-}
-
-func (s MessagesContextManagementClearToolUsesTriggerType) Validate() error {
-	switch s {
-	case "tool_uses":
-		return nil
-	default:
-		return errors.Errorf("invalid value: %v", s)
-	}
-}
-
-func (s MessagesContextManagementClearToolUsesType) Validate() error {
-	switch s {
-	case "clear_tool_uses":
-		return nil
-	default:
-		return errors.Errorf("invalid value: %v", s)
-	}
-}
-
 func (s *MessagesContextManagementEdit) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -771,13 +1039,61 @@ func (s *MessagesContextManagementEdit) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if err := s.OneOf.Validate(); err != nil {
-			return err
+		if err := (validate.String{
+			MinLength:     0,
+			MinLengthSet:  false,
+			MaxLength:     0,
+			MaxLengthSet:  false,
+			Email:         false,
+			Hostname:      false,
+			Regex:         regexMap["^(clear_thinking|clear_tool_uses)"],
+			MinNumeric:    0,
+			MinNumericSet: false,
+			MaxNumeric:    0,
+			MaxNumericSet: false,
+		}).Validate(string(s.Type)); err != nil {
+			return errors.Wrap(err, "string")
 		}
 		return nil
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
-			Name:  "OneOf",
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.Keep.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "keep",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.ExcludeTools.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "exclude_tools",
 			Error: err,
 		})
 	}
@@ -785,23 +1101,6 @@ func (s *MessagesContextManagementEdit) Validate() error {
 		return &validate.Error{Fields: failures}
 	}
 	return nil
-}
-
-func (s MessagesContextManagementEditSum) Validate() error {
-	switch s.Type {
-	case MessagesContextManagementClearThinkingMessagesContextManagementEditSum:
-		if err := s.MessagesContextManagementClearThinking.Validate(); err != nil {
-			return err
-		}
-		return nil
-	case MessagesContextManagementClearToolUsesMessagesContextManagementEditSum:
-		if err := s.MessagesContextManagementClearToolUses.Validate(); err != nil {
-			return err
-		}
-		return nil
-	default:
-		return errors.Errorf("invalid type %q", s.Type)
-	}
 }
 
 func (s MessagesContextManagementKeep) Validate() error {
@@ -971,19 +1270,74 @@ func (s MessagesContextManagementKeepToolUsesType) Validate() error {
 	}
 }
 
-func (s MessagesDocumentSourceType) Validate() error {
-	switch s {
-	case "base64":
+func (s MessagesDocumentContent) Validate() error {
+	switch s.Type {
+	case MessagesDocumentContentTextMessagesDocumentContent:
+		if err := s.MessagesDocumentContentText.Validate(); err != nil {
+			return err
+		}
 		return nil
-	case "text":
-		return nil
-	case "url":
-		return nil
-	case "content":
+	case MessagesDocumentContentPartsMessagesDocumentContent:
+		if err := s.MessagesDocumentContentParts.Validate(); err != nil {
+			return err
+		}
 		return nil
 	default:
-		return errors.Errorf("invalid value: %v", s)
+		return errors.Errorf("invalid type %q", s.Type)
 	}
+}
+
+func (s MessagesDocumentContentParts) Validate() error {
+	alias := ([]MessagesContentPart)(s)
+	if alias == nil {
+		return errors.New("nil is invalid value")
+	}
+	if err := (validate.Array{
+		MinLength:    1,
+		MinLengthSet: true,
+		MaxLength:    0,
+		MaxLengthSet: false,
+	}).ValidateLength(len(alias)); err != nil {
+		return errors.Wrap(err, "array")
+	}
+	var failures []validate.FieldError
+	for i, elem := range alias {
+		if err := func() error {
+			if err := elem.Validate(); err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			failures = append(failures, validate.FieldError{
+				Name:  fmt.Sprintf("[%d]", i),
+				Error: err,
+			})
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s MessagesDocumentContentText) Validate() error {
+	alias := (string)(s)
+	if err := (validate.String{
+		MinLength:     1,
+		MinLengthSet:  true,
+		MaxLength:     0,
+		MaxLengthSet:  false,
+		Email:         false,
+		Hostname:      false,
+		Regex:         nil,
+		MinNumeric:    0,
+		MinNumericSet: false,
+		MaxNumeric:    0,
+		MaxNumericSet: false,
+	}).Validate(string(alias)); err != nil {
+		return errors.Wrap(err, "string")
+	}
+	return nil
 }
 
 func (s *MessagesErrorResponse) Validate() error {
@@ -1018,6 +1372,24 @@ func (s MessagesErrorResponseType) Validate() error {
 	}
 }
 
+func (s MessagesFrequencyPenalty) Validate() error {
+	alias := (float64)(s)
+	if err := (validate.Float{
+		MinSet:        true,
+		Min:           -2,
+		MaxSet:        true,
+		Max:           2,
+		MinExclusive:  false,
+		MaxExclusive:  false,
+		MultipleOfSet: false,
+		MultipleOf:    nil,
+		Pattern:       nil,
+	}).Validate(float64(alias)); err != nil {
+		return errors.Wrap(err, "float")
+	}
+	return nil
+}
+
 func (s MessagesImageSourceType) Validate() error {
 	switch s {
 	case "url":
@@ -1027,6 +1399,60 @@ func (s MessagesImageSourceType) Validate() error {
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
+}
+
+func (s MessagesLogitBiasValue) Validate() error {
+	alias := (float32)(s)
+	if err := (validate.Float{
+		MinSet:        true,
+		Min:           -100,
+		MaxSet:        true,
+		Max:           100,
+		MinExclusive:  false,
+		MaxExclusive:  false,
+		MultipleOfSet: false,
+		MultipleOf:    nil,
+		Pattern:       nil,
+	}).Validate(float64(alias)); err != nil {
+		return errors.Wrap(err, "float")
+	}
+	return nil
+}
+
+func (s MessagesMaxTokens) Validate() error {
+	alias := (int32)(s)
+	if err := (validate.Int{
+		MinSet:        true,
+		Min:           0,
+		MaxSet:        false,
+		Max:           0,
+		MinExclusive:  false,
+		MaxExclusive:  false,
+		MultipleOfSet: false,
+		MultipleOf:    0,
+		Pattern:       nil,
+	}).Validate(int64(alias)); err != nil {
+		return errors.Wrap(err, "int")
+	}
+	return nil
+}
+
+func (s MessagesMaxUses) Validate() error {
+	alias := (int32)(s)
+	if err := (validate.Int{
+		MinSet:        true,
+		Min:           1,
+		MaxSet:        false,
+		Max:           0,
+		MinExclusive:  false,
+		MaxExclusive:  false,
+		MultipleOfSet: false,
+		MultipleOf:    0,
+		Pattern:       nil,
+	}).Validate(int64(alias)); err != nil {
+		return errors.Wrap(err, "int")
+	}
+	return nil
 }
 
 func (s MessagesMessageContent) Validate() error {
@@ -1067,6 +1493,29 @@ func (s *MessagesOutputFormat) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
+		if err := s.OneOf.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "OneOf",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s *MessagesOutputFormatJsonObject) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
 		if err := s.Type.Validate(); err != nil {
 			return err
 		}
@@ -1083,17 +1532,135 @@ func (s *MessagesOutputFormat) Validate() error {
 	return nil
 }
 
-func (s MessagesOutputFormatType) Validate() error {
+func (s MessagesOutputFormatJsonObjectType) Validate() error {
 	switch s {
-	case "text":
-		return nil
 	case "json_object":
 		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *MessagesOutputFormatJsonSchema) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s MessagesOutputFormatJsonSchemaType) Validate() error {
+	switch s {
 	case "json_schema":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
+}
+
+func (s MessagesOutputFormatSum) Validate() error {
+	switch s.Type {
+	case MessagesOutputFormatTextMessagesOutputFormatSum:
+		if err := s.MessagesOutputFormatText.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case MessagesOutputFormatJsonObjectMessagesOutputFormatSum:
+		if err := s.MessagesOutputFormatJsonObject.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case MessagesOutputFormatJsonSchemaMessagesOutputFormatSum:
+		if err := s.MessagesOutputFormatJsonSchema.Validate(); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return errors.Errorf("invalid type %q", s.Type)
+	}
+}
+
+func (s *MessagesOutputFormatText) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s MessagesOutputFormatTextType) Validate() error {
+	switch s {
+	case "text":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s MessagesPresencePenalty) Validate() error {
+	alias := (float64)(s)
+	if err := (validate.Float{
+		MinSet:        true,
+		Min:           -2,
+		MaxSet:        true,
+		Max:           2,
+		MinExclusive:  false,
+		MaxExclusive:  false,
+		MultipleOfSet: false,
+		MultipleOf:    nil,
+		Pattern:       nil,
+	}).Validate(float64(alias)); err != nil {
+		return errors.Wrap(err, "float")
+	}
+	return nil
+}
+
+func (s MessagesRepetitionPenalty) Validate() error {
+	alias := (float64)(s)
+	if err := (validate.Float{
+		MinSet:        true,
+		Min:           0,
+		MaxSet:        true,
+		Max:           2,
+		MinExclusive:  false,
+		MaxExclusive:  false,
+		MultipleOfSet: false,
+		MultipleOf:    nil,
+		Pattern:       nil,
+	}).Validate(float64(alias)); err != nil {
+		return errors.Wrap(err, "float")
+	}
+	return nil
 }
 
 func (s *MessagesRequest) Validate() error {
@@ -1105,6 +1672,14 @@ func (s *MessagesRequest) Validate() error {
 	if err := func() error {
 		if s.Messages == nil {
 			return errors.New("nil is invalid value")
+		}
+		if err := (validate.Array{
+			MinLength:    1,
+			MinLengthSet: true,
+			MaxLength:    0,
+			MaxLengthSet: false,
+		}).ValidateLength(len(s.Messages)); err != nil {
+			return errors.Wrap(err, "array")
 		}
 		var failures []validate.FieldError
 		for i, elem := range s.Messages {
@@ -1151,8 +1726,8 @@ func (s *MessagesRequest) Validate() error {
 	if err := func() error {
 		if value, ok := s.FrequencyPenalty.Get(); ok {
 			if err := func() error {
-				if err := (validate.Float{}).Validate(float64(value)); err != nil {
-					return errors.Wrap(err, "float")
+				if err := value.Validate(); err != nil {
+					return err
 				}
 				return nil
 			}(); err != nil {
@@ -1185,10 +1760,28 @@ func (s *MessagesRequest) Validate() error {
 		})
 	}
 	if err := func() error {
+		if value, ok := s.MaxTokens.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "max_tokens",
+			Error: err,
+		})
+	}
+	if err := func() error {
 		if value, ok := s.PresencePenalty.Get(); ok {
 			if err := func() error {
-				if err := (validate.Float{}).Validate(float64(value)); err != nil {
-					return errors.Wrap(err, "float")
+				if err := value.Validate(); err != nil {
+					return err
 				}
 				return nil
 			}(); err != nil {
@@ -1205,8 +1798,8 @@ func (s *MessagesRequest) Validate() error {
 	if err := func() error {
 		if value, ok := s.RepetitionPenalty.Get(); ok {
 			if err := func() error {
-				if err := (validate.Float{}).Validate(float64(value)); err != nil {
-					return errors.Wrap(err, "float")
+				if err := value.Validate(); err != nil {
+					return err
 				}
 				return nil
 			}(); err != nil {
@@ -1259,8 +1852,8 @@ func (s *MessagesRequest) Validate() error {
 	if err := func() error {
 		if value, ok := s.Temperature.Get(); ok {
 			if err := func() error {
-				if err := (validate.Float{}).Validate(float64(value)); err != nil {
-					return errors.Wrap(err, "float")
+				if err := value.Validate(); err != nil {
+					return err
 				}
 				return nil
 			}(); err != nil {
@@ -1293,10 +1886,63 @@ func (s *MessagesRequest) Validate() error {
 		})
 	}
 	if err := func() error {
+		if value, ok := s.Tools.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				var failures []validate.FieldError
+				for i, elem := range value {
+					if err := func() error {
+						if err := elem.Validate(); err != nil {
+							return err
+						}
+						return nil
+					}(); err != nil {
+						failures = append(failures, validate.FieldError{
+							Name:  fmt.Sprintf("[%d]", i),
+							Error: err,
+						})
+					}
+				}
+				if len(failures) > 0 {
+					return &validate.Error{Fields: failures}
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "tools",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.TopLogprobs.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "top_logprobs",
+			Error: err,
+		})
+	}
+	if err := func() error {
 		if value, ok := s.TopP.Get(); ok {
 			if err := func() error {
-				if err := (validate.Float{}).Validate(float64(value)); err != nil {
-					return errors.Wrap(err, "float")
+				if err := value.Validate(); err != nil {
+					return err
 				}
 				return nil
 			}(); err != nil {
@@ -1356,8 +2002,8 @@ func (s MessagesRequestLogitBias) Validate() error {
 	var failures []validate.FieldError
 	for key, elem := range s {
 		if err := func() error {
-			if err := (validate.Float{}).Validate(float64(elem)); err != nil {
-				return errors.Wrap(err, "float")
+			if err := elem.Validate(); err != nil {
+				return err
 			}
 			return nil
 		}(); err != nil {
@@ -1392,8 +2038,15 @@ func (s *MessagesRequestMessage) Validate() error {
 		})
 	}
 	if err := func() error {
-		if err := s.Content.Validate(); err != nil {
-			return err
+		if value, ok := s.Content.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
 		}
 		return nil
 	}(); err != nil {
@@ -1410,9 +2063,13 @@ func (s *MessagesRequestMessage) Validate() error {
 
 func (s MessagesRequestServiceTier) Validate() error {
 	switch s {
+	case "":
+		return nil
 	case "auto":
 		return nil
 	case "default":
+		return nil
+	case "flex":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)
@@ -2238,16 +2895,23 @@ func (s MessagesResponseType) Validate() error {
 }
 
 func (s MessagesRole) Validate() error {
-	switch s {
-	case "assistant":
-		return nil
-	case "user":
-		return nil
-	case "system":
-		return nil
-	default:
-		return errors.Errorf("invalid value: %v", s)
+	alias := (string)(s)
+	if err := (validate.String{
+		MinLength:     1,
+		MinLengthSet:  true,
+		MaxLength:     0,
+		MaxLengthSet:  false,
+		Email:         false,
+		Hostname:      false,
+		Regex:         nil,
+		MinNumeric:    0,
+		MinNumericSet: false,
+		MaxNumeric:    0,
+		MaxNumericSet: false,
+	}).Validate(string(alias)); err != nil {
+		return errors.Wrap(err, "string")
 	}
+	return nil
 }
 
 func (s MessagesStopSequences) Validate() error {
@@ -2259,6 +2923,8 @@ func (s MessagesStopSequences) Validate() error {
 			return errors.New("nil is invalid value")
 		}
 		return nil
+	case NullMessagesStopSequences:
+		return nil // no validation needed
 	default:
 		return errors.Errorf("invalid type %q", s.Type)
 	}
@@ -2390,6 +3056,113 @@ func (s MessagesSystemTextPartType) Validate() error {
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
+}
+
+func (s MessagesTemperature) Validate() error {
+	alias := (float64)(s)
+	if err := (validate.Float{
+		MinSet:        true,
+		Min:           0,
+		MaxSet:        true,
+		Max:           2,
+		MinExclusive:  false,
+		MaxExclusive:  false,
+		MultipleOfSet: false,
+		MultipleOf:    nil,
+		Pattern:       nil,
+	}).Validate(float64(alias)); err != nil {
+		return errors.Wrap(err, "float")
+	}
+	return nil
+}
+
+func (s *MessagesTool) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := (validate.String{
+			MinLength:     1,
+			MinLengthSet:  true,
+			MaxLength:     0,
+			MaxLengthSet:  false,
+			Email:         false,
+			Hostname:      false,
+			Regex:         nil,
+			MinNumeric:    0,
+			MinNumericSet: false,
+			MaxNumeric:    0,
+			MaxNumericSet: false,
+		}).Validate(string(s.Name)); err != nil {
+			return errors.Wrap(err, "string")
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "name",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.MaxUses.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "max_uses",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.AllowedDomains.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "allowed_domains",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.BlockedDomains.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "blocked_domains",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
 }
 
 func (s *MessagesToolChoice) Validate() error {
@@ -2646,6 +3419,42 @@ func (s MessagesToolResultContentPartSum) Validate() error {
 	}
 }
 
+func (s MessagesTopLogprobs) Validate() error {
+	alias := (int32)(s)
+	if err := (validate.Int{
+		MinSet:        true,
+		Min:           0,
+		MaxSet:        true,
+		Max:           20,
+		MinExclusive:  false,
+		MaxExclusive:  false,
+		MultipleOfSet: false,
+		MultipleOf:    0,
+		Pattern:       nil,
+	}).Validate(int64(alias)); err != nil {
+		return errors.Wrap(err, "int")
+	}
+	return nil
+}
+
+func (s MessagesTopP) Validate() error {
+	alias := (float64)(s)
+	if err := (validate.Float{
+		MinSet:        true,
+		Min:           0,
+		MaxSet:        true,
+		Max:           1,
+		MinExclusive:  false,
+		MaxExclusive:  false,
+		MultipleOfSet: false,
+		MultipleOf:    nil,
+		Pattern:       nil,
+	}).Validate(float64(alias)); err != nil {
+		return errors.Wrap(err, "float")
+	}
+	return nil
+}
+
 func (s *MessagesWebSearchResult) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -2726,6 +3535,29 @@ func (s *MessagesWebSearchToolResultError) Validate() error {
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
 			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := (validate.String{
+			MinLength:     1,
+			MinLengthSet:  true,
+			MaxLength:     0,
+			MaxLengthSet:  false,
+			Email:         false,
+			Hostname:      false,
+			Regex:         nil,
+			MinNumeric:    0,
+			MinNumericSet: false,
+			MaxNumeric:    0,
+			MaxNumericSet: false,
+		}).Validate(string(s.ErrorCode)); err != nil {
+			return errors.Wrap(err, "string")
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "error_code",
 			Error: err,
 		})
 	}
