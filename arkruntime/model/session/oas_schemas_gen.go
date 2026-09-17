@@ -551,30 +551,426 @@ func (s *CacheCreation) SetEphemeral5mInputTokens(val OptInt64) {
 	s.Ephemeral5mInputTokens = val
 }
 
+// Checkpoint 中单个资源组件的脱敏执行摘要。
+// 不暴露运行时 Snapshot ID、平台 TOS Prefix、Credential 等内部信息。.
+// Ref: #/components/schemas/CheckpointComponent
+type CheckpointComponent struct {
+	// 组件类型。.
+	Type string `json:"type"`
+	// 组件快照状态。.
+	Status CheckpointComponentStatus `json:"status"`
+	// 源资源 ID。.
+	SourceResourceID OptString `json:"source_resource_id"`
+	// 快照对象数。.
+	ObjectCount OptInt64 `json:"object_count"`
+	// 快照占用字节数。.
+	StorageBytes OptInt64 `json:"storage_bytes"`
+	// 失败错误码。.
+	ErrorCode OptString `json:"error_code"`
+	// 失败错误信息。.
+	ErrorMessage OptString `json:"error_message"`
+}
+
+// GetType returns the value of Type.
+func (s *CheckpointComponent) GetType() string {
+	return s.Type
+}
+
+// GetStatus returns the value of Status.
+func (s *CheckpointComponent) GetStatus() CheckpointComponentStatus {
+	return s.Status
+}
+
+// GetSourceResourceID returns the value of SourceResourceID.
+func (s *CheckpointComponent) GetSourceResourceID() OptString {
+	return s.SourceResourceID
+}
+
+// GetObjectCount returns the value of ObjectCount.
+func (s *CheckpointComponent) GetObjectCount() OptInt64 {
+	return s.ObjectCount
+}
+
+// GetStorageBytes returns the value of StorageBytes.
+func (s *CheckpointComponent) GetStorageBytes() OptInt64 {
+	return s.StorageBytes
+}
+
+// GetErrorCode returns the value of ErrorCode.
+func (s *CheckpointComponent) GetErrorCode() OptString {
+	return s.ErrorCode
+}
+
+// GetErrorMessage returns the value of ErrorMessage.
+func (s *CheckpointComponent) GetErrorMessage() OptString {
+	return s.ErrorMessage
+}
+
+// SetType sets the value of Type.
+func (s *CheckpointComponent) SetType(val string) {
+	s.Type = val
+}
+
+// SetStatus sets the value of Status.
+func (s *CheckpointComponent) SetStatus(val CheckpointComponentStatus) {
+	s.Status = val
+}
+
+// SetSourceResourceID sets the value of SourceResourceID.
+func (s *CheckpointComponent) SetSourceResourceID(val OptString) {
+	s.SourceResourceID = val
+}
+
+// SetObjectCount sets the value of ObjectCount.
+func (s *CheckpointComponent) SetObjectCount(val OptInt64) {
+	s.ObjectCount = val
+}
+
+// SetStorageBytes sets the value of StorageBytes.
+func (s *CheckpointComponent) SetStorageBytes(val OptInt64) {
+	s.StorageBytes = val
+}
+
+// SetErrorCode sets the value of ErrorCode.
+func (s *CheckpointComponent) SetErrorCode(val OptString) {
+	s.ErrorCode = val
+}
+
+// SetErrorMessage sets the value of ErrorMessage.
+func (s *CheckpointComponent) SetErrorMessage(val OptString) {
+	s.ErrorMessage = val
+}
+
+// 单个 Checkpoint 组件（资源快照分区）的状态。.
+// Ref: #/components/schemas/CheckpointComponentStatus
+type CheckpointComponentStatus string
+
+const (
+	CheckpointComponentStatusCreating CheckpointComponentStatus = "creating"
+	CheckpointComponentStatusReady    CheckpointComponentStatus = "ready"
+	CheckpointComponentStatusFailed   CheckpointComponentStatus = "failed"
+	CheckpointComponentStatusDeleted  CheckpointComponentStatus = "deleted"
+)
+
+// AllValues returns all CheckpointComponentStatus values.
+func (CheckpointComponentStatus) AllValues() []CheckpointComponentStatus {
+	return []CheckpointComponentStatus{
+		CheckpointComponentStatusCreating,
+		CheckpointComponentStatusReady,
+		CheckpointComponentStatusFailed,
+		CheckpointComponentStatusDeleted,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s CheckpointComponentStatus) MarshalText() ([]byte, error) {
+	switch s {
+	case CheckpointComponentStatusCreating:
+		return []byte(s), nil
+	case CheckpointComponentStatusReady:
+		return []byte(s), nil
+	case CheckpointComponentStatusFailed:
+		return []byte(s), nil
+	case CheckpointComponentStatusDeleted:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *CheckpointComponentStatus) UnmarshalText(data []byte) error {
+	switch CheckpointComponentStatus(data) {
+	case CheckpointComponentStatusCreating:
+		*s = CheckpointComponentStatusCreating
+		return nil
+	case CheckpointComponentStatusReady:
+		*s = CheckpointComponentStatusReady
+		return nil
+	case CheckpointComponentStatusFailed:
+		*s = CheckpointComponentStatusFailed
+		return nil
+	case CheckpointComponentStatusDeleted:
+		*s = CheckpointComponentStatusDeleted
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// 跨账号 Checkpoint 恢复的目标账号侧配置。
+// 是否提供分三种情况：
+// - 同账号恢复：**必须省略**，携带返回 400；
+// - 跨账号恢复但 Checkpoint 不含 customer TOS 数据（仅平台托管的
+// uploads/outputs/memory 等）：**必须省略**，携带返回 400，错误码
+// 消息为 "checkpoint_restore_config is only allowed when the
+// checkpoint contains customer TOS data"；
+// - 跨账号恢复且 Checkpoint 包含 customer TOS 数据：**必填**
+// `tos_bucket`，声明调用方已离线同步好快照的目标账号 TOS 桶；
+// 省略返回 400。
+// 快照源 prefix、region、mount_path、access 均从 Checkpoint 继承，
+// 最终 Session 目标 key 由平台生成。.
+// Ref: #/components/schemas/CheckpointRestoreConfig
+type CheckpointRestoreConfig struct {
+	// 调用方已将 customer TOS 快照同步到的目标账号 TOS 桶。.
+	TosBucket string `json:"tos_bucket"`
+}
+
+// GetTosBucket returns the value of TosBucket.
+func (s *CheckpointRestoreConfig) GetTosBucket() string {
+	return s.TosBucket
+}
+
+// SetTosBucket sets the value of TosBucket.
+func (s *CheckpointRestoreConfig) SetTosBucket(val string) {
+	s.TosBucket = val
+}
+
+// 创建 Checkpoint 时冻结的用户可见 Session 配置。
+// `agent` / `environment` 反映创建瞬间的 wire 形态（分别与 Ark.Agent 的
+// Agent、Ark.Environment 的 Environment 同 shape），为保持本模块自足，
+// 此处承载为 `Record<unknown>`。.
+// Ref: #/components/schemas/CheckpointSessionSnapshot
+type CheckpointSessionSnapshot struct {
+	// 冻结的 Agent 快照。.
+	Agent OptCheckpointSessionSnapshotAgent `json:"agent"`
+	// 冻结的 Environment 快照。.
+	Environment OptCheckpointSessionSnapshotEnvironment `json:"environment"`
+	// 冻结的挂载资源列表。.
+	Resources []SessionResource `json:"resources"`
+	// 冻结的可访问 Vault ID 列表。.
+	VaultIds []string `json:"vault_ids"`
+	// 冻结的会话标题。.
+	Title OptString `json:"title"`
+	// 冻结的资源标签。.
+	Tags []Tag `json:"tags"`
+}
+
+// GetAgent returns the value of Agent.
+func (s *CheckpointSessionSnapshot) GetAgent() OptCheckpointSessionSnapshotAgent {
+	return s.Agent
+}
+
+// GetEnvironment returns the value of Environment.
+func (s *CheckpointSessionSnapshot) GetEnvironment() OptCheckpointSessionSnapshotEnvironment {
+	return s.Environment
+}
+
+// GetResources returns the value of Resources.
+func (s *CheckpointSessionSnapshot) GetResources() []SessionResource {
+	return s.Resources
+}
+
+// GetVaultIds returns the value of VaultIds.
+func (s *CheckpointSessionSnapshot) GetVaultIds() []string {
+	return s.VaultIds
+}
+
+// GetTitle returns the value of Title.
+func (s *CheckpointSessionSnapshot) GetTitle() OptString {
+	return s.Title
+}
+
+// GetTags returns the value of Tags.
+func (s *CheckpointSessionSnapshot) GetTags() []Tag {
+	return s.Tags
+}
+
+// SetAgent sets the value of Agent.
+func (s *CheckpointSessionSnapshot) SetAgent(val OptCheckpointSessionSnapshotAgent) {
+	s.Agent = val
+}
+
+// SetEnvironment sets the value of Environment.
+func (s *CheckpointSessionSnapshot) SetEnvironment(val OptCheckpointSessionSnapshotEnvironment) {
+	s.Environment = val
+}
+
+// SetResources sets the value of Resources.
+func (s *CheckpointSessionSnapshot) SetResources(val []SessionResource) {
+	s.Resources = val
+}
+
+// SetVaultIds sets the value of VaultIds.
+func (s *CheckpointSessionSnapshot) SetVaultIds(val []string) {
+	s.VaultIds = val
+}
+
+// SetTitle sets the value of Title.
+func (s *CheckpointSessionSnapshot) SetTitle(val OptString) {
+	s.Title = val
+}
+
+// SetTags sets the value of Tags.
+func (s *CheckpointSessionSnapshot) SetTags(val []Tag) {
+	s.Tags = val
+}
+
+// 冻结的 Agent 快照。.
+type CheckpointSessionSnapshotAgent map[string]jx.Raw
+
+func (s *CheckpointSessionSnapshotAgent) init() CheckpointSessionSnapshotAgent {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+// 冻结的 Environment 快照。.
+type CheckpointSessionSnapshotEnvironment map[string]jx.Raw
+
+func (s *CheckpointSessionSnapshotEnvironment) init() CheckpointSessionSnapshotEnvironment {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+// Checkpoint 生命周期状态。.
+// Ref: #/components/schemas/CheckpointStatus
+type CheckpointStatus string
+
+const (
+	CheckpointStatusCreating CheckpointStatus = "creating"
+	CheckpointStatusReady    CheckpointStatus = "ready"
+	CheckpointStatusFailed   CheckpointStatus = "failed"
+	CheckpointStatusDeleting CheckpointStatus = "deleting"
+	CheckpointStatusDeleted  CheckpointStatus = "deleted"
+)
+
+// AllValues returns all CheckpointStatus values.
+func (CheckpointStatus) AllValues() []CheckpointStatus {
+	return []CheckpointStatus{
+		CheckpointStatusCreating,
+		CheckpointStatusReady,
+		CheckpointStatusFailed,
+		CheckpointStatusDeleting,
+		CheckpointStatusDeleted,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s CheckpointStatus) MarshalText() ([]byte, error) {
+	switch s {
+	case CheckpointStatusCreating:
+		return []byte(s), nil
+	case CheckpointStatusReady:
+		return []byte(s), nil
+	case CheckpointStatusFailed:
+		return []byte(s), nil
+	case CheckpointStatusDeleting:
+		return []byte(s), nil
+	case CheckpointStatusDeleted:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *CheckpointStatus) UnmarshalText(data []byte) error {
+	switch CheckpointStatus(data) {
+	case CheckpointStatusCreating:
+		*s = CheckpointStatusCreating
+		return nil
+	case CheckpointStatusReady:
+		*s = CheckpointStatusReady
+		return nil
+	case CheckpointStatusFailed:
+		*s = CheckpointStatusFailed
+		return nil
+	case CheckpointStatusDeleting:
+		*s = CheckpointStatusDeleting
+		return nil
+	case CheckpointStatusDeleted:
+		*s = CheckpointStatusDeleted
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// 创建 Session Checkpoint 的请求体。.
+// Ref: #/components/schemas/CreateSessionCheckpointRequest
+type CreateSessionCheckpointRequest struct {
+	// Checkpoint 名称；由调用方提供，长度 1–128，仅用于展示。
+	// Checkpoint ID 由平台生成并在响应的 `id` 字段返回。.
+	Name string `json:"name"`
+}
+
+// GetName returns the value of Name.
+func (s *CreateSessionCheckpointRequest) GetName() string {
+	return s.Name
+}
+
+// SetName sets the value of Name.
+func (s *CreateSessionCheckpointRequest) SetName(val string) {
+	s.Name = val
+}
+
+// `POST /sessions/{session_id}/checkpoints` 响应体。.
+// Ref: #/components/schemas/CreateSessionCheckpointResponse
+type CreateSessionCheckpointResponse struct {
+	// 创建出的 Checkpoint。.
+	Checkpoint SessionCheckpoint `json:"checkpoint"`
+}
+
+// GetCheckpoint returns the value of Checkpoint.
+func (s *CreateSessionCheckpointResponse) GetCheckpoint() SessionCheckpoint {
+	return s.Checkpoint
+}
+
+// SetCheckpoint sets the value of Checkpoint.
+func (s *CreateSessionCheckpointResponse) SetCheckpoint(val SessionCheckpoint) {
+	s.Checkpoint = val
+}
+
 // 创建会话请求。
 // `agent` 字段承载两种 wire 形态：
 // - 裸 `agent_id` 字符串
 // - AgentRef 对象：`{"type":"agent","id":"agent_...","version":1}`.
 // Ref: #/components/schemas/CreateSessionRequest
 type CreateSessionRequest struct {
-	// Agent 标识。.
-	Agent AgentIdentifier `json:"agent"`
-	// 关联的 Environment ID。与 `environment` 二选一。.
+	// Agent 标识。普通创建必填；携带 `checkpoint_id` 恢复时可省略。
+	// 注意两种恢复基线的区别：
+	// - **省略 `agent`**：完整继承 Checkpoint 冻结的 Agent 快照（含其
+	// system / tools / model 接入配置等全部字段）；
+	// - **显式提供 `agent`**：不是在 Checkpoint 快照上做局部修改，而是按
+	// Agent 引用重新解析（指定 `version` 取该版本，省略取当前最新版；
+	// 源 Agent 在 Checkpoint 冻结后更新过就会拿到新配置），再在该基线
+	// 上应用 `agent_with_overrides` 覆写。.
+	Agent OptAgentIdentifier `json:"agent"`
+	// 关联的 Environment ID。与 `environment` 二选一；恢复时省略则继承快照。.
 	EnvironmentID OptString `json:"environment_id"`
 	// 关联 Environment 的覆写引用。与 `environment_id` 二选一。.
 	Environment OptEnvironmentWithOverrides `json:"environment"`
 	// 资源标签。.
 	Tags []Tag `json:"tags"`
-	// 挂载资源列表。.
+	// 挂载资源列表。普通创建可指定；基于 Checkpoint 恢复时**必须省略**
+	// （同账号 / 跨账号都完整继承 Checkpoint 资源，显式传空数组也返回 400）。.
 	Resources []SessionResource `json:"resources"`
 	// 会话人类可读标题。.
 	Title OptString `json:"title"`
-	// 会话可访问的 Vault ID 列表。.
+	// 会话可访问的 Vault ID 列表。基于 Checkpoint 同账号恢复时必须省略并
+	// 继承快照；跨账号恢复允许显式提供完整替换列表（空数组同样属于覆盖）。.
 	VaultIds []string `json:"vault_ids"`
+	// Session Checkpoint ID。省略时为普通创建；传入时以 ready 状态
+	// Checkpoint 的冻结配置为默认值创建新 Session，未显式提供的字段均从
+	// 快照继承。Checkpoint 不存在 / 非 ready 返回对应 4xx。.
+	CheckpointID OptString `json:"checkpoint_id"`
+	// 跨账号 customer TOS 恢复配置。**不是所有跨账号恢复都需要**：仅当跨
+	// 账号恢复且 Checkpoint 含 customer TOS 数据时必填；同账号恢复、以及
+	// 跨账号但不含 customer TOS 时必须省略，否则返回 400。三分支细则见
+	// `CheckpointRestoreConfig`。.
+	CheckpointRestoreConfig OptCheckpointRestoreConfig `json:"checkpoint_restore_config"`
 }
 
 // GetAgent returns the value of Agent.
-func (s *CreateSessionRequest) GetAgent() AgentIdentifier {
+func (s *CreateSessionRequest) GetAgent() OptAgentIdentifier {
 	return s.Agent
 }
 
@@ -608,8 +1004,18 @@ func (s *CreateSessionRequest) GetVaultIds() []string {
 	return s.VaultIds
 }
 
+// GetCheckpointID returns the value of CheckpointID.
+func (s *CreateSessionRequest) GetCheckpointID() OptString {
+	return s.CheckpointID
+}
+
+// GetCheckpointRestoreConfig returns the value of CheckpointRestoreConfig.
+func (s *CreateSessionRequest) GetCheckpointRestoreConfig() OptCheckpointRestoreConfig {
+	return s.CheckpointRestoreConfig
+}
+
 // SetAgent sets the value of Agent.
-func (s *CreateSessionRequest) SetAgent(val AgentIdentifier) {
+func (s *CreateSessionRequest) SetAgent(val OptAgentIdentifier) {
 	s.Agent = val
 }
 
@@ -641,6 +1047,16 @@ func (s *CreateSessionRequest) SetTitle(val OptString) {
 // SetVaultIds sets the value of VaultIds.
 func (s *CreateSessionRequest) SetVaultIds(val []string) {
 	s.VaultIds = val
+}
+
+// SetCheckpointID sets the value of CheckpointID.
+func (s *CreateSessionRequest) SetCheckpointID(val OptString) {
+	s.CheckpointID = val
+}
+
+// SetCheckpointRestoreConfig sets the value of CheckpointRestoreConfig.
+func (s *CreateSessionRequest) SetCheckpointRestoreConfig(val OptCheckpointRestoreConfig) {
+	s.CheckpointRestoreConfig = val
 }
 
 // 挂载新的 SessionResource。
@@ -773,6 +1189,35 @@ func (s *CreateSessionUpgradeRequest) SetVaultIds(val []string) {
 // SetInitialEvents sets the value of InitialEvents.
 func (s *CreateSessionUpgradeRequest) SetInitialEvents(val []ManagedAgentsEventParams) {
 	s.InitialEvents = val
+}
+
+// `DELETE /checkpoints/{checkpoint_id}` 响应体。.
+// Ref: #/components/schemas/DeleteSessionCheckpointResponse
+type DeleteSessionCheckpointResponse struct {
+	// 被删除的 Checkpoint ID。.
+	ID string `json:"id"`
+	// 删除受理后的 Checkpoint 状态（通常为 `"deleting"`）。.
+	Status CheckpointStatus `json:"status"`
+}
+
+// GetID returns the value of ID.
+func (s *DeleteSessionCheckpointResponse) GetID() string {
+	return s.ID
+}
+
+// GetStatus returns the value of Status.
+func (s *DeleteSessionCheckpointResponse) GetStatus() CheckpointStatus {
+	return s.Status
+}
+
+// SetID sets the value of ID.
+func (s *DeleteSessionCheckpointResponse) SetID(val string) {
+	s.ID = val
+}
+
+// SetStatus sets the value of Status.
+func (s *DeleteSessionCheckpointResponse) SetStatus(val CheckpointStatus) {
+	s.Status = val
 }
 
 // Delete Session 响应体。.
@@ -1435,6 +1880,23 @@ func (s *FileImageSource) SetFileID(val string) {
 	s.FileID = val
 }
 
+// `GET /checkpoints/{checkpoint_id}` 响应体。.
+// Ref: #/components/schemas/GetSessionCheckpointResponse
+type GetSessionCheckpointResponse struct {
+	// Checkpoint 对象。.
+	Checkpoint SessionCheckpoint `json:"checkpoint"`
+}
+
+// GetCheckpoint returns the value of Checkpoint.
+func (s *GetSessionCheckpointResponse) GetCheckpoint() SessionCheckpoint {
+	return s.Checkpoint
+}
+
+// SetCheckpoint sets the value of Checkpoint.
+func (s *GetSessionCheckpointResponse) SetCheckpoint(val SessionCheckpoint) {
+	s.Checkpoint = val
+}
+
 // 图片来源 tagged union：`base64` / `url` / `file`。
 // 用于 ManagedAgentsImageBlock.source。.
 // Ref: #/components/schemas/ImageSource
@@ -1540,6 +2002,35 @@ func NewFileImageSourceImageSourceSum(v FileImageSource) ImageSourceSum {
 	var s ImageSourceSum
 	s.SetFileImageSource(v)
 	return s
+}
+
+// `GET /checkpoints` 响应体。.
+// Ref: #/components/schemas/ListSessionCheckpointsResponse
+type ListSessionCheckpointsResponse struct {
+	// 本页 Checkpoint 列表。.
+	Data []SessionCheckpoint `json:"data"`
+	// 下一页 cursor；已列尽时为空或缺省。.
+	NextPage OptString `json:"next_page"`
+}
+
+// GetData returns the value of Data.
+func (s *ListSessionCheckpointsResponse) GetData() []SessionCheckpoint {
+	return s.Data
+}
+
+// GetNextPage returns the value of NextPage.
+func (s *ListSessionCheckpointsResponse) GetNextPage() OptString {
+	return s.NextPage
+}
+
+// SetData sets the value of Data.
+func (s *ListSessionCheckpointsResponse) SetData(val []SessionCheckpoint) {
+	s.Data = val
+}
+
+// SetNextPage sets the value of NextPage.
+func (s *ListSessionCheckpointsResponse) SetNextPage(val OptString) {
+	s.NextPage = val
 }
 
 // ListSessionEvents wire response. The `data` field carries the raw
@@ -2882,7 +3373,7 @@ func (s *ManagedAgentsUserToolResultEventParams) SetSessionThreadID(val OptStrin
 	s.SessionThreadID = val
 }
 
-// Session 创建时允许临时覆写的模型运行参数。
+// Session 创建时允许临时覆写的模型运行参数与接入配置。
 // 内部字段省略表示继承 base Agent 的对应值。.
 // Ref: #/components/schemas/ModelOverrides
 type ModelOverrides struct {
@@ -2898,6 +3389,28 @@ type ModelOverrides struct {
 	ReasoningEffort OptString `json:"reasoning_effort"`
 	// 服务档位。.
 	ServiceTier OptString `json:"service_tier"`
+	// 模型提供方覆写，例如 `"ark"` 或外接 provider 名。非空才生效，显式传空
+	// 串返回 400。切到非 ark provider 时，`base_url` 与 `token_limits` 为
+	// 必填（可继承快照中已有的值，否则返回 400）；ark provider 不允许指定
+	// `token_limits`。.
+	Provider OptString `json:"provider"`
+	// 模型接入协议覆写；取值须命中服务端维护的接入协议白名单，非法值返回
+	// 400。.
+	Protocol OptString `json:"protocol"`
+	// 自定义模型接入点 base URL。配合非 ark 的 `provider` 使用，把 Session
+	// 快照里冻结的上游替换成当前环境可达的接入点。.
+	BaseURL OptString `json:"base_url"`
+	// 自定义模型请求 header（整组覆写），例如 `Authorization` 或
+	// `X-Trial-Id`；key / value 均为字符串。.
+	Headers OptModelOverridesHeaders `json:"headers"`
+	// 模型 token 限制覆写（整体替换，提供时内部三字段必填且为正数）；
+	// 非 ark provider 可用，ark provider 指定返回 400。.
+	TokenLimits OptOverrideTokenLimits `json:"token_limits"`
+	// 底模支持的输入模态列表覆写。取值域：`text` / `image` / `audio` /
+	// `video`（无 `document`；文档在内部归入 image 通道）。
+	// 服务端会做归一化：去空白、转小写、元素去重、拒绝空元素，元素长度
+	// 上限 32，列表长度上限 16，超出返回 400。.
+	InputModalities []string `json:"input_modalities"`
 }
 
 // GetID returns the value of ID.
@@ -2925,6 +3438,36 @@ func (s *ModelOverrides) GetServiceTier() OptString {
 	return s.ServiceTier
 }
 
+// GetProvider returns the value of Provider.
+func (s *ModelOverrides) GetProvider() OptString {
+	return s.Provider
+}
+
+// GetProtocol returns the value of Protocol.
+func (s *ModelOverrides) GetProtocol() OptString {
+	return s.Protocol
+}
+
+// GetBaseURL returns the value of BaseURL.
+func (s *ModelOverrides) GetBaseURL() OptString {
+	return s.BaseURL
+}
+
+// GetHeaders returns the value of Headers.
+func (s *ModelOverrides) GetHeaders() OptModelOverridesHeaders {
+	return s.Headers
+}
+
+// GetTokenLimits returns the value of TokenLimits.
+func (s *ModelOverrides) GetTokenLimits() OptOverrideTokenLimits {
+	return s.TokenLimits
+}
+
+// GetInputModalities returns the value of InputModalities.
+func (s *ModelOverrides) GetInputModalities() []string {
+	return s.InputModalities
+}
+
 // SetID sets the value of ID.
 func (s *ModelOverrides) SetID(val OptString) {
 	s.ID = val
@@ -2948,6 +3491,49 @@ func (s *ModelOverrides) SetReasoningEffort(val OptString) {
 // SetServiceTier sets the value of ServiceTier.
 func (s *ModelOverrides) SetServiceTier(val OptString) {
 	s.ServiceTier = val
+}
+
+// SetProvider sets the value of Provider.
+func (s *ModelOverrides) SetProvider(val OptString) {
+	s.Provider = val
+}
+
+// SetProtocol sets the value of Protocol.
+func (s *ModelOverrides) SetProtocol(val OptString) {
+	s.Protocol = val
+}
+
+// SetBaseURL sets the value of BaseURL.
+func (s *ModelOverrides) SetBaseURL(val OptString) {
+	s.BaseURL = val
+}
+
+// SetHeaders sets the value of Headers.
+func (s *ModelOverrides) SetHeaders(val OptModelOverridesHeaders) {
+	s.Headers = val
+}
+
+// SetTokenLimits sets the value of TokenLimits.
+func (s *ModelOverrides) SetTokenLimits(val OptOverrideTokenLimits) {
+	s.TokenLimits = val
+}
+
+// SetInputModalities sets the value of InputModalities.
+func (s *ModelOverrides) SetInputModalities(val []string) {
+	s.InputModalities = val
+}
+
+// 自定义模型请求 header（整组覆写），例如 `Authorization` 或
+// `X-Trial-Id`；key / value 均为字符串。.
+type ModelOverridesHeaders map[string]string
+
+func (s *ModelOverridesHeaders) init() ModelOverridesHeaders {
+	m := *s
+	if m == nil {
+		m = map[string]string{}
+		*s = m
+	}
+	return m
 }
 
 // Session upgrade 中允许调整的模型配置子集。
@@ -3024,6 +3610,52 @@ func (s *ModelUpgrades) SetReasoningEffort(val OptString) {
 // SetServiceTier sets the value of ServiceTier.
 func (s *ModelUpgrades) SetServiceTier(val OptString) {
 	s.ServiceTier = val
+}
+
+// NewOptAgentIdentifier returns new OptAgentIdentifier with value set to v.
+func NewOptAgentIdentifier(v AgentIdentifier) OptAgentIdentifier {
+	return OptAgentIdentifier{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptAgentIdentifier is optional AgentIdentifier.
+type OptAgentIdentifier struct {
+	Value AgentIdentifier
+	Set   bool
+}
+
+// IsSet returns true if OptAgentIdentifier was set.
+func (o OptAgentIdentifier) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptAgentIdentifier) Reset() {
+	var v AgentIdentifier
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptAgentIdentifier) SetTo(v AgentIdentifier) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptAgentIdentifier) Get() (v AgentIdentifier, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptAgentIdentifier) Or(d AgentIdentifier) AgentIdentifier {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
 }
 
 // NewOptAgentRefMultiagent returns new OptAgentRefMultiagent with value set to v.
@@ -3250,6 +3882,190 @@ func (o OptCacheCreation) Get() (v CacheCreation, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptCacheCreation) Or(d CacheCreation) CacheCreation {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptCheckpointRestoreConfig returns new OptCheckpointRestoreConfig with value set to v.
+func NewOptCheckpointRestoreConfig(v CheckpointRestoreConfig) OptCheckpointRestoreConfig {
+	return OptCheckpointRestoreConfig{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptCheckpointRestoreConfig is optional CheckpointRestoreConfig.
+type OptCheckpointRestoreConfig struct {
+	Value CheckpointRestoreConfig
+	Set   bool
+}
+
+// IsSet returns true if OptCheckpointRestoreConfig was set.
+func (o OptCheckpointRestoreConfig) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptCheckpointRestoreConfig) Reset() {
+	var v CheckpointRestoreConfig
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptCheckpointRestoreConfig) SetTo(v CheckpointRestoreConfig) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptCheckpointRestoreConfig) Get() (v CheckpointRestoreConfig, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptCheckpointRestoreConfig) Or(d CheckpointRestoreConfig) CheckpointRestoreConfig {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptCheckpointSessionSnapshot returns new OptCheckpointSessionSnapshot with value set to v.
+func NewOptCheckpointSessionSnapshot(v CheckpointSessionSnapshot) OptCheckpointSessionSnapshot {
+	return OptCheckpointSessionSnapshot{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptCheckpointSessionSnapshot is optional CheckpointSessionSnapshot.
+type OptCheckpointSessionSnapshot struct {
+	Value CheckpointSessionSnapshot
+	Set   bool
+}
+
+// IsSet returns true if OptCheckpointSessionSnapshot was set.
+func (o OptCheckpointSessionSnapshot) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptCheckpointSessionSnapshot) Reset() {
+	var v CheckpointSessionSnapshot
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptCheckpointSessionSnapshot) SetTo(v CheckpointSessionSnapshot) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptCheckpointSessionSnapshot) Get() (v CheckpointSessionSnapshot, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptCheckpointSessionSnapshot) Or(d CheckpointSessionSnapshot) CheckpointSessionSnapshot {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptCheckpointSessionSnapshotAgent returns new OptCheckpointSessionSnapshotAgent with value set to v.
+func NewOptCheckpointSessionSnapshotAgent(v CheckpointSessionSnapshotAgent) OptCheckpointSessionSnapshotAgent {
+	return OptCheckpointSessionSnapshotAgent{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptCheckpointSessionSnapshotAgent is optional CheckpointSessionSnapshotAgent.
+type OptCheckpointSessionSnapshotAgent struct {
+	Value CheckpointSessionSnapshotAgent
+	Set   bool
+}
+
+// IsSet returns true if OptCheckpointSessionSnapshotAgent was set.
+func (o OptCheckpointSessionSnapshotAgent) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptCheckpointSessionSnapshotAgent) Reset() {
+	var v CheckpointSessionSnapshotAgent
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptCheckpointSessionSnapshotAgent) SetTo(v CheckpointSessionSnapshotAgent) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptCheckpointSessionSnapshotAgent) Get() (v CheckpointSessionSnapshotAgent, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptCheckpointSessionSnapshotAgent) Or(d CheckpointSessionSnapshotAgent) CheckpointSessionSnapshotAgent {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptCheckpointSessionSnapshotEnvironment returns new OptCheckpointSessionSnapshotEnvironment with value set to v.
+func NewOptCheckpointSessionSnapshotEnvironment(v CheckpointSessionSnapshotEnvironment) OptCheckpointSessionSnapshotEnvironment {
+	return OptCheckpointSessionSnapshotEnvironment{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptCheckpointSessionSnapshotEnvironment is optional CheckpointSessionSnapshotEnvironment.
+type OptCheckpointSessionSnapshotEnvironment struct {
+	Value CheckpointSessionSnapshotEnvironment
+	Set   bool
+}
+
+// IsSet returns true if OptCheckpointSessionSnapshotEnvironment was set.
+func (o OptCheckpointSessionSnapshotEnvironment) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptCheckpointSessionSnapshotEnvironment) Reset() {
+	var v CheckpointSessionSnapshotEnvironment
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptCheckpointSessionSnapshotEnvironment) SetTo(v CheckpointSessionSnapshotEnvironment) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptCheckpointSessionSnapshotEnvironment) Get() (v CheckpointSessionSnapshotEnvironment, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptCheckpointSessionSnapshotEnvironment) Or(d CheckpointSessionSnapshotEnvironment) CheckpointSessionSnapshotEnvironment {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -3808,6 +4624,52 @@ func (o OptModelOverrides) Or(d ModelOverrides) ModelOverrides {
 	return d
 }
 
+// NewOptModelOverridesHeaders returns new OptModelOverridesHeaders with value set to v.
+func NewOptModelOverridesHeaders(v ModelOverridesHeaders) OptModelOverridesHeaders {
+	return OptModelOverridesHeaders{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptModelOverridesHeaders is optional ModelOverridesHeaders.
+type OptModelOverridesHeaders struct {
+	Value ModelOverridesHeaders
+	Set   bool
+}
+
+// IsSet returns true if OptModelOverridesHeaders was set.
+func (o OptModelOverridesHeaders) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptModelOverridesHeaders) Reset() {
+	var v ModelOverridesHeaders
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptModelOverridesHeaders) SetTo(v ModelOverridesHeaders) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptModelOverridesHeaders) Get() (v ModelOverridesHeaders, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptModelOverridesHeaders) Or(d ModelOverridesHeaders) ModelOverridesHeaders {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptModelUpgrades returns new OptModelUpgrades with value set to v.
 func NewOptModelUpgrades(v ModelUpgrades) OptModelUpgrades {
 	return OptModelUpgrades{
@@ -4232,6 +5094,52 @@ func (o OptNilTagArray) Or(d []Tag) []Tag {
 	return d
 }
 
+// NewOptOverrideTokenLimits returns new OptOverrideTokenLimits with value set to v.
+func NewOptOverrideTokenLimits(v OverrideTokenLimits) OptOverrideTokenLimits {
+	return OptOverrideTokenLimits{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptOverrideTokenLimits is optional OverrideTokenLimits.
+type OptOverrideTokenLimits struct {
+	Value OverrideTokenLimits
+	Set   bool
+}
+
+// IsSet returns true if OptOverrideTokenLimits was set.
+func (o OptOverrideTokenLimits) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptOverrideTokenLimits) Reset() {
+	var v OverrideTokenLimits
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptOverrideTokenLimits) SetTo(v OverrideTokenLimits) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptOverrideTokenLimits) Get() (v OverrideTokenLimits, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptOverrideTokenLimits) Or(d OverrideTokenLimits) OverrideTokenLimits {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptSessionResourceAccess returns new OptSessionResourceAccess with value set to v.
 func NewOptSessionResourceAccess(v SessionResourceAccess) OptSessionResourceAccess {
 	return OptSessionResourceAccess{
@@ -4322,6 +5230,51 @@ func (o OptString) Or(d string) string {
 		return v
 	}
 	return d
+}
+
+// Session 创建期模型覆写使用的 token 限制。
+// **整体替换语义**：省略整个 `token_limits` 对象表示不覆写、继承快照值；
+// 一旦提供对象，三个字段**全部必填**且为正整数（>= 1），服务端不会与
+// 快照中的旧 limits 按字段合并——只传部分字段返回 400
+// `model.token_limits.<field>: required`。.
+// Ref: #/components/schemas/OverrideTokenLimits
+type OverrideTokenLimits struct {
+	// 模型上下文窗口；正整数。.
+	ContextWindow int64 `json:"context_window"`
+	// 最大输入 token 长度；正整数。.
+	MaxInputTokenLength int64 `json:"max_input_token_length"`
+	// 最大输出 token 长度；正整数。.
+	MaxOutputTokenLength int64 `json:"max_output_token_length"`
+}
+
+// GetContextWindow returns the value of ContextWindow.
+func (s *OverrideTokenLimits) GetContextWindow() int64 {
+	return s.ContextWindow
+}
+
+// GetMaxInputTokenLength returns the value of MaxInputTokenLength.
+func (s *OverrideTokenLimits) GetMaxInputTokenLength() int64 {
+	return s.MaxInputTokenLength
+}
+
+// GetMaxOutputTokenLength returns the value of MaxOutputTokenLength.
+func (s *OverrideTokenLimits) GetMaxOutputTokenLength() int64 {
+	return s.MaxOutputTokenLength
+}
+
+// SetContextWindow sets the value of ContextWindow.
+func (s *OverrideTokenLimits) SetContextWindow(val int64) {
+	s.ContextWindow = val
+}
+
+// SetMaxInputTokenLength sets the value of MaxInputTokenLength.
+func (s *OverrideTokenLimits) SetMaxInputTokenLength(val int64) {
+	s.MaxInputTokenLength = val
+}
+
+// SetMaxOutputTokenLength sets the value of MaxOutputTokenLength.
+func (s *OverrideTokenLimits) SetMaxOutputTokenLength(val int64) {
+	s.MaxOutputTokenLength = val
 }
 
 // 纯文本文档；`media_type` 必须为 `text/plain`；`data` 是原文。.
@@ -4620,6 +5573,158 @@ func (s *SessionAgent) init() SessionAgent {
 		*s = m
 	}
 	return m
+}
+
+// Session Checkpoint：某个静止 Session 的可恢复快照。
+// 用于 `POST /sessions` 携带 `checkpoint_id` 创建一个继承冻结配置的新
+// Session。是否需要 `checkpoint_restore_config` 只取决于快照是否包含
+// customer TOS 数据且跨账号恢复，详见该字段说明。.
+// Ref: #/components/schemas/SessionCheckpoint
+type SessionCheckpoint struct {
+	// Checkpoint ID。.
+	ID string `json:"id"`
+	// 快照来源 Session ID。.
+	SourceSessionID string `json:"source_session_id"`
+	// 调用方创建时给出的 Checkpoint 名称。.
+	Name string `json:"name"`
+	// Checkpoint 状态。.
+	Status CheckpointStatus `json:"status"`
+	// 失败错误码（`status = "failed"` 时存在）。.
+	ErrorCode OptString `json:"error_code"`
+	// 失败错误信息。.
+	ErrorMessage OptString `json:"error_message"`
+	// 过期时间（RFC 3339）；过期后不可用于恢复。.
+	ExpiresAt OptString `json:"expires_at"`
+	// 快照完成时间（RFC 3339）。.
+	CompletedAt OptString `json:"completed_at"`
+	// 创建时间（RFC 3339）。.
+	CreatedAt string `json:"created_at"`
+	// 最近更新时间（RFC 3339）。.
+	UpdatedAt string `json:"updated_at"`
+	// 冻结的用户可见 Session 配置。.
+	Snapshot OptCheckpointSessionSnapshot `json:"snapshot"`
+	// 各资源组件的脱敏执行摘要。.
+	Components []CheckpointComponent `json:"components"`
+}
+
+// GetID returns the value of ID.
+func (s *SessionCheckpoint) GetID() string {
+	return s.ID
+}
+
+// GetSourceSessionID returns the value of SourceSessionID.
+func (s *SessionCheckpoint) GetSourceSessionID() string {
+	return s.SourceSessionID
+}
+
+// GetName returns the value of Name.
+func (s *SessionCheckpoint) GetName() string {
+	return s.Name
+}
+
+// GetStatus returns the value of Status.
+func (s *SessionCheckpoint) GetStatus() CheckpointStatus {
+	return s.Status
+}
+
+// GetErrorCode returns the value of ErrorCode.
+func (s *SessionCheckpoint) GetErrorCode() OptString {
+	return s.ErrorCode
+}
+
+// GetErrorMessage returns the value of ErrorMessage.
+func (s *SessionCheckpoint) GetErrorMessage() OptString {
+	return s.ErrorMessage
+}
+
+// GetExpiresAt returns the value of ExpiresAt.
+func (s *SessionCheckpoint) GetExpiresAt() OptString {
+	return s.ExpiresAt
+}
+
+// GetCompletedAt returns the value of CompletedAt.
+func (s *SessionCheckpoint) GetCompletedAt() OptString {
+	return s.CompletedAt
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *SessionCheckpoint) GetCreatedAt() string {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *SessionCheckpoint) GetUpdatedAt() string {
+	return s.UpdatedAt
+}
+
+// GetSnapshot returns the value of Snapshot.
+func (s *SessionCheckpoint) GetSnapshot() OptCheckpointSessionSnapshot {
+	return s.Snapshot
+}
+
+// GetComponents returns the value of Components.
+func (s *SessionCheckpoint) GetComponents() []CheckpointComponent {
+	return s.Components
+}
+
+// SetID sets the value of ID.
+func (s *SessionCheckpoint) SetID(val string) {
+	s.ID = val
+}
+
+// SetSourceSessionID sets the value of SourceSessionID.
+func (s *SessionCheckpoint) SetSourceSessionID(val string) {
+	s.SourceSessionID = val
+}
+
+// SetName sets the value of Name.
+func (s *SessionCheckpoint) SetName(val string) {
+	s.Name = val
+}
+
+// SetStatus sets the value of Status.
+func (s *SessionCheckpoint) SetStatus(val CheckpointStatus) {
+	s.Status = val
+}
+
+// SetErrorCode sets the value of ErrorCode.
+func (s *SessionCheckpoint) SetErrorCode(val OptString) {
+	s.ErrorCode = val
+}
+
+// SetErrorMessage sets the value of ErrorMessage.
+func (s *SessionCheckpoint) SetErrorMessage(val OptString) {
+	s.ErrorMessage = val
+}
+
+// SetExpiresAt sets the value of ExpiresAt.
+func (s *SessionCheckpoint) SetExpiresAt(val OptString) {
+	s.ExpiresAt = val
+}
+
+// SetCompletedAt sets the value of CompletedAt.
+func (s *SessionCheckpoint) SetCompletedAt(val OptString) {
+	s.CompletedAt = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *SessionCheckpoint) SetCreatedAt(val string) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *SessionCheckpoint) SetUpdatedAt(val string) {
+	s.UpdatedAt = val
+}
+
+// SetSnapshot sets the value of Snapshot.
+func (s *SessionCheckpoint) SetSnapshot(val OptCheckpointSessionSnapshot) {
+	s.Snapshot = val
+}
+
+// SetComponents sets the value of Components.
+func (s *SessionCheckpoint) SetComponents(val []CheckpointComponent) {
+	s.Components = val
 }
 
 type SessionEnvironment map[string]jx.Raw

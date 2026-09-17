@@ -5,6 +5,34 @@
 
 package session
 
+// CheckpointsListParams is parameters of Checkpoints_list operation.
+type CheckpointsListParams struct {
+	// 按来源 Session ID 精确过滤。.
+	SourceSessionID OptString `json:",omitempty,omitzero" query:"source_session_id"`
+	// 按状态过滤；多值使用**重复 query 参数**编码
+	// （`status=ready&status=failed`），不要用逗号拼接。.
+	Status []CheckpointStatus `json:",omitempty" query:"status,repeat"`
+	// 单页最大条数，取值 [1, 100]；省略时服务端默认 `20`。.
+	Limit OptInt32 `json:",omitempty,omitzero" query:"limit"`
+	// 分页 cursor；首页省略。.
+	Page OptString `json:",omitempty,omitzero" query:"page"`
+}
+
+// CheckpointsRemoveParams is parameters of Checkpoints_remove operation.
+type CheckpointsRemoveParams struct {
+	CheckpointId string
+}
+
+// CheckpointsRetrieveParams is parameters of Checkpoints_retrieve operation.
+type CheckpointsRetrieveParams struct {
+	CheckpointId string
+}
+
+// SessionCheckpointsCreateParams is parameters of SessionCheckpoints_create operation.
+type SessionCheckpointsCreateParams struct {
+	SessionId string
+}
+
 // SessionEventsListEventsParams is parameters of SessionEvents_listEvents operation.
 type SessionEventsListEventsParams struct {
 	SessionId string
