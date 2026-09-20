@@ -56,6 +56,8 @@ type Options struct {
 type Limits struct {
 	MaxOutputBytes    int64
 	MaxInputFileBytes int64
+	// MaxMediaFileBytes 限制 read 内联图片和 PDF 的原始文件大小；零值回落到 MaxInputFileBytes，负值不限制。
+	MaxMediaFileBytes int64
 	ReadDefaultLines  int
 	ReadMaxLineChars  int
 	GlobMaxMatches    int
@@ -67,6 +69,7 @@ func DefaultLimits() Limits {
 	return Limits{
 		MaxOutputBytes:    100 << 10,
 		MaxInputFileBytes: 256 << 10,
+		MaxMediaFileBytes: 7 << 20,
 		ReadDefaultLines:  2000,
 		ReadMaxLineChars:  2000,
 		GlobMaxMatches:    1000,
