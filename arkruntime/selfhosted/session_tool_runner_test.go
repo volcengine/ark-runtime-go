@@ -15,6 +15,8 @@ import (
 	"github.com/volcengine/ark-runtime-go/arkruntime/toolset"
 )
 
+const runnerTestCallID = "call-id"
+
 type runnerTestAPI struct {
 	listCalls int
 	listEvent Event
@@ -63,6 +65,35 @@ func (t *runnerTestTool) Name() string { return "custom" }
 func (t *runnerTestTool) Execute(context.Context, json.RawMessage) toolset.Result {
 	t.calls++
 	return toolset.TextResult("ok")
+}
+
+type runnerBlockingTool struct {
+	started  chan struct{}
+	canceled chan struct{}
+}
+
+func (t *runnerBlockingTool) Name() string { return "blocking" }
+
+func (t *runnerBlockingTool) Execute(ctx context.Context, _ json.RawMessage) toolset.Result {
+	close(t.started)
+	<-ctx.Done()
+	close(t.canceled)
+	return toolset.ErrorResult(ctx.Err().Error())
+}
+
+type runnerNamedBlockingTool struct {
+	name     string
+	started  chan struct{}
+	canceled chan struct{}
+}
+
+func (t *runnerNamedBlockingTool) Name() string { return t.name }
+
+func (t *runnerNamedBlockingTool) Execute(ctx context.Context, _ json.RawMessage) toolset.Result {
+	close(t.started)
+	<-ctx.Done()
+	close(t.canceled)
+	return toolset.ErrorResult(ctx.Err().Error())
 }
 
 type runnerFailingMarkSentStore struct {
@@ -115,7 +146,7 @@ func TestSessionToolRunnerReconcileRetriesWithoutLosingToolUse(t *testing.T) {
 		ID:              "event-id",
 		Type:            EventTypeAgentCustomToolUse,
 		Name:            tool.Name(),
-		ToolUseID:       "call-id",
+		ToolUseID:       runnerTestCallID,
 		SessionThreadID: "thread-id",
 		Input:           RawJSON(`{}`),
 	}}
@@ -139,10 +170,11 @@ func TestSessionToolRunnerReconcileRetriesWithoutLosingToolUse(t *testing.T) {
 	if err := state.reconcile(context.Background()); err != nil {
 		t.Fatal(err)
 	}
+	finishRunnerTestExecution(t, state)
 	if api.listCalls != 2 || tool.calls != 1 || len(api.sent) != 1 {
 		t.Fatalf("list_calls=%d tool_calls=%d sent=%d", api.listCalls, tool.calls, len(api.sent))
 	}
-	if api.sent[0].CustomToolUseID != "call-id" {
+	if api.sent[0].CustomToolUseID != runnerTestCallID {
 		t.Fatalf("sent event=%+v", api.sent[0])
 	}
 }
@@ -155,7 +187,7 @@ func TestSessionToolRunnerConvertsToolPanicToErrorResult(t *testing.T) {
 	state := &toolRunnerState{runner: runner}
 	result := state.executeWithTimeout(context.Background(), Event{
 		ID:        "event-id",
-		ToolUseID: "call-id",
+		ToolUseID: runnerTestCallID,
 		Name:      "panicking-tool",
 	}, func(context.Context) toolset.Result {
 		panic("boom")
@@ -223,20 +255,20 @@ func TestSessionToolRunnerMarkSentFailureDoesNotRetainDeliveredResult(t *testing
 		Logger:      log.New(io.Discard, "", 0),
 	})
 	runner.events = make(chan ToolCallResult, 1)
-	out := NewUserToolResultEvent("call-id", []ContentBlock{{Type: "text", Text: "ok"}}, false, "thread-id")
+	out := NewUserToolResultEvent(runnerTestCallID, []ContentBlock{{Type: "text", Text: "ok"}}, false, "thread-id")
 	state := &toolRunnerState{
 		runner:         runner,
 		processed:      map[string]bool{},
 		answered:       map[string]bool{},
-		pendingResults: map[string]Event{"call-id": out},
+		pendingResults: map[string]Event{runnerTestCallID: out},
 	}
-	if err := state.sendResult(context.Background(), "call-id", Event{Name: "bash"}, false, "", out); err != nil {
+	if err := state.sendResult(context.Background(), runnerTestCallID, Event{Name: "bash"}, false, "", out); err != nil {
 		t.Fatal(err)
 	}
 	if len(api.sent) != 1 || store.markCalls != 1 {
 		t.Fatalf("sent=%d mark_calls=%d", len(api.sent), store.markCalls)
 	}
-	if !state.isAnswered("call-id") || len(state.pendingResults) != 0 {
+	if !state.isAnswered(runnerTestCallID) || len(state.pendingResults) != 0 {
 		t.Fatalf("answered=%v pending=%v", state.answered, state.pendingResults)
 	}
 }
@@ -248,12 +280,12 @@ func TestSessionToolRunnerFlushMarkSentFailureDoesNotRetainDeliveredResult(t *te
 		ResultStore: store,
 		Logger:      log.New(io.Discard, "", 0),
 	})
-	out := NewUserToolResultEvent("call-id", []ContentBlock{{Type: "text", Text: "ok"}}, false, "thread-id")
+	out := NewUserToolResultEvent(runnerTestCallID, []ContentBlock{{Type: "text", Text: "ok"}}, false, "thread-id")
 	state := &toolRunnerState{
 		runner:         runner,
 		processed:      map[string]bool{},
 		answered:       map[string]bool{},
-		pendingResults: map[string]Event{"call-id": out},
+		pendingResults: map[string]Event{runnerTestCallID: out},
 	}
 	if err := state.flushResults(context.Background()); err != nil {
 		t.Fatal(err)
@@ -261,7 +293,7 @@ func TestSessionToolRunnerFlushMarkSentFailureDoesNotRetainDeliveredResult(t *te
 	if len(api.sent) != 1 || store.markCalls != 1 {
 		t.Fatalf("sent=%d mark_calls=%d", len(api.sent), store.markCalls)
 	}
-	if !state.isAnswered("call-id") || len(state.pendingResults) != 0 {
+	if !state.isAnswered(runnerTestCallID) || len(state.pendingResults) != 0 {
 		t.Fatalf("answered=%v pending=%v", state.answered, state.pendingResults)
 	}
 }
@@ -291,13 +323,13 @@ func TestSessionToolRunnerPermissionDenyDoesNotPostToolResult(t *testing.T) {
 		ID:                  "event-id",
 		Type:                EventTypeAgentToolUse,
 		Name:                "read",
-		ToolUseID:           "call-id",
+		ToolUseID:           runnerTestCallID,
 		EvaluatedPermission: PermissionDeny,
 	}
 	if err := state.handleToolUse(context.Background(), event, false); err != nil {
 		t.Fatal(err)
 	}
-	if len(api.sent) != 0 || !state.isAnswered("call-id") {
+	if len(api.sent) != 0 || !state.isAnswered(runnerTestCallID) {
 		t.Fatalf("sent=%d answered=%v", len(api.sent), state.answered)
 	}
 	result := <-runner.events
@@ -347,6 +379,7 @@ func TestSessionToolRunnerFiltersRecoveredResultsAgainstCurrentBlockers(t *testi
 	if err := state.processListedEvents(context.Background(), events, true); err != nil {
 		t.Fatal(err)
 	}
+	finishRunnerTestExecution(t, state)
 	if tool.calls != 1 || len(api.sent) != 1 || api.sent[0].CustomToolUseID != "current-call" {
 		t.Fatalf("tool_calls=%d sent=%+v", tool.calls, api.sent)
 	}
@@ -355,6 +388,332 @@ func TestSessionToolRunnerFiltersRecoveredResultsAgainstCurrentBlockers(t *testi
 	}
 	if len(store.discarded) != 2 {
 		t.Fatalf("discarded=%v", store.discarded)
+	}
+}
+
+func TestSessionToolRunnerInterruptCancelsActiveToolWithoutPostingResult(t *testing.T) {
+	tool := &runnerBlockingTool{started: make(chan struct{}), canceled: make(chan struct{})}
+	api := &runnerTestAPI{}
+	store := &runnerRecordingStore{}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		ResultStore: store,
+		Logger:      log.New(io.Discard, "", 0),
+		ToolTimeout: time.Second,
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+	toolUse := Event{
+		ID:              runnerTestCallID,
+		Type:            EventTypeAgentCustomToolUse,
+		Name:            tool.Name(),
+		ToolUseID:       runnerTestCallID,
+		SessionThreadID: "thread-id",
+		Input:           RawJSON(`{}`),
+	}
+	if err := state.handleStreamEvent(context.Background(), toolUse); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-tool.started:
+	case <-time.After(time.Second):
+		t.Fatal("tool did not start")
+	}
+	if err := state.handleStreamEvent(context.Background(), Event{
+		ID:              "interrupt-id",
+		Type:            EventTypeUserInterrupt,
+		SessionThreadID: "thread-id",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-tool.canceled:
+	case <-time.After(time.Second):
+		t.Fatal("tool context was not canceled")
+	}
+	finishRunnerTestExecution(t, state)
+
+	if len(api.sent) != 0 || !state.isAnswered(runnerTestCallID) {
+		t.Fatalf("sent=%d answered=%v", len(api.sent), state.answered)
+	}
+	if len(store.discarded) != 1 || store.discarded[0] != runnerTestCallID {
+		t.Fatalf("discarded=%v", store.discarded)
+	}
+}
+
+func TestSessionToolRunnerInterruptOnlyCancelsTargetThread(t *testing.T) {
+	tool := &runnerBlockingTool{started: make(chan struct{}), canceled: make(chan struct{})}
+	runner := NewSessionToolRunner(context.Background(), &runnerTestAPI{}, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		Logger:      log.New(io.Discard, "", 0),
+		ToolTimeout: time.Second,
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+	toolUse := Event{
+		ID:              runnerTestCallID,
+		Type:            EventTypeAgentCustomToolUse,
+		Name:            tool.Name(),
+		ToolUseID:       runnerTestCallID,
+		SessionThreadID: "thread-a",
+		Input:           RawJSON(`{}`),
+	}
+	if err := state.handleStreamEvent(context.Background(), toolUse); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-tool.started:
+	case <-time.After(time.Second):
+		t.Fatal("tool did not start")
+	}
+	if err := state.handleStreamEvent(context.Background(), Event{
+		ID:              "other-interrupt",
+		Type:            EventTypeUserInterrupt,
+		SessionThreadID: "thread-b",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if state.isAnswered(runnerTestCallID) {
+		t.Fatal("interrupt for another thread settled the active call")
+	}
+	select {
+	case <-tool.canceled:
+		t.Fatal("interrupt for another thread canceled the active call")
+	default:
+	}
+
+	state.handleInterrupt(Event{Type: EventTypeUserInterrupt, SessionThreadID: "thread-a"})
+	finishRunnerTestExecution(t, state)
+}
+
+func TestSessionToolRunnerReconcileDoesNotRedispatchInterruptedToolUse(t *testing.T) {
+	tool := &runnerTestTool{}
+	api := &runnerTestAPI{}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		Logger:      log.New(io.Discard, "", 0),
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+	events := []Event{
+		{
+			ID:              runnerTestCallID,
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            tool.Name(),
+			ToolUseID:       runnerTestCallID,
+			SessionThreadID: "thread-id",
+			Input:           RawJSON(`{}`),
+		},
+		{ID: "interrupt-id", Type: EventTypeUserInterrupt, SessionThreadID: "thread-id"},
+		{ID: "idle-id", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{Type: SessionStopReasonEndTurn}},
+	}
+	if err := state.processListedEvents(context.Background(), events, true); err != nil {
+		t.Fatal(err)
+	}
+
+	if tool.calls != 0 || len(api.sent) != 0 || !state.isAnswered(runnerTestCallID) {
+		t.Fatalf("tool_calls=%d sent=%d answered=%v", tool.calls, len(api.sent), state.answered)
+	}
+}
+
+func TestSessionToolRunnerListInterruptCancelsToolFromEarlierPoll(t *testing.T) {
+	tool := &runnerBlockingTool{started: make(chan struct{}), canceled: make(chan struct{})}
+	runner := NewSessionToolRunner(context.Background(), &runnerTestAPI{}, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		Logger:      log.New(io.Discard, "", 0),
+		ToolTimeout: time.Second,
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+	toolUse := Event{
+		ID: "cross-poll-call", Type: EventTypeAgentCustomToolUse, Name: tool.Name(),
+		ToolUseID: "cross-poll-call", SessionThreadID: "thread-id", Input: RawJSON(`{}`),
+	}
+	if err := state.processListedEvents(context.Background(), []Event{toolUse}, false); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-tool.started:
+	case <-time.After(time.Second):
+		t.Fatal("tool did not start")
+	}
+	interrupt := Event{
+		Type: EventTypeUserInterrupt, ProcessedAt: "2026-09-20T00:00:00Z", SessionThreadID: "thread-id",
+	}
+	if err := state.processListedEvents(context.Background(), []Event{toolUse, interrupt}, false); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-tool.canceled:
+	case <-time.After(time.Second):
+		t.Fatal("cross-poll interrupt did not cancel tool")
+	}
+	finishRunnerTestExecution(t, state)
+	if !state.isAnswered("cross-poll-call") {
+		t.Fatal("cross-poll interrupt did not settle tool call")
+	}
+}
+
+func TestSessionToolRunnerSerialQueueInterruptRemovesMatchingToolOnly(t *testing.T) {
+	activeTool := &runnerNamedBlockingTool{name: "active", started: make(chan struct{}), canceled: make(chan struct{})}
+	queuedTool := &runnerNamedBlockingTool{name: "queued", started: make(chan struct{}), canceled: make(chan struct{})}
+	runner := NewSessionToolRunner(context.Background(), &runnerTestAPI{}, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{activeTool.Name(): activeTool, queuedTool.Name(): queuedTool},
+		Logger:      log.New(io.Discard, "", 0),
+		ToolTimeout: time.Second,
+	})
+	runner.events = make(chan ToolCallResult, 2)
+	state := newRunnerTestState(runner)
+	events := []Event{
+		{ID: "active-call", Type: EventTypeAgentCustomToolUse, Name: activeTool.Name(), ToolUseID: "active-call", SessionThreadID: "thread-a", Input: RawJSON(`{}`)},
+		{ID: "queued-call", Type: EventTypeAgentCustomToolUse, Name: queuedTool.Name(), ToolUseID: "queued-call", SessionThreadID: "thread-b", Input: RawJSON(`{}`)},
+	}
+	if err := state.processListedEvents(context.Background(), events, false); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-activeTool.started:
+	case <-time.After(time.Second):
+		t.Fatal("first tool did not start")
+	}
+	select {
+	case <-queuedTool.started:
+		t.Fatal("queued tool started before active tool finished")
+	case <-time.After(50 * time.Millisecond):
+	}
+	state.handleInterrupt(Event{Type: EventTypeUserInterrupt, SessionThreadID: "thread-b"})
+	if !state.isAnswered("queued-call") || state.isAnswered("active-call") {
+		t.Fatalf("answered=%v", state.answered)
+	}
+	select {
+	case <-activeTool.canceled:
+		t.Fatal("interrupt for queued thread canceled active tool")
+	default:
+	}
+	state.handleInterrupt(Event{Type: EventTypeUserInterrupt})
+	finishRunnerTestExecution(t, state)
+	select {
+	case <-queuedTool.started:
+		t.Fatal("interrupted queued tool was dispatched")
+	default:
+	}
+}
+
+func TestSessionToolRunnerListEndTurnArmsIdleAfterToolCompletes(t *testing.T) {
+	maxIdle := time.Minute
+	tool := &runnerTestTool{}
+	runner := NewSessionToolRunner(context.Background(), &runnerTestAPI{}, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		Logger:      log.New(io.Discard, "", 0),
+		MaxIdle:     &maxIdle,
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+	toolUse := Event{ID: "idle-call", Type: EventTypeAgentCustomToolUse, Name: tool.Name(), ToolUseID: "idle-call", Input: RawJSON(`{}`)}
+	if err := state.processListedEvents(context.Background(), []Event{toolUse}, false); err != nil {
+		t.Fatal(err)
+	}
+	idle := Event{ID: "idle-end-turn", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{Type: SessionStopReasonEndTurn}}
+	if err := state.processListedEvents(context.Background(), []Event{toolUse, idle}, false); err != nil {
+		t.Fatal(err)
+	}
+	if !state.idleArmPending || !state.idleArmedAt.IsZero() {
+		t.Fatalf("pending=%v armed_at=%v", state.idleArmPending, state.idleArmedAt)
+	}
+	finishRunnerTestExecution(t, state)
+	if state.idleArmPending || state.idleArmedAt.IsZero() {
+		t.Fatalf("pending=%v armed_at=%v", state.idleArmPending, state.idleArmedAt)
+	}
+}
+
+func TestSessionToolRunnerListReplayOfAnonymousInterruptDoesNotCancelLaterToolUse(t *testing.T) {
+	tool := &runnerBlockingTool{started: make(chan struct{}), canceled: make(chan struct{})}
+	api := &runnerTestAPI{}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		Logger:      log.New(io.Discard, "", 0),
+		ToolTimeout: time.Second,
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+	events := []Event{
+		{
+			ID:              "old-call",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            tool.Name(),
+			ToolUseID:       "old-call",
+			SessionThreadID: "thread-id",
+			Input:           RawJSON(`{}`),
+		},
+		{Type: EventTypeUserInterrupt, SessionThreadID: "thread-id"},
+		{
+			ID:              "new-call",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            tool.Name(),
+			ToolUseID:       "new-call",
+			SessionThreadID: "thread-id",
+			Input:           RawJSON(`{}`),
+		},
+	}
+	if err := state.processListedEvents(context.Background(), events, false); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-tool.started:
+	case <-time.After(time.Second):
+		t.Fatal("later tool did not start")
+	}
+	if err := state.processListedEvents(context.Background(), events, false); err != nil {
+		t.Fatal(err)
+	}
+	if err := state.processListedEvents(context.Background(), events, true); err != nil {
+		t.Fatal(err)
+	}
+	if state.isAnswered("new-call") {
+		t.Fatal("replayed interrupt canceled a later tool call")
+	}
+	if _, retained := state.toolUseEvents["old-call"]; retained {
+		t.Fatal("answered tool event was retained")
+	}
+	select {
+	case <-tool.canceled:
+		t.Fatal("later tool context was canceled by replay")
+	default:
+	}
+
+	state.handleInterrupt(Event{Type: EventTypeUserInterrupt})
+	finishRunnerTestExecution(t, state)
+}
+
+func newRunnerTestState(runner *SessionToolRunner) *toolRunnerState {
+	return &toolRunnerState{
+		runner:              runner,
+		processed:           map[string]bool{},
+		seen:                map[string]bool{},
+		answered:            map[string]bool{},
+		pendingResults:      map[string]Event{},
+		recoveredResults:    map[string]bool{},
+		pendingAsk:          map[string]Event{},
+		confirmations:       map[string]Event{},
+		externalTools:       map[string]Event{},
+		toolUseEvents:       map[string]Event{},
+		scheduled:           map[string]bool{},
+		executionDone:       make(chan toolExecutionResult, sessionRunnerResultsBuffer),
+		sessionToolUses:     map[string]bool{},
+		toolUsesSinceStatus: map[string]bool{},
+		blockingEventIDs:    map[string]bool{},
+	}
+}
+
+func finishRunnerTestExecution(t *testing.T, state *toolRunnerState) {
+	t.Helper()
+	select {
+	case result := <-state.executionDone:
+		if err := state.finishToolExecution(context.Background(), result); err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("tool execution did not finish")
 	}
 }
 

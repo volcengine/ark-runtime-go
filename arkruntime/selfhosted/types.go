@@ -23,6 +23,8 @@ const (
 	EventTypeAgentCustomToolUse = "agent.custom_tool_use"
 	// EventTypeUserToolConfirmation 表示用户确认工具执行。
 	EventTypeUserToolConfirmation = "user.tool_confirmation"
+	// EventTypeUserInterrupt 表示用户中断当前 session 或指定 thread。
+	EventTypeUserInterrupt = "user.interrupt"
 	// EventTypeUserToolResult 表示 self-host worker 回写内置工具结果。
 	EventTypeUserToolResult = "user.tool_result"
 	// EventTypeUserCustomToolResult 表示 self-host worker 回写自定义工具结果。

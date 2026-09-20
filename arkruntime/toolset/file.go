@@ -4,18 +4,38 @@ package toolset
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"mime"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"unicode/utf8"
 )
 
+const (
+	readBlockTypeImage    = "image"
+	readBlockTypeDocument = "document"
+	readMediaTypePDF      = "application/pdf"
+)
+
 // ReadTool 实现 read 工具。
 type ReadTool struct {
 	resolver *Resolver
 	limits   Limits
+}
+
+type readRequest struct {
+	FilePath  string `json:"file_path"`
+	Path      string `json:"path"`
+	File      string `json:"file"`
+	ViewRange []int  `json:"view_range,omitempty"`
+	Offset    *int   `json:"offset,omitempty"`
+	Limit     *int   `json:"limit,omitempty"`
 }
 
 // NewReadTool 创建 read 工具。
@@ -27,17 +47,19 @@ func NewReadTool(resolver *Resolver, limits Limits) *ReadTool {
 func (t *ReadTool) Name() string { return "read" }
 
 // Execute 执行 read。
-func (t *ReadTool) Execute(_ context.Context, input json.RawMessage) Result {
-	var req struct {
-		FilePath  string `json:"file_path"`
-		ViewRange []int  `json:"view_range,omitempty"`
-		Offset    int    `json:"offset,omitempty"`
-		Limit     int    `json:"limit,omitempty"`
-	}
+func (t *ReadTool) Execute(ctx context.Context, input json.RawMessage) Result {
+	var req readRequest
 	if err := decodeInput(input, &req); err != nil {
 		return ErrorResult(err.Error())
 	}
-	host, err := t.resolver.ResolveExisting(req.FilePath)
+	path, err := req.resolvedPath()
+	if err != nil {
+		return ErrorResult(err.Error())
+	}
+	if len(req.ViewRange) > 0 && (req.Offset != nil || req.Limit != nil) {
+		return ErrorResult("view_range cannot be combined with offset or limit")
+	}
+	host, err := t.resolver.ResolveExisting(path)
 	if err != nil {
 		return ErrorResult(err.Error())
 	}
@@ -47,6 +69,56 @@ func (t *ReadTool) Execute(_ context.Context, input json.RawMessage) Result {
 	}
 	if !info.Mode().IsRegular() {
 		return ErrorResult("path is not a regular file")
+	}
+	if err := ctx.Err(); err != nil {
+		return ErrorResult(err.Error())
+	}
+	blockType, mediaType, err := detectReadMedia(host)
+	if err != nil {
+		return ErrorResult(err.Error())
+	}
+	if blockType != "" {
+		if len(req.ViewRange) > 0 || req.Offset != nil || req.Limit != nil {
+			return ErrorResult("view_range, offset, and limit are only supported for text files")
+		}
+		limit := t.limits.MaxMediaFileBytes
+		if limit == 0 {
+			limit = t.limits.MaxInputFileBytes
+		}
+		if limit > 0 && info.Size() > limit {
+			return ErrorResult(fmt.Sprintf("media file too large: %d bytes", info.Size()))
+		}
+		reader, err := os.Open(host)
+		if err != nil {
+			return ErrorResult(err.Error())
+		}
+		defer func() { _ = reader.Close() }()
+		var source io.Reader = reader
+		if limit > 0 {
+			source = io.LimitReader(reader, limit+1)
+		}
+		data, err := io.ReadAll(source)
+		if err != nil {
+			return ErrorResult(err.Error())
+		}
+		if limit > 0 && int64(len(data)) > limit {
+			size := info.Size()
+			if int64(len(data)) > size {
+				size = int64(len(data))
+			}
+			return ErrorResult(fmt.Sprintf("media file too large: %d bytes", size))
+		}
+		if err := ctx.Err(); err != nil {
+			return ErrorResult(err.Error())
+		}
+		return Result{Content: []ContentBlock{{
+			Type: blockType,
+			Source: map[string]any{
+				"type":       "base64",
+				"media_type": mediaType,
+				"data":       base64.StdEncoding.EncodeToString(data),
+			},
+		}}}
 	}
 	if t.limits.MaxInputFileBytes > 0 && info.Size() > t.limits.MaxInputFileBytes {
 		return ErrorResult(fmt.Sprintf("file too large: %d bytes", info.Size()))
@@ -63,9 +135,9 @@ func (t *ReadTool) Execute(_ context.Context, input json.RawMessage) Result {
 			return ErrorResult("view_range must be [start_line, end_line]")
 		}
 		lines := strings.Split(string(data), "\n")
-		start := req.ViewRange[0] - 1
-		if start < 0 {
-			start = 0
+		start := 0
+		if req.ViewRange[0] > 1 {
+			start = req.ViewRange[0] - 1
 		}
 		if start >= len(lines) {
 			return TextResult("")
@@ -79,36 +151,39 @@ func (t *ReadTool) Execute(_ context.Context, input json.RawMessage) Result {
 		}
 		return TextResult(strings.Join(lines[start:end], "\n"))
 	}
-	if req.Offset == 0 && req.Limit == 0 {
-		return TextResult(string(data))
-	}
 	lines := strings.Split(string(data), "\n")
-	if len(lines) > 0 && lines[len(lines)-1] == "" {
+	if len(lines) > 0 && lines[len(lines)-1] == "" && strings.HasSuffix(string(data), "\n") {
 		lines = lines[:len(lines)-1]
 	}
-	offset := req.Offset
-	if offset < 0 {
-		offset = 0
+	offset := 0
+	if req.Offset != nil {
+		if *req.Offset < 1 {
+			return ErrorResult(fmt.Sprintf("offset is the 1-based start line and must be >= 1, got %d", *req.Offset))
+		}
+		offset = *req.Offset - 1
 	}
 	if offset > len(lines) {
 		offset = len(lines)
 	}
-	limit := req.Limit
+	limit := 0
+	if req.Limit != nil {
+		limit = *req.Limit
+	}
 	if limit <= 0 {
 		limit = t.limits.ReadDefaultLines
 	}
 	if limit <= 0 {
 		limit = 2000
 	}
-	end := offset + limit
-	if end > len(lines) {
-		end = len(lines)
+	end := len(lines)
+	if limit < len(lines)-offset {
+		end = offset + limit
 	}
 	var b strings.Builder
 	for i := offset; i < end; i++ {
 		line := lines[i]
 		if t.limits.ReadMaxLineChars > 0 && utf8.RuneCountInString(line) > t.limits.ReadMaxLineChars {
-			line = string([]rune(line)[:t.limits.ReadMaxLineChars])
+			line = string([]rune(line)[:t.limits.ReadMaxLineChars]) + " [line truncated]"
 		}
 		fmt.Fprintf(&b, "%6d\t%s\n", i+1, line)
 	}
@@ -116,6 +191,62 @@ func (t *ReadTool) Execute(_ context.Context, input json.RawMessage) Result {
 		fmt.Fprintf(&b, "\n[truncated: showing lines %d-%d of %d]\n", offset+1, end, len(lines))
 	}
 	return TextResult(b.String())
+}
+
+func (r readRequest) resolvedPath() (string, error) {
+	path := ""
+	for _, candidate := range []string{r.FilePath, r.Path, r.File} {
+		if candidate == "" {
+			continue
+		}
+		if path != "" && path != candidate {
+			return "", errors.New("file_path, path, and file must not conflict")
+		}
+		path = candidate
+	}
+	if path == "" {
+		return "", errors.New("file_path is required")
+	}
+	return path, nil
+}
+
+func detectReadMedia(path string) (string, string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", "", err
+	}
+	defer func() { _ = f.Close() }()
+
+	header := make([]byte, 512)
+	n, err := io.ReadFull(f, header)
+	if err != nil && err != io.EOF && err != io.ErrUnexpectedEOF {
+		return "", "", err
+	}
+	header = header[:n]
+	detected := http.DetectContentType(header)
+	if blockType := supportedReadMediaBlock(detected); blockType != "" {
+		return blockType, detected, nil
+	}
+	if detected != "application/octet-stream" {
+		return "", "", nil
+	}
+	extensionType := mime.TypeByExtension(strings.ToLower(filepath.Ext(path)))
+	if semi := strings.IndexByte(extensionType, ';'); semi >= 0 {
+		extensionType = extensionType[:semi]
+	}
+	extensionType = strings.ToLower(strings.TrimSpace(extensionType))
+	return supportedReadMediaBlock(extensionType), extensionType, nil
+}
+
+func supportedReadMediaBlock(mediaType string) string {
+	switch mediaType {
+	case "image/jpeg", "image/png", "image/gif", "image/webp":
+		return readBlockTypeImage
+	case readMediaTypePDF:
+		return readBlockTypeDocument
+	default:
+		return ""
+	}
 }
 
 // WriteTool 实现 write 工具。

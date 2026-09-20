@@ -4,6 +4,7 @@ package toolset
 
 import (
 	"context"
+	"encoding/base64"
 	"os"
 	"path/filepath"
 	"strings"
@@ -187,7 +188,7 @@ func TestReadSupportsViewRange(t *testing.T) {
 	}
 }
 
-func TestReadDefaultsToRawContent(t *testing.T) {
+func TestReadDefaultsToNumberedContent(t *testing.T) {
 	root := t.TempDir()
 	if err := os.WriteFile(filepath.Join(root, "demo.txt"), []byte("a\nb\n"), 0o600); err != nil {
 		t.Fatal(err)
@@ -199,7 +200,165 @@ func TestReadDefaultsToRawContent(t *testing.T) {
 	defer set.Close()
 
 	res := set.Execute(context.Background(), "read", []byte(`{"file_path":"demo.txt"}`))
-	if res.IsError || res.Content[0].Text != "a\nb\n" {
+	if res.IsError || res.Content[0].Text != "     1\ta\n     2\tb\n" {
+		t.Fatalf("read result = %+v", res)
+	}
+}
+
+func TestReadMarksTruncatedLines(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "long.txt"), []byte(strings.Repeat("a", 2001)), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	set, err := NewDefault(Options{Workdir: root})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer set.Close()
+
+	res := set.Execute(context.Background(), "read", []byte(`{"file_path":"long.txt"}`))
+	want := "     1\t" + strings.Repeat("a", 2000) + " [line truncated]\n"
+	if res.IsError || res.Content[0].Text != want {
+		t.Fatalf("read result = %+v", res)
+	}
+}
+
+func TestReadSupportsManagedAgentLineRange(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "demo.txt"), []byte("a\nb\nc\nd\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	set, err := NewDefault(Options{Workdir: root})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer set.Close()
+
+	res := set.Execute(context.Background(), "read", []byte(`{"file_path":"demo.txt","offset":2,"limit":2}`))
+	if res.IsError || res.Content[0].Text != "     2\tb\n     3\tc\n\n[truncated: showing lines 2-3 of 4]\n" {
+		t.Fatalf("read result = %+v", res)
+	}
+	invalid := set.Execute(context.Background(), "read", []byte(`{"file_path":"demo.txt","offset":0}`))
+	if !invalid.IsError || !strings.Contains(invalid.Content[0].Text, "must be >= 1") {
+		t.Fatalf("invalid offset result = %+v", invalid)
+	}
+}
+
+func TestReadKeepsLegacyPathAliases(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "demo.txt"), []byte("a\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	set, err := NewDefault(Options{Workdir: root})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer set.Close()
+
+	for _, input := range []string{
+		`{"path":"demo.txt"}`,
+		`{"file":"demo.txt"}`,
+		`{"file_path":"demo.txt","path":"demo.txt"}`,
+	} {
+		res := set.Execute(context.Background(), "read", []byte(input))
+		if res.IsError {
+			t.Fatalf("read(%s) result = %+v", input, res)
+		}
+	}
+	conflict := set.Execute(context.Background(), "read", []byte(`{"file_path":"demo.txt","path":"other.txt"}`))
+	if !conflict.IsError || !strings.Contains(conflict.Content[0].Text, "must not conflict") {
+		t.Fatalf("conflicting path result = %+v", conflict)
+	}
+	rangeConflict := set.Execute(context.Background(), "read", []byte(
+		`{"file_path":"demo.txt","view_range":[1,1],"offset":1}`,
+	))
+	if !rangeConflict.IsError || !strings.Contains(rangeConflict.Content[0].Text, "cannot be combined") {
+		t.Fatalf("conflicting range result = %+v", rangeConflict)
+	}
+}
+
+func TestReadReturnsImageAsBase64ContentBlock(t *testing.T) {
+	root := t.TempDir()
+	data := append([]byte("\x89PNG\r\n\x1a\n"), make([]byte, 300<<10)...)
+	if err := os.WriteFile(filepath.Join(root, "image.png"), data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	set, err := NewDefault(Options{Workdir: root})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer set.Close()
+
+	res := set.Execute(context.Background(), "read", []byte(`{"file_path":"image.png"}`))
+	if res.IsError || len(res.Content) != 1 || res.Content[0].Type != "image" {
+		t.Fatalf("read result = %+v", res)
+	}
+	source, ok := res.Content[0].Source.(map[string]any)
+	if !ok || source["type"] != "base64" || source["media_type"] != "image/png" {
+		t.Fatalf("image source = %#v", res.Content[0].Source)
+	}
+	if source["data"] != base64.StdEncoding.EncodeToString(data) {
+		t.Fatal("image data was not base64 encoded")
+	}
+}
+
+func TestReadReturnsPDFAsDocumentContentBlock(t *testing.T) {
+	root := t.TempDir()
+	data := []byte("%PDF-1.7\n%%EOF\n")
+	if err := os.WriteFile(filepath.Join(root, "report.pdf"), data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	set, err := NewDefault(Options{Workdir: root})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer set.Close()
+
+	res := set.Execute(context.Background(), "read", []byte(`{"file_path":"report.pdf"}`))
+	if res.IsError || len(res.Content) != 1 || res.Content[0].Type != "document" {
+		t.Fatalf("read result = %+v", res)
+	}
+	source, ok := res.Content[0].Source.(map[string]any)
+	if !ok || source["media_type"] != "application/pdf" || source["data"] != base64.StdEncoding.EncodeToString(data) {
+		t.Fatalf("document source = %#v", res.Content[0].Source)
+	}
+}
+
+func TestReadRejectsRangesForMedia(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "image.gif"), []byte("GIF89a"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	set, err := NewDefault(Options{Workdir: root})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer set.Close()
+
+	res := set.Execute(context.Background(), "read", []byte(`{"file_path":"image.gif","view_range":[1,2]}`))
+	if !res.IsError || !strings.Contains(res.Content[0].Text, "only supported for text") {
+		t.Fatalf("read result = %+v", res)
+	}
+}
+
+func TestReadRejectsMediaAboveInlineLimit(t *testing.T) {
+	root := t.TempDir()
+	path := filepath.Join(root, "image.png")
+	if err := os.WriteFile(path, []byte("\x89PNG\r\n\x1a\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	limits := DefaultLimits()
+	if err := os.Truncate(path, limits.MaxMediaFileBytes+1); err != nil {
+		t.Fatal(err)
+	}
+	set, err := NewDefault(Options{Workdir: root, Limits: limits})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer set.Close()
+
+	res := set.Execute(context.Background(), "read", []byte(`{"file_path":"image.png"}`))
+	if !res.IsError || !strings.Contains(res.Content[0].Text, "media file too large") {
 		t.Fatalf("read result = %+v", res)
 	}
 }
