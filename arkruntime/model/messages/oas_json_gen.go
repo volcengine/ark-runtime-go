@@ -8,6 +8,7 @@ package messages
 import (
 	"math/bits"
 	"strconv"
+	"strings"
 
 	"github.com/go-faster/errors"
 	"github.com/go-faster/jx"
@@ -439,6 +440,13 @@ func (s ContentBlockStartContentBlockSum) Encode(e *jx.Encoder) {
 }
 
 func (s ContentBlockStartContentBlockSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
 	switch s.Type {
 	case ContentBlockStartContentBlockTextContentBlockStartContentBlockSum:
 		e.FieldStart("type")
@@ -548,6 +556,16 @@ func (s *ContentBlockStartContentBlockSum) Decode(d *jx.Decoder) error {
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
 
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
@@ -578,7 +596,11 @@ func (s *ContentBlockStartContentBlockSum) Decode(d *jx.Decoder) error {
 					s.Type = ContentBlockStartContentBlockWebSearchToolResultContentBlockStartContentBlockSum
 					found = true
 				default:
-					return errors.Errorf("unknown type %s", typ)
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
 				}
 				return nil
 			}
@@ -586,6 +608,12 @@ func (s *ContentBlockStartContentBlockSum) Decode(d *jx.Decoder) error {
 		})
 	}); err != nil {
 		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = ContentBlockStartContentBlockSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
 	}
 	if !found {
 		return errors.New("unable to detect sum type variant")
@@ -8267,6 +8295,13 @@ func (s MessagesResponseContentBlockDeltaSum) Encode(e *jx.Encoder) {
 }
 
 func (s MessagesResponseContentBlockDeltaSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
 	switch s.Type {
 	case MessagesResponseContentBlockDeltaTextMessagesResponseContentBlockDeltaSum:
 		e.FieldStart("type")
@@ -8320,6 +8355,16 @@ func (s *MessagesResponseContentBlockDeltaSum) Decode(d *jx.Decoder) error {
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
 
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
@@ -8347,7 +8392,11 @@ func (s *MessagesResponseContentBlockDeltaSum) Decode(d *jx.Decoder) error {
 					s.Type = MessagesResponseContentBlockDeltaToolUseMessagesResponseContentBlockDeltaSum
 					found = true
 				default:
-					return errors.Errorf("unknown type %s", typ)
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
 				}
 				return nil
 			}
@@ -8355,6 +8404,12 @@ func (s *MessagesResponseContentBlockDeltaSum) Decode(d *jx.Decoder) error {
 		})
 	}); err != nil {
 		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = MessagesResponseContentBlockDeltaSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
 	}
 	if !found {
 		return errors.New("unable to detect sum type variant")
@@ -9326,6 +9381,13 @@ func (s MessagesResponseContentPartSum) Encode(e *jx.Encoder) {
 }
 
 func (s MessagesResponseContentPartSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
 	switch s.Type {
 	case MessagesResponseContentPartTextMessagesResponseContentPartSum:
 		e.FieldStart("type")
@@ -9421,6 +9483,16 @@ func (s *MessagesResponseContentPartSum) Decode(d *jx.Decoder) error {
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
 
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
@@ -9451,7 +9523,11 @@ func (s *MessagesResponseContentPartSum) Decode(d *jx.Decoder) error {
 					s.Type = MessagesResponseContentPartWebSearchToolResultMessagesResponseContentPartSum
 					found = true
 				default:
-					return errors.Errorf("unknown type %s", typ)
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
 				}
 				return nil
 			}
@@ -9459,6 +9535,12 @@ func (s *MessagesResponseContentPartSum) Decode(d *jx.Decoder) error {
 		})
 	}); err != nil {
 		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = MessagesResponseContentPartSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
 	}
 	if !found {
 		return errors.New("unable to detect sum type variant")
@@ -11665,6 +11747,13 @@ func (s MessagesStreamEventSum) Encode(e *jx.Encoder) {
 }
 
 func (s MessagesStreamEventSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
 	switch s.Type {
 	case MessagesResponseStreamMessageStartMessagesStreamEventSum:
 		e.FieldStart("type")
@@ -11753,6 +11842,16 @@ func (s *MessagesStreamEventSum) Decode(d *jx.Decoder) error {
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
 
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
@@ -11789,7 +11888,11 @@ func (s *MessagesStreamEventSum) Decode(d *jx.Decoder) error {
 					s.Type = MessagesErrorResponseMessagesStreamEventSum
 					found = true
 				default:
-					return errors.Errorf("unknown type %s", typ)
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
 				}
 				return nil
 			}
@@ -11797,6 +11900,12 @@ func (s *MessagesStreamEventSum) Decode(d *jx.Decoder) error {
 		})
 	}); err != nil {
 		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = MessagesStreamEventSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
 	}
 	if !found {
 		return errors.New("unable to detect sum type variant")

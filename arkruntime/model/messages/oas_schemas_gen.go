@@ -157,12 +157,25 @@ func (s *ContentBlockStartContentBlockServerToolUseType) UnmarshalText(data []by
 
 // ContentBlockStartContentBlockSum represents sum type.
 type ContentBlockStartContentBlockSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType                                      string
+	unknownJSON                                      string
 	Type                                             ContentBlockStartContentBlockSumType // switch on this field
 	ContentBlockStartContentBlockText                ContentBlockStartContentBlockText
 	ContentBlockStartContentBlockThinking            ContentBlockStartContentBlockThinking
 	ContentBlockStartContentBlockToolUse             ContentBlockStartContentBlockToolUse
 	ContentBlockStartContentBlockServerToolUse       ContentBlockStartContentBlockServerToolUse
 	ContentBlockStartContentBlockWebSearchToolResult ContentBlockStartContentBlockWebSearchToolResult
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s ContentBlockStartContentBlockSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
 }
 
 // ContentBlockStartContentBlockSumType is oneOf type of ContentBlockStartContentBlockSum.
@@ -205,6 +218,8 @@ func (s ContentBlockStartContentBlockSum) IsContentBlockStartContentBlockWebSear
 // SetContentBlockStartContentBlockText sets ContentBlockStartContentBlockSum to ContentBlockStartContentBlockText.
 func (s *ContentBlockStartContentBlockSum) SetContentBlockStartContentBlockText(v ContentBlockStartContentBlockText) {
 	s.Type = ContentBlockStartContentBlockTextContentBlockStartContentBlockSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ContentBlockStartContentBlockText = v
 }
 
@@ -226,6 +241,8 @@ func NewContentBlockStartContentBlockTextContentBlockStartContentBlockSum(v Cont
 // SetContentBlockStartContentBlockThinking sets ContentBlockStartContentBlockSum to ContentBlockStartContentBlockThinking.
 func (s *ContentBlockStartContentBlockSum) SetContentBlockStartContentBlockThinking(v ContentBlockStartContentBlockThinking) {
 	s.Type = ContentBlockStartContentBlockThinkingContentBlockStartContentBlockSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ContentBlockStartContentBlockThinking = v
 }
 
@@ -247,6 +264,8 @@ func NewContentBlockStartContentBlockThinkingContentBlockStartContentBlockSum(v 
 // SetContentBlockStartContentBlockToolUse sets ContentBlockStartContentBlockSum to ContentBlockStartContentBlockToolUse.
 func (s *ContentBlockStartContentBlockSum) SetContentBlockStartContentBlockToolUse(v ContentBlockStartContentBlockToolUse) {
 	s.Type = ContentBlockStartContentBlockToolUseContentBlockStartContentBlockSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ContentBlockStartContentBlockToolUse = v
 }
 
@@ -268,6 +287,8 @@ func NewContentBlockStartContentBlockToolUseContentBlockStartContentBlockSum(v C
 // SetContentBlockStartContentBlockServerToolUse sets ContentBlockStartContentBlockSum to ContentBlockStartContentBlockServerToolUse.
 func (s *ContentBlockStartContentBlockSum) SetContentBlockStartContentBlockServerToolUse(v ContentBlockStartContentBlockServerToolUse) {
 	s.Type = ContentBlockStartContentBlockServerToolUseContentBlockStartContentBlockSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ContentBlockStartContentBlockServerToolUse = v
 }
 
@@ -289,6 +310,8 @@ func NewContentBlockStartContentBlockServerToolUseContentBlockStartContentBlockS
 // SetContentBlockStartContentBlockWebSearchToolResult sets ContentBlockStartContentBlockSum to ContentBlockStartContentBlockWebSearchToolResult.
 func (s *ContentBlockStartContentBlockSum) SetContentBlockStartContentBlockWebSearchToolResult(v ContentBlockStartContentBlockWebSearchToolResult) {
 	s.Type = ContentBlockStartContentBlockWebSearchToolResultContentBlockStartContentBlockSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ContentBlockStartContentBlockWebSearchToolResult = v
 }
 
@@ -3848,11 +3871,24 @@ func (s *MessagesResponseContentBlockDeltaSignatureType) UnmarshalText(data []by
 
 // MessagesResponseContentBlockDeltaSum represents sum type.
 type MessagesResponseContentBlockDeltaSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType                                string
+	unknownJSON                                string
 	Type                                       MessagesResponseContentBlockDeltaSumType // switch on this field
 	MessagesResponseContentBlockDeltaText      MessagesResponseContentBlockDeltaText
 	MessagesResponseContentBlockDeltaThinking  MessagesResponseContentBlockDeltaThinking
 	MessagesResponseContentBlockDeltaSignature MessagesResponseContentBlockDeltaSignature
 	MessagesResponseContentBlockDeltaToolUse   MessagesResponseContentBlockDeltaToolUse
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s MessagesResponseContentBlockDeltaSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
 }
 
 // MessagesResponseContentBlockDeltaSumType is oneOf type of MessagesResponseContentBlockDeltaSum.
@@ -3889,6 +3925,8 @@ func (s MessagesResponseContentBlockDeltaSum) IsMessagesResponseContentBlockDelt
 // SetMessagesResponseContentBlockDeltaText sets MessagesResponseContentBlockDeltaSum to MessagesResponseContentBlockDeltaText.
 func (s *MessagesResponseContentBlockDeltaSum) SetMessagesResponseContentBlockDeltaText(v MessagesResponseContentBlockDeltaText) {
 	s.Type = MessagesResponseContentBlockDeltaTextMessagesResponseContentBlockDeltaSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesResponseContentBlockDeltaText = v
 }
 
@@ -3910,6 +3948,8 @@ func NewMessagesResponseContentBlockDeltaTextMessagesResponseContentBlockDeltaSu
 // SetMessagesResponseContentBlockDeltaThinking sets MessagesResponseContentBlockDeltaSum to MessagesResponseContentBlockDeltaThinking.
 func (s *MessagesResponseContentBlockDeltaSum) SetMessagesResponseContentBlockDeltaThinking(v MessagesResponseContentBlockDeltaThinking) {
 	s.Type = MessagesResponseContentBlockDeltaThinkingMessagesResponseContentBlockDeltaSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesResponseContentBlockDeltaThinking = v
 }
 
@@ -3931,6 +3971,8 @@ func NewMessagesResponseContentBlockDeltaThinkingMessagesResponseContentBlockDel
 // SetMessagesResponseContentBlockDeltaSignature sets MessagesResponseContentBlockDeltaSum to MessagesResponseContentBlockDeltaSignature.
 func (s *MessagesResponseContentBlockDeltaSum) SetMessagesResponseContentBlockDeltaSignature(v MessagesResponseContentBlockDeltaSignature) {
 	s.Type = MessagesResponseContentBlockDeltaSignatureMessagesResponseContentBlockDeltaSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesResponseContentBlockDeltaSignature = v
 }
 
@@ -3952,6 +3994,8 @@ func NewMessagesResponseContentBlockDeltaSignatureMessagesResponseContentBlockDe
 // SetMessagesResponseContentBlockDeltaToolUse sets MessagesResponseContentBlockDeltaSum to MessagesResponseContentBlockDeltaToolUse.
 func (s *MessagesResponseContentBlockDeltaSum) SetMessagesResponseContentBlockDeltaToolUse(v MessagesResponseContentBlockDeltaToolUse) {
 	s.Type = MessagesResponseContentBlockDeltaToolUseMessagesResponseContentBlockDeltaSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesResponseContentBlockDeltaToolUse = v
 }
 
@@ -4354,12 +4398,25 @@ func (s *MessagesResponseContentPartServerToolUseType) UnmarshalText(data []byte
 
 // MessagesResponseContentPartSum represents sum type.
 type MessagesResponseContentPartSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType                                    string
+	unknownJSON                                    string
 	Type                                           MessagesResponseContentPartSumType // switch on this field
 	MessagesResponseContentPartText                MessagesResponseContentPartText
 	MessagesResponseContentPartThinking            MessagesResponseContentPartThinking
 	MessagesResponseContentPartToolUse             MessagesResponseContentPartToolUse
 	MessagesResponseContentPartServerToolUse       MessagesResponseContentPartServerToolUse
 	MessagesResponseContentPartWebSearchToolResult MessagesResponseContentPartWebSearchToolResult
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s MessagesResponseContentPartSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
 }
 
 // MessagesResponseContentPartSumType is oneOf type of MessagesResponseContentPartSum.
@@ -4402,6 +4459,8 @@ func (s MessagesResponseContentPartSum) IsMessagesResponseContentPartWebSearchTo
 // SetMessagesResponseContentPartText sets MessagesResponseContentPartSum to MessagesResponseContentPartText.
 func (s *MessagesResponseContentPartSum) SetMessagesResponseContentPartText(v MessagesResponseContentPartText) {
 	s.Type = MessagesResponseContentPartTextMessagesResponseContentPartSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesResponseContentPartText = v
 }
 
@@ -4423,6 +4482,8 @@ func NewMessagesResponseContentPartTextMessagesResponseContentPartSum(v Messages
 // SetMessagesResponseContentPartThinking sets MessagesResponseContentPartSum to MessagesResponseContentPartThinking.
 func (s *MessagesResponseContentPartSum) SetMessagesResponseContentPartThinking(v MessagesResponseContentPartThinking) {
 	s.Type = MessagesResponseContentPartThinkingMessagesResponseContentPartSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesResponseContentPartThinking = v
 }
 
@@ -4444,6 +4505,8 @@ func NewMessagesResponseContentPartThinkingMessagesResponseContentPartSum(v Mess
 // SetMessagesResponseContentPartToolUse sets MessagesResponseContentPartSum to MessagesResponseContentPartToolUse.
 func (s *MessagesResponseContentPartSum) SetMessagesResponseContentPartToolUse(v MessagesResponseContentPartToolUse) {
 	s.Type = MessagesResponseContentPartToolUseMessagesResponseContentPartSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesResponseContentPartToolUse = v
 }
 
@@ -4465,6 +4528,8 @@ func NewMessagesResponseContentPartToolUseMessagesResponseContentPartSum(v Messa
 // SetMessagesResponseContentPartServerToolUse sets MessagesResponseContentPartSum to MessagesResponseContentPartServerToolUse.
 func (s *MessagesResponseContentPartSum) SetMessagesResponseContentPartServerToolUse(v MessagesResponseContentPartServerToolUse) {
 	s.Type = MessagesResponseContentPartServerToolUseMessagesResponseContentPartSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesResponseContentPartServerToolUse = v
 }
 
@@ -4486,6 +4551,8 @@ func NewMessagesResponseContentPartServerToolUseMessagesResponseContentPartSum(v
 // SetMessagesResponseContentPartWebSearchToolResult sets MessagesResponseContentPartSum to MessagesResponseContentPartWebSearchToolResult.
 func (s *MessagesResponseContentPartSum) SetMessagesResponseContentPartWebSearchToolResult(v MessagesResponseContentPartWebSearchToolResult) {
 	s.Type = MessagesResponseContentPartWebSearchToolResultMessagesResponseContentPartSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesResponseContentPartWebSearchToolResult = v
 }
 
@@ -5504,6 +5571,9 @@ func (*MessagesStreamEvent) messagesCreateRes() {}
 
 // MessagesStreamEventSum represents sum type.
 type MessagesStreamEventSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType                        string
+	unknownJSON                        string
 	Type                               MessagesStreamEventSumType // switch on this field
 	MessagesResponseStreamMessageStart MessagesResponseStreamMessageStart
 	ContentBlockStart                  ContentBlockStart
@@ -5512,6 +5582,16 @@ type MessagesStreamEventSum struct {
 	MessagesResponseStreamMessageDelta MessagesResponseStreamMessageDelta
 	MessagesResponseStreamMessageStop  MessagesResponseStreamMessageStop
 	MessagesErrorResponse              MessagesErrorResponse
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s MessagesStreamEventSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
 }
 
 // MessagesStreamEventSumType is oneOf type of MessagesStreamEventSum.
@@ -5566,6 +5646,8 @@ func (s MessagesStreamEventSum) IsMessagesErrorResponse() bool {
 // SetMessagesResponseStreamMessageStart sets MessagesStreamEventSum to MessagesResponseStreamMessageStart.
 func (s *MessagesStreamEventSum) SetMessagesResponseStreamMessageStart(v MessagesResponseStreamMessageStart) {
 	s.Type = MessagesResponseStreamMessageStartMessagesStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesResponseStreamMessageStart = v
 }
 
@@ -5587,6 +5669,8 @@ func NewMessagesResponseStreamMessageStartMessagesStreamEventSum(v MessagesRespo
 // SetContentBlockStart sets MessagesStreamEventSum to ContentBlockStart.
 func (s *MessagesStreamEventSum) SetContentBlockStart(v ContentBlockStart) {
 	s.Type = ContentBlockStartMessagesStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ContentBlockStart = v
 }
 
@@ -5608,6 +5692,8 @@ func NewContentBlockStartMessagesStreamEventSum(v ContentBlockStart) MessagesStr
 // SetMessagesResponseContentBlock sets MessagesStreamEventSum to MessagesResponseContentBlock.
 func (s *MessagesStreamEventSum) SetMessagesResponseContentBlock(v MessagesResponseContentBlock) {
 	s.Type = MessagesResponseContentBlockMessagesStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesResponseContentBlock = v
 }
 
@@ -5629,6 +5715,8 @@ func NewMessagesResponseContentBlockMessagesStreamEventSum(v MessagesResponseCon
 // SetMessagesResponseContentBlockStop sets MessagesStreamEventSum to MessagesResponseContentBlockStop.
 func (s *MessagesStreamEventSum) SetMessagesResponseContentBlockStop(v MessagesResponseContentBlockStop) {
 	s.Type = MessagesResponseContentBlockStopMessagesStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesResponseContentBlockStop = v
 }
 
@@ -5650,6 +5738,8 @@ func NewMessagesResponseContentBlockStopMessagesStreamEventSum(v MessagesRespons
 // SetMessagesResponseStreamMessageDelta sets MessagesStreamEventSum to MessagesResponseStreamMessageDelta.
 func (s *MessagesStreamEventSum) SetMessagesResponseStreamMessageDelta(v MessagesResponseStreamMessageDelta) {
 	s.Type = MessagesResponseStreamMessageDeltaMessagesStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesResponseStreamMessageDelta = v
 }
 
@@ -5671,6 +5761,8 @@ func NewMessagesResponseStreamMessageDeltaMessagesStreamEventSum(v MessagesRespo
 // SetMessagesResponseStreamMessageStop sets MessagesStreamEventSum to MessagesResponseStreamMessageStop.
 func (s *MessagesStreamEventSum) SetMessagesResponseStreamMessageStop(v MessagesResponseStreamMessageStop) {
 	s.Type = MessagesResponseStreamMessageStopMessagesStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesResponseStreamMessageStop = v
 }
 
@@ -5692,6 +5784,8 @@ func NewMessagesResponseStreamMessageStopMessagesStreamEventSum(v MessagesRespon
 // SetMessagesErrorResponse sets MessagesStreamEventSum to MessagesErrorResponse.
 func (s *MessagesStreamEventSum) SetMessagesErrorResponse(v MessagesErrorResponse) {
 	s.Type = MessagesErrorResponseMessagesStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.MessagesErrorResponse = v
 }
 

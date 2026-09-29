@@ -27,9 +27,22 @@ func (s *Annotation) SetOneOf(val AnnotationSum) {
 
 // AnnotationSum represents sum type.
 type AnnotationSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType string
+	unknownJSON string
 	Type        AnnotationSumType // switch on this field
 	UrlCitation UrlCitation
 	DocCitation DocCitation
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s AnnotationSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
 }
 
 // AnnotationSumType is oneOf type of AnnotationSum.
@@ -50,6 +63,8 @@ func (s AnnotationSum) IsDocCitation() bool { return s.Type == DocCitationAnnota
 // SetUrlCitation sets AnnotationSum to UrlCitation.
 func (s *AnnotationSum) SetUrlCitation(v UrlCitation) {
 	s.Type = UrlCitationAnnotationSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.UrlCitation = v
 }
 
@@ -71,6 +86,8 @@ func NewUrlCitationAnnotationSum(v UrlCitation) AnnotationSum {
 // SetDocCitation sets AnnotationSum to DocCitation.
 func (s *AnnotationSum) SetDocCitation(v DocCitation) {
 	s.Type = DocCitationAnnotationSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.DocCitation = v
 }
 
@@ -106,9 +123,22 @@ func (s *AppliedEdit) SetOneOf(val AppliedEditSum) {
 
 // AppliedEditSum represents sum type.
 type AppliedEditSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType           string
+	unknownJSON           string
 	Type                  AppliedEditSumType // switch on this field
 	ClearToolUsesResponse ClearToolUsesResponse
 	ClearThinkingResponse ClearThinkingResponse
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s AppliedEditSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
 }
 
 // AppliedEditSumType is oneOf type of AppliedEditSum.
@@ -133,6 +163,8 @@ func (s AppliedEditSum) IsClearThinkingResponse() bool {
 // SetClearToolUsesResponse sets AppliedEditSum to ClearToolUsesResponse.
 func (s *AppliedEditSum) SetClearToolUsesResponse(v ClearToolUsesResponse) {
 	s.Type = ClearToolUsesResponseAppliedEditSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ClearToolUsesResponse = v
 }
 
@@ -154,6 +186,8 @@ func NewClearToolUsesResponseAppliedEditSum(v ClearToolUsesResponse) AppliedEdit
 // SetClearThinkingResponse sets AppliedEditSum to ClearThinkingResponse.
 func (s *AppliedEditSum) SetClearThinkingResponse(v ClearThinkingResponse) {
 	s.Type = ClearThinkingResponseAppliedEditSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ClearThinkingResponse = v
 }
 
@@ -1003,6 +1037,9 @@ func (s *ContentItemImageType) UnmarshalText(data []byte) error {
 
 // ContentItemSum represents sum type.
 type ContentItemSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType                    string
+	unknownJSON                    string
 	Type                           ContentItemSumType // switch on this field
 	ContentItemText                ContentItemText
 	ContentItemImage               ContentItemImage
@@ -1011,6 +1048,16 @@ type ContentItemSum struct {
 	ContentItemVideo               ContentItemVideo
 	OutputContentItemText          OutputContentItemText
 	OutputContentItemReasoningText OutputContentItemReasoningText
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s ContentItemSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
 }
 
 // ContentItemSumType is oneOf type of ContentItemSum.
@@ -1055,6 +1102,8 @@ func (s ContentItemSum) IsOutputContentItemReasoningText() bool {
 // SetContentItemText sets ContentItemSum to ContentItemText.
 func (s *ContentItemSum) SetContentItemText(v ContentItemText) {
 	s.Type = ContentItemTextContentItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ContentItemText = v
 }
 
@@ -1076,6 +1125,8 @@ func NewContentItemTextContentItemSum(v ContentItemText) ContentItemSum {
 // SetContentItemImage sets ContentItemSum to ContentItemImage.
 func (s *ContentItemSum) SetContentItemImage(v ContentItemImage) {
 	s.Type = ContentItemImageContentItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ContentItemImage = v
 }
 
@@ -1097,6 +1148,8 @@ func NewContentItemImageContentItemSum(v ContentItemImage) ContentItemSum {
 // SetContentItemAudio sets ContentItemSum to ContentItemAudio.
 func (s *ContentItemSum) SetContentItemAudio(v ContentItemAudio) {
 	s.Type = ContentItemAudioContentItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ContentItemAudio = v
 }
 
@@ -1118,6 +1171,8 @@ func NewContentItemAudioContentItemSum(v ContentItemAudio) ContentItemSum {
 // SetContentItemFile sets ContentItemSum to ContentItemFile.
 func (s *ContentItemSum) SetContentItemFile(v ContentItemFile) {
 	s.Type = ContentItemFileContentItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ContentItemFile = v
 }
 
@@ -1139,6 +1194,8 @@ func NewContentItemFileContentItemSum(v ContentItemFile) ContentItemSum {
 // SetContentItemVideo sets ContentItemSum to ContentItemVideo.
 func (s *ContentItemSum) SetContentItemVideo(v ContentItemVideo) {
 	s.Type = ContentItemVideoContentItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ContentItemVideo = v
 }
 
@@ -1160,6 +1217,8 @@ func NewContentItemVideoContentItemSum(v ContentItemVideo) ContentItemSum {
 // SetOutputContentItemText sets ContentItemSum to OutputContentItemText.
 func (s *ContentItemSum) SetOutputContentItemText(v OutputContentItemText) {
 	s.Type = OutputContentItemTextContentItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.OutputContentItemText = v
 }
 
@@ -1181,6 +1240,8 @@ func NewOutputContentItemTextContentItemSum(v OutputContentItemText) ContentItem
 // SetOutputContentItemReasoningText sets ContentItemSum to OutputContentItemReasoningText.
 func (s *ContentItemSum) SetOutputContentItemReasoningText(v OutputContentItemReasoningText) {
 	s.Type = OutputContentItemReasoningTextContentItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.OutputContentItemReasoningText = v
 }
 
@@ -2027,11 +2088,24 @@ func (s *DoubaoAppCallBlockSearchType) UnmarshalText(data []byte) error {
 
 // DoubaoAppCallBlockSum represents sum type.
 type DoubaoAppCallBlockSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType                       string
+	unknownJSON                       string
 	Type                              DoubaoAppCallBlockSumType // switch on this field
 	DoubaoAppCallBlockOutputText      DoubaoAppCallBlockOutputText
 	DoubaoAppCallBlockReasoningText   DoubaoAppCallBlockReasoningText
 	DoubaoAppCallBlockSearch          DoubaoAppCallBlockSearch
 	DoubaoAppCallBlockReasoningSearch DoubaoAppCallBlockReasoningSearch
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s DoubaoAppCallBlockSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
 }
 
 // DoubaoAppCallBlockSumType is oneOf type of DoubaoAppCallBlockSum.
@@ -2068,6 +2142,8 @@ func (s DoubaoAppCallBlockSum) IsDoubaoAppCallBlockReasoningSearch() bool {
 // SetDoubaoAppCallBlockOutputText sets DoubaoAppCallBlockSum to DoubaoAppCallBlockOutputText.
 func (s *DoubaoAppCallBlockSum) SetDoubaoAppCallBlockOutputText(v DoubaoAppCallBlockOutputText) {
 	s.Type = DoubaoAppCallBlockOutputTextDoubaoAppCallBlockSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.DoubaoAppCallBlockOutputText = v
 }
 
@@ -2089,6 +2165,8 @@ func NewDoubaoAppCallBlockOutputTextDoubaoAppCallBlockSum(v DoubaoAppCallBlockOu
 // SetDoubaoAppCallBlockReasoningText sets DoubaoAppCallBlockSum to DoubaoAppCallBlockReasoningText.
 func (s *DoubaoAppCallBlockSum) SetDoubaoAppCallBlockReasoningText(v DoubaoAppCallBlockReasoningText) {
 	s.Type = DoubaoAppCallBlockReasoningTextDoubaoAppCallBlockSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.DoubaoAppCallBlockReasoningText = v
 }
 
@@ -2110,6 +2188,8 @@ func NewDoubaoAppCallBlockReasoningTextDoubaoAppCallBlockSum(v DoubaoAppCallBloc
 // SetDoubaoAppCallBlockSearch sets DoubaoAppCallBlockSum to DoubaoAppCallBlockSearch.
 func (s *DoubaoAppCallBlockSum) SetDoubaoAppCallBlockSearch(v DoubaoAppCallBlockSearch) {
 	s.Type = DoubaoAppCallBlockSearchDoubaoAppCallBlockSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.DoubaoAppCallBlockSearch = v
 }
 
@@ -2131,6 +2211,8 @@ func NewDoubaoAppCallBlockSearchDoubaoAppCallBlockSum(v DoubaoAppCallBlockSearch
 // SetDoubaoAppCallBlockReasoningSearch sets DoubaoAppCallBlockSum to DoubaoAppCallBlockReasoningSearch.
 func (s *DoubaoAppCallBlockSum) SetDoubaoAppCallBlockReasoningSearch(v DoubaoAppCallBlockReasoningSearch) {
 	s.Type = DoubaoAppCallBlockReasoningSearchDoubaoAppCallBlockSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.DoubaoAppCallBlockReasoningSearch = v
 }
 
@@ -2802,6 +2884,9 @@ func (s *InputItem) SetOneOf(val InputItemSum) {
 
 // InputItemSum represents sum type.
 type InputItemSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType                     string
+	unknownJSON                     string
 	Type                            InputItemSumType // switch on this field
 	ItemEasyMessage                 ItemEasyMessage
 	ItemFunctionToolCall            ItemFunctionToolCall
@@ -2811,6 +2896,16 @@ type InputItemSum struct {
 	ItemFunctionMcpApprovalResponse ItemFunctionMcpApprovalResponse
 	ItemFunctionMcpListTools        ItemFunctionMcpListTools
 	ItemFunctionMcpCall             ItemFunctionMcpCall
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s InputItemSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
 }
 
 // InputItemSumType is oneOf type of InputItemSum.
@@ -2865,6 +2960,8 @@ func (s InputItemSum) IsItemFunctionMcpCall() bool { return s.Type == ItemFuncti
 // SetItemEasyMessage sets InputItemSum to ItemEasyMessage.
 func (s *InputItemSum) SetItemEasyMessage(v ItemEasyMessage) {
 	s.Type = ItemEasyMessageInputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemEasyMessage = v
 }
 
@@ -2886,6 +2983,8 @@ func NewItemEasyMessageInputItemSum(v ItemEasyMessage) InputItemSum {
 // SetItemFunctionToolCall sets InputItemSum to ItemFunctionToolCall.
 func (s *InputItemSum) SetItemFunctionToolCall(v ItemFunctionToolCall) {
 	s.Type = ItemFunctionToolCallInputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemFunctionToolCall = v
 }
 
@@ -2907,6 +3006,8 @@ func NewItemFunctionToolCallInputItemSum(v ItemFunctionToolCall) InputItemSum {
 // SetItemFunctionToolCallOutput sets InputItemSum to ItemFunctionToolCallOutput.
 func (s *InputItemSum) SetItemFunctionToolCallOutput(v ItemFunctionToolCallOutput) {
 	s.Type = ItemFunctionToolCallOutputInputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemFunctionToolCallOutput = v
 }
 
@@ -2928,6 +3029,8 @@ func NewItemFunctionToolCallOutputInputItemSum(v ItemFunctionToolCallOutput) Inp
 // SetItemReasoning sets InputItemSum to ItemReasoning.
 func (s *InputItemSum) SetItemReasoning(v ItemReasoning) {
 	s.Type = ItemReasoningInputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemReasoning = v
 }
 
@@ -2949,6 +3052,8 @@ func NewItemReasoningInputItemSum(v ItemReasoning) InputItemSum {
 // SetItemFunctionMcpApprovalRequest sets InputItemSum to ItemFunctionMcpApprovalRequest.
 func (s *InputItemSum) SetItemFunctionMcpApprovalRequest(v ItemFunctionMcpApprovalRequest) {
 	s.Type = ItemFunctionMcpApprovalRequestInputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemFunctionMcpApprovalRequest = v
 }
 
@@ -2970,6 +3075,8 @@ func NewItemFunctionMcpApprovalRequestInputItemSum(v ItemFunctionMcpApprovalRequ
 // SetItemFunctionMcpApprovalResponse sets InputItemSum to ItemFunctionMcpApprovalResponse.
 func (s *InputItemSum) SetItemFunctionMcpApprovalResponse(v ItemFunctionMcpApprovalResponse) {
 	s.Type = ItemFunctionMcpApprovalResponseInputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemFunctionMcpApprovalResponse = v
 }
 
@@ -2991,6 +3098,8 @@ func NewItemFunctionMcpApprovalResponseInputItemSum(v ItemFunctionMcpApprovalRes
 // SetItemFunctionMcpListTools sets InputItemSum to ItemFunctionMcpListTools.
 func (s *InputItemSum) SetItemFunctionMcpListTools(v ItemFunctionMcpListTools) {
 	s.Type = ItemFunctionMcpListToolsInputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemFunctionMcpListTools = v
 }
 
@@ -3012,6 +3121,8 @@ func NewItemFunctionMcpListToolsInputItemSum(v ItemFunctionMcpListTools) InputIt
 // SetItemFunctionMcpCall sets InputItemSum to ItemFunctionMcpCall.
 func (s *InputItemSum) SetItemFunctionMcpCall(v ItemFunctionMcpCall) {
 	s.Type = ItemFunctionMcpCallInputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemFunctionMcpCall = v
 }
 
@@ -8397,9 +8508,22 @@ func (s *OutputContentItemReasoningTextType) UnmarshalText(data []byte) error {
 
 // OutputContentItemSum represents sum type.
 type OutputContentItemSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType                    string
+	unknownJSON                    string
 	Type                           OutputContentItemSumType // switch on this field
 	OutputContentItemText          OutputContentItemText
 	OutputContentItemReasoningText OutputContentItemReasoningText
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s OutputContentItemSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
 }
 
 // OutputContentItemSumType is oneOf type of OutputContentItemSum.
@@ -8424,6 +8548,8 @@ func (s OutputContentItemSum) IsOutputContentItemReasoningText() bool {
 // SetOutputContentItemText sets OutputContentItemSum to OutputContentItemText.
 func (s *OutputContentItemSum) SetOutputContentItemText(v OutputContentItemText) {
 	s.Type = OutputContentItemTextOutputContentItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.OutputContentItemText = v
 }
 
@@ -8445,6 +8571,8 @@ func NewOutputContentItemTextOutputContentItemSum(v OutputContentItemText) Outpu
 // SetOutputContentItemReasoningText sets OutputContentItemSum to OutputContentItemReasoningText.
 func (s *OutputContentItemSum) SetOutputContentItemReasoningText(v OutputContentItemReasoningText) {
 	s.Type = OutputContentItemReasoningTextOutputContentItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.OutputContentItemReasoningText = v
 }
 
@@ -8551,6 +8679,9 @@ func (s *OutputItem) SetOneOf(val OutputItemSum) {
 
 // OutputItemSum represents sum type.
 type OutputItemSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType                    string
+	unknownJSON                    string
 	Type                           OutputItemSumType // switch on this field
 	ItemOutputMessage              ItemOutputMessage
 	ItemFunctionToolCall           ItemFunctionToolCall
@@ -8564,6 +8695,16 @@ type OutputItemSum struct {
 	ItemFunctionKnowledgeSearch    ItemFunctionKnowledgeSearch
 	ItemDoubaoAppCall              ItemDoubaoAppCall
 	ItemAgentToolCall              ItemAgentToolCall
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s OutputItemSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
 }
 
 // OutputItemSumType is oneOf type of OutputItemSum.
@@ -8638,6 +8779,8 @@ func (s OutputItemSum) IsItemAgentToolCall() bool { return s.Type == ItemAgentTo
 // SetItemOutputMessage sets OutputItemSum to ItemOutputMessage.
 func (s *OutputItemSum) SetItemOutputMessage(v ItemOutputMessage) {
 	s.Type = ItemOutputMessageOutputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemOutputMessage = v
 }
 
@@ -8659,6 +8802,8 @@ func NewItemOutputMessageOutputItemSum(v ItemOutputMessage) OutputItemSum {
 // SetItemFunctionToolCall sets OutputItemSum to ItemFunctionToolCall.
 func (s *OutputItemSum) SetItemFunctionToolCall(v ItemFunctionToolCall) {
 	s.Type = ItemFunctionToolCallOutputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemFunctionToolCall = v
 }
 
@@ -8680,6 +8825,8 @@ func NewItemFunctionToolCallOutputItemSum(v ItemFunctionToolCall) OutputItemSum 
 // SetItemReasoning sets OutputItemSum to ItemReasoning.
 func (s *OutputItemSum) SetItemReasoning(v ItemReasoning) {
 	s.Type = ItemReasoningOutputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemReasoning = v
 }
 
@@ -8701,6 +8848,8 @@ func NewItemReasoningOutputItemSum(v ItemReasoning) OutputItemSum {
 // SetItemTranscription sets OutputItemSum to ItemTranscription.
 func (s *OutputItemSum) SetItemTranscription(v ItemTranscription) {
 	s.Type = ItemTranscriptionOutputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemTranscription = v
 }
 
@@ -8722,6 +8871,8 @@ func NewItemTranscriptionOutputItemSum(v ItemTranscription) OutputItemSum {
 // SetItemFunctionWebSearch sets OutputItemSum to ItemFunctionWebSearch.
 func (s *OutputItemSum) SetItemFunctionWebSearch(v ItemFunctionWebSearch) {
 	s.Type = ItemFunctionWebSearchOutputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemFunctionWebSearch = v
 }
 
@@ -8743,6 +8894,8 @@ func NewItemFunctionWebSearchOutputItemSum(v ItemFunctionWebSearch) OutputItemSu
 // SetItemFunctionImageProcess sets OutputItemSum to ItemFunctionImageProcess.
 func (s *OutputItemSum) SetItemFunctionImageProcess(v ItemFunctionImageProcess) {
 	s.Type = ItemFunctionImageProcessOutputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemFunctionImageProcess = v
 }
 
@@ -8764,6 +8917,8 @@ func NewItemFunctionImageProcessOutputItemSum(v ItemFunctionImageProcess) Output
 // SetItemFunctionMcpApprovalRequest sets OutputItemSum to ItemFunctionMcpApprovalRequest.
 func (s *OutputItemSum) SetItemFunctionMcpApprovalRequest(v ItemFunctionMcpApprovalRequest) {
 	s.Type = ItemFunctionMcpApprovalRequestOutputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemFunctionMcpApprovalRequest = v
 }
 
@@ -8785,6 +8940,8 @@ func NewItemFunctionMcpApprovalRequestOutputItemSum(v ItemFunctionMcpApprovalReq
 // SetItemFunctionMcpListTools sets OutputItemSum to ItemFunctionMcpListTools.
 func (s *OutputItemSum) SetItemFunctionMcpListTools(v ItemFunctionMcpListTools) {
 	s.Type = ItemFunctionMcpListToolsOutputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemFunctionMcpListTools = v
 }
 
@@ -8806,6 +8963,8 @@ func NewItemFunctionMcpListToolsOutputItemSum(v ItemFunctionMcpListTools) Output
 // SetItemFunctionMcpCall sets OutputItemSum to ItemFunctionMcpCall.
 func (s *OutputItemSum) SetItemFunctionMcpCall(v ItemFunctionMcpCall) {
 	s.Type = ItemFunctionMcpCallOutputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemFunctionMcpCall = v
 }
 
@@ -8827,6 +8986,8 @@ func NewItemFunctionMcpCallOutputItemSum(v ItemFunctionMcpCall) OutputItemSum {
 // SetItemFunctionKnowledgeSearch sets OutputItemSum to ItemFunctionKnowledgeSearch.
 func (s *OutputItemSum) SetItemFunctionKnowledgeSearch(v ItemFunctionKnowledgeSearch) {
 	s.Type = ItemFunctionKnowledgeSearchOutputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemFunctionKnowledgeSearch = v
 }
 
@@ -8848,6 +9009,8 @@ func NewItemFunctionKnowledgeSearchOutputItemSum(v ItemFunctionKnowledgeSearch) 
 // SetItemDoubaoAppCall sets OutputItemSum to ItemDoubaoAppCall.
 func (s *OutputItemSum) SetItemDoubaoAppCall(v ItemDoubaoAppCall) {
 	s.Type = ItemDoubaoAppCallOutputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemDoubaoAppCall = v
 }
 
@@ -8869,6 +9032,8 @@ func NewItemDoubaoAppCallOutputItemSum(v ItemDoubaoAppCall) OutputItemSum {
 // SetItemAgentToolCall sets OutputItemSum to ItemAgentToolCall.
 func (s *OutputItemSum) SetItemAgentToolCall(v ItemAgentToolCall) {
 	s.Type = ItemAgentToolCallOutputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ItemAgentToolCall = v
 }
 
@@ -14845,6 +15010,9 @@ func (*ResponseStreamEvent) responsesCreateRes() {}
 
 // ResponseStreamEventSum represents sum type.
 type ResponseStreamEventSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType                                         string
+	unknownJSON                                         string
 	Type                                                ResponseStreamEventSumType // switch on this field
 	ResponseCreatedEvent                                ResponseCreatedEvent
 	ResponseInProgressEvent                             ResponseInProgressEvent
@@ -14909,6 +15077,16 @@ type ResponseStreamEventSum struct {
 	ResponseAgentToolCallInProgressEvent                ResponseAgentToolCallInProgressEvent
 	ResponseAgentToolCallCompletedEvent                 ResponseAgentToolCallCompletedEvent
 	ResponseErrorEvent                                  ResponseErrorEvent
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s ResponseStreamEventSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
 }
 
 // ResponseStreamEventSumType is oneOf type of ResponseStreamEventSum.
@@ -15299,6 +15477,8 @@ func (s ResponseStreamEventSum) IsResponseErrorEvent() bool {
 // SetResponseCreatedEvent sets ResponseStreamEventSum to ResponseCreatedEvent.
 func (s *ResponseStreamEventSum) SetResponseCreatedEvent(v ResponseCreatedEvent) {
 	s.Type = ResponseCreatedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseCreatedEvent = v
 }
 
@@ -15320,6 +15500,8 @@ func NewResponseCreatedEventResponseStreamEventSum(v ResponseCreatedEvent) Respo
 // SetResponseInProgressEvent sets ResponseStreamEventSum to ResponseInProgressEvent.
 func (s *ResponseStreamEventSum) SetResponseInProgressEvent(v ResponseInProgressEvent) {
 	s.Type = ResponseInProgressEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseInProgressEvent = v
 }
 
@@ -15341,6 +15523,8 @@ func NewResponseInProgressEventResponseStreamEventSum(v ResponseInProgressEvent)
 // SetResponseCompletedEvent sets ResponseStreamEventSum to ResponseCompletedEvent.
 func (s *ResponseStreamEventSum) SetResponseCompletedEvent(v ResponseCompletedEvent) {
 	s.Type = ResponseCompletedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseCompletedEvent = v
 }
 
@@ -15362,6 +15546,8 @@ func NewResponseCompletedEventResponseStreamEventSum(v ResponseCompletedEvent) R
 // SetResponseFailedEvent sets ResponseStreamEventSum to ResponseFailedEvent.
 func (s *ResponseStreamEventSum) SetResponseFailedEvent(v ResponseFailedEvent) {
 	s.Type = ResponseFailedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseFailedEvent = v
 }
 
@@ -15383,6 +15569,8 @@ func NewResponseFailedEventResponseStreamEventSum(v ResponseFailedEvent) Respons
 // SetResponseIncompleteEvent sets ResponseStreamEventSum to ResponseIncompleteEvent.
 func (s *ResponseStreamEventSum) SetResponseIncompleteEvent(v ResponseIncompleteEvent) {
 	s.Type = ResponseIncompleteEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseIncompleteEvent = v
 }
 
@@ -15404,6 +15592,8 @@ func NewResponseIncompleteEventResponseStreamEventSum(v ResponseIncompleteEvent)
 // SetResponseOutputItemAddedEvent sets ResponseStreamEventSum to ResponseOutputItemAddedEvent.
 func (s *ResponseStreamEventSum) SetResponseOutputItemAddedEvent(v ResponseOutputItemAddedEvent) {
 	s.Type = ResponseOutputItemAddedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseOutputItemAddedEvent = v
 }
 
@@ -15425,6 +15615,8 @@ func NewResponseOutputItemAddedEventResponseStreamEventSum(v ResponseOutputItemA
 // SetResponseOutputItemDoneEvent sets ResponseStreamEventSum to ResponseOutputItemDoneEvent.
 func (s *ResponseStreamEventSum) SetResponseOutputItemDoneEvent(v ResponseOutputItemDoneEvent) {
 	s.Type = ResponseOutputItemDoneEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseOutputItemDoneEvent = v
 }
 
@@ -15446,6 +15638,8 @@ func NewResponseOutputItemDoneEventResponseStreamEventSum(v ResponseOutputItemDo
 // SetResponseContentPartAddedEvent sets ResponseStreamEventSum to ResponseContentPartAddedEvent.
 func (s *ResponseStreamEventSum) SetResponseContentPartAddedEvent(v ResponseContentPartAddedEvent) {
 	s.Type = ResponseContentPartAddedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseContentPartAddedEvent = v
 }
 
@@ -15467,6 +15661,8 @@ func NewResponseContentPartAddedEventResponseStreamEventSum(v ResponseContentPar
 // SetResponseContentPartDoneEvent sets ResponseStreamEventSum to ResponseContentPartDoneEvent.
 func (s *ResponseStreamEventSum) SetResponseContentPartDoneEvent(v ResponseContentPartDoneEvent) {
 	s.Type = ResponseContentPartDoneEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseContentPartDoneEvent = v
 }
 
@@ -15488,6 +15684,8 @@ func NewResponseContentPartDoneEventResponseStreamEventSum(v ResponseContentPart
 // SetResponseTextDeltaEvent sets ResponseStreamEventSum to ResponseTextDeltaEvent.
 func (s *ResponseStreamEventSum) SetResponseTextDeltaEvent(v ResponseTextDeltaEvent) {
 	s.Type = ResponseTextDeltaEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseTextDeltaEvent = v
 }
 
@@ -15509,6 +15707,8 @@ func NewResponseTextDeltaEventResponseStreamEventSum(v ResponseTextDeltaEvent) R
 // SetResponseTextDoneEvent sets ResponseStreamEventSum to ResponseTextDoneEvent.
 func (s *ResponseStreamEventSum) SetResponseTextDoneEvent(v ResponseTextDoneEvent) {
 	s.Type = ResponseTextDoneEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseTextDoneEvent = v
 }
 
@@ -15530,6 +15730,8 @@ func NewResponseTextDoneEventResponseStreamEventSum(v ResponseTextDoneEvent) Res
 // SetResponseOutputTextAnnotationAddedEvent sets ResponseStreamEventSum to ResponseOutputTextAnnotationAddedEvent.
 func (s *ResponseStreamEventSum) SetResponseOutputTextAnnotationAddedEvent(v ResponseOutputTextAnnotationAddedEvent) {
 	s.Type = ResponseOutputTextAnnotationAddedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseOutputTextAnnotationAddedEvent = v
 }
 
@@ -15551,6 +15753,8 @@ func NewResponseOutputTextAnnotationAddedEventResponseStreamEventSum(v ResponseO
 // SetResponseReasoningSummaryPartAddedEvent sets ResponseStreamEventSum to ResponseReasoningSummaryPartAddedEvent.
 func (s *ResponseStreamEventSum) SetResponseReasoningSummaryPartAddedEvent(v ResponseReasoningSummaryPartAddedEvent) {
 	s.Type = ResponseReasoningSummaryPartAddedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseReasoningSummaryPartAddedEvent = v
 }
 
@@ -15572,6 +15776,8 @@ func NewResponseReasoningSummaryPartAddedEventResponseStreamEventSum(v ResponseR
 // SetResponseReasoningSummaryPartDoneEvent sets ResponseStreamEventSum to ResponseReasoningSummaryPartDoneEvent.
 func (s *ResponseStreamEventSum) SetResponseReasoningSummaryPartDoneEvent(v ResponseReasoningSummaryPartDoneEvent) {
 	s.Type = ResponseReasoningSummaryPartDoneEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseReasoningSummaryPartDoneEvent = v
 }
 
@@ -15593,6 +15799,8 @@ func NewResponseReasoningSummaryPartDoneEventResponseStreamEventSum(v ResponseRe
 // SetResponseReasoningSummaryTextDeltaEvent sets ResponseStreamEventSum to ResponseReasoningSummaryTextDeltaEvent.
 func (s *ResponseStreamEventSum) SetResponseReasoningSummaryTextDeltaEvent(v ResponseReasoningSummaryTextDeltaEvent) {
 	s.Type = ResponseReasoningSummaryTextDeltaEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseReasoningSummaryTextDeltaEvent = v
 }
 
@@ -15614,6 +15822,8 @@ func NewResponseReasoningSummaryTextDeltaEventResponseStreamEventSum(v ResponseR
 // SetResponseReasoningSummaryTextDoneEvent sets ResponseStreamEventSum to ResponseReasoningSummaryTextDoneEvent.
 func (s *ResponseStreamEventSum) SetResponseReasoningSummaryTextDoneEvent(v ResponseReasoningSummaryTextDoneEvent) {
 	s.Type = ResponseReasoningSummaryTextDoneEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseReasoningSummaryTextDoneEvent = v
 }
 
@@ -15635,6 +15845,8 @@ func NewResponseReasoningSummaryTextDoneEventResponseStreamEventSum(v ResponseRe
 // SetResponseReasoningTextDeltaEvent sets ResponseStreamEventSum to ResponseReasoningTextDeltaEvent.
 func (s *ResponseStreamEventSum) SetResponseReasoningTextDeltaEvent(v ResponseReasoningTextDeltaEvent) {
 	s.Type = ResponseReasoningTextDeltaEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseReasoningTextDeltaEvent = v
 }
 
@@ -15656,6 +15868,8 @@ func NewResponseReasoningTextDeltaEventResponseStreamEventSum(v ResponseReasonin
 // SetResponseReasoningTextDoneEvent sets ResponseStreamEventSum to ResponseReasoningTextDoneEvent.
 func (s *ResponseStreamEventSum) SetResponseReasoningTextDoneEvent(v ResponseReasoningTextDoneEvent) {
 	s.Type = ResponseReasoningTextDoneEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseReasoningTextDoneEvent = v
 }
 
@@ -15677,6 +15891,8 @@ func NewResponseReasoningTextDoneEventResponseStreamEventSum(v ResponseReasoning
 // SetResponseReasoningRawTextDeltaEvent sets ResponseStreamEventSum to ResponseReasoningRawTextDeltaEvent.
 func (s *ResponseStreamEventSum) SetResponseReasoningRawTextDeltaEvent(v ResponseReasoningRawTextDeltaEvent) {
 	s.Type = ResponseReasoningRawTextDeltaEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseReasoningRawTextDeltaEvent = v
 }
 
@@ -15698,6 +15914,8 @@ func NewResponseReasoningRawTextDeltaEventResponseStreamEventSum(v ResponseReaso
 // SetResponseReasoningRawTextDoneEvent sets ResponseStreamEventSum to ResponseReasoningRawTextDoneEvent.
 func (s *ResponseStreamEventSum) SetResponseReasoningRawTextDoneEvent(v ResponseReasoningRawTextDoneEvent) {
 	s.Type = ResponseReasoningRawTextDoneEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseReasoningRawTextDoneEvent = v
 }
 
@@ -15719,6 +15937,8 @@ func NewResponseReasoningRawTextDoneEventResponseStreamEventSum(v ResponseReason
 // SetResponseFunctionCallArgumentsDeltaEvent sets ResponseStreamEventSum to ResponseFunctionCallArgumentsDeltaEvent.
 func (s *ResponseStreamEventSum) SetResponseFunctionCallArgumentsDeltaEvent(v ResponseFunctionCallArgumentsDeltaEvent) {
 	s.Type = ResponseFunctionCallArgumentsDeltaEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseFunctionCallArgumentsDeltaEvent = v
 }
 
@@ -15740,6 +15960,8 @@ func NewResponseFunctionCallArgumentsDeltaEventResponseStreamEventSum(v Response
 // SetResponseFunctionCallArgumentsDoneEvent sets ResponseStreamEventSum to ResponseFunctionCallArgumentsDoneEvent.
 func (s *ResponseStreamEventSum) SetResponseFunctionCallArgumentsDoneEvent(v ResponseFunctionCallArgumentsDoneEvent) {
 	s.Type = ResponseFunctionCallArgumentsDoneEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseFunctionCallArgumentsDoneEvent = v
 }
 
@@ -15761,6 +15983,8 @@ func NewResponseFunctionCallArgumentsDoneEventResponseStreamEventSum(v ResponseF
 // SetResponseTranscriptionPartAddedEvent sets ResponseStreamEventSum to ResponseTranscriptionPartAddedEvent.
 func (s *ResponseStreamEventSum) SetResponseTranscriptionPartAddedEvent(v ResponseTranscriptionPartAddedEvent) {
 	s.Type = ResponseTranscriptionPartAddedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseTranscriptionPartAddedEvent = v
 }
 
@@ -15782,6 +16006,8 @@ func NewResponseTranscriptionPartAddedEventResponseStreamEventSum(v ResponseTran
 // SetResponseTranscriptionPartDoneEvent sets ResponseStreamEventSum to ResponseTranscriptionPartDoneEvent.
 func (s *ResponseStreamEventSum) SetResponseTranscriptionPartDoneEvent(v ResponseTranscriptionPartDoneEvent) {
 	s.Type = ResponseTranscriptionPartDoneEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseTranscriptionPartDoneEvent = v
 }
 
@@ -15803,6 +16029,8 @@ func NewResponseTranscriptionPartDoneEventResponseStreamEventSum(v ResponseTrans
 // SetResponseTranscriptionTextDeltaEvent sets ResponseStreamEventSum to ResponseTranscriptionTextDeltaEvent.
 func (s *ResponseStreamEventSum) SetResponseTranscriptionTextDeltaEvent(v ResponseTranscriptionTextDeltaEvent) {
 	s.Type = ResponseTranscriptionTextDeltaEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseTranscriptionTextDeltaEvent = v
 }
 
@@ -15824,6 +16052,8 @@ func NewResponseTranscriptionTextDeltaEventResponseStreamEventSum(v ResponseTran
 // SetResponseTranscriptionTextDoneEvent sets ResponseStreamEventSum to ResponseTranscriptionTextDoneEvent.
 func (s *ResponseStreamEventSum) SetResponseTranscriptionTextDoneEvent(v ResponseTranscriptionTextDoneEvent) {
 	s.Type = ResponseTranscriptionTextDoneEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseTranscriptionTextDoneEvent = v
 }
 
@@ -15845,6 +16075,8 @@ func NewResponseTranscriptionTextDoneEventResponseStreamEventSum(v ResponseTrans
 // SetResponseWebSearchCallInProgressEvent sets ResponseStreamEventSum to ResponseWebSearchCallInProgressEvent.
 func (s *ResponseStreamEventSum) SetResponseWebSearchCallInProgressEvent(v ResponseWebSearchCallInProgressEvent) {
 	s.Type = ResponseWebSearchCallInProgressEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseWebSearchCallInProgressEvent = v
 }
 
@@ -15866,6 +16098,8 @@ func NewResponseWebSearchCallInProgressEventResponseStreamEventSum(v ResponseWeb
 // SetResponseWebSearchCallSearchingEvent sets ResponseStreamEventSum to ResponseWebSearchCallSearchingEvent.
 func (s *ResponseStreamEventSum) SetResponseWebSearchCallSearchingEvent(v ResponseWebSearchCallSearchingEvent) {
 	s.Type = ResponseWebSearchCallSearchingEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseWebSearchCallSearchingEvent = v
 }
 
@@ -15887,6 +16121,8 @@ func NewResponseWebSearchCallSearchingEventResponseStreamEventSum(v ResponseWebS
 // SetResponseWebSearchCallCompletedEvent sets ResponseStreamEventSum to ResponseWebSearchCallCompletedEvent.
 func (s *ResponseStreamEventSum) SetResponseWebSearchCallCompletedEvent(v ResponseWebSearchCallCompletedEvent) {
 	s.Type = ResponseWebSearchCallCompletedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseWebSearchCallCompletedEvent = v
 }
 
@@ -15908,6 +16144,8 @@ func NewResponseWebSearchCallCompletedEventResponseStreamEventSum(v ResponseWebS
 // SetResponseImageProcessCallInProgressEvent sets ResponseStreamEventSum to ResponseImageProcessCallInProgressEvent.
 func (s *ResponseStreamEventSum) SetResponseImageProcessCallInProgressEvent(v ResponseImageProcessCallInProgressEvent) {
 	s.Type = ResponseImageProcessCallInProgressEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseImageProcessCallInProgressEvent = v
 }
 
@@ -15929,6 +16167,8 @@ func NewResponseImageProcessCallInProgressEventResponseStreamEventSum(v Response
 // SetResponseImageProcessCallProcessingEvent sets ResponseStreamEventSum to ResponseImageProcessCallProcessingEvent.
 func (s *ResponseStreamEventSum) SetResponseImageProcessCallProcessingEvent(v ResponseImageProcessCallProcessingEvent) {
 	s.Type = ResponseImageProcessCallProcessingEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseImageProcessCallProcessingEvent = v
 }
 
@@ -15950,6 +16190,8 @@ func NewResponseImageProcessCallProcessingEventResponseStreamEventSum(v Response
 // SetResponseImageProcessCallCompletedEvent sets ResponseStreamEventSum to ResponseImageProcessCallCompletedEvent.
 func (s *ResponseStreamEventSum) SetResponseImageProcessCallCompletedEvent(v ResponseImageProcessCallCompletedEvent) {
 	s.Type = ResponseImageProcessCallCompletedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseImageProcessCallCompletedEvent = v
 }
 
@@ -15971,6 +16213,8 @@ func NewResponseImageProcessCallCompletedEventResponseStreamEventSum(v ResponseI
 // SetResponseMcpListToolsInProgressEvent sets ResponseStreamEventSum to ResponseMcpListToolsInProgressEvent.
 func (s *ResponseStreamEventSum) SetResponseMcpListToolsInProgressEvent(v ResponseMcpListToolsInProgressEvent) {
 	s.Type = ResponseMcpListToolsInProgressEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseMcpListToolsInProgressEvent = v
 }
 
@@ -15992,6 +16236,8 @@ func NewResponseMcpListToolsInProgressEventResponseStreamEventSum(v ResponseMcpL
 // SetResponseMcpListToolsCompletedEvent sets ResponseStreamEventSum to ResponseMcpListToolsCompletedEvent.
 func (s *ResponseStreamEventSum) SetResponseMcpListToolsCompletedEvent(v ResponseMcpListToolsCompletedEvent) {
 	s.Type = ResponseMcpListToolsCompletedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseMcpListToolsCompletedEvent = v
 }
 
@@ -16013,6 +16259,8 @@ func NewResponseMcpListToolsCompletedEventResponseStreamEventSum(v ResponseMcpLi
 // SetResponseMcpListToolsFailedEvent sets ResponseStreamEventSum to ResponseMcpListToolsFailedEvent.
 func (s *ResponseStreamEventSum) SetResponseMcpListToolsFailedEvent(v ResponseMcpListToolsFailedEvent) {
 	s.Type = ResponseMcpListToolsFailedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseMcpListToolsFailedEvent = v
 }
 
@@ -16034,6 +16282,8 @@ func NewResponseMcpListToolsFailedEventResponseStreamEventSum(v ResponseMcpListT
 // SetResponseMcpCallInProgressEvent sets ResponseStreamEventSum to ResponseMcpCallInProgressEvent.
 func (s *ResponseStreamEventSum) SetResponseMcpCallInProgressEvent(v ResponseMcpCallInProgressEvent) {
 	s.Type = ResponseMcpCallInProgressEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseMcpCallInProgressEvent = v
 }
 
@@ -16055,6 +16305,8 @@ func NewResponseMcpCallInProgressEventResponseStreamEventSum(v ResponseMcpCallIn
 // SetResponseMcpCallArgumentsDeltaEvent sets ResponseStreamEventSum to ResponseMcpCallArgumentsDeltaEvent.
 func (s *ResponseStreamEventSum) SetResponseMcpCallArgumentsDeltaEvent(v ResponseMcpCallArgumentsDeltaEvent) {
 	s.Type = ResponseMcpCallArgumentsDeltaEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseMcpCallArgumentsDeltaEvent = v
 }
 
@@ -16076,6 +16328,8 @@ func NewResponseMcpCallArgumentsDeltaEventResponseStreamEventSum(v ResponseMcpCa
 // SetResponseMcpCallArgumentsDoneEvent sets ResponseStreamEventSum to ResponseMcpCallArgumentsDoneEvent.
 func (s *ResponseStreamEventSum) SetResponseMcpCallArgumentsDoneEvent(v ResponseMcpCallArgumentsDoneEvent) {
 	s.Type = ResponseMcpCallArgumentsDoneEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseMcpCallArgumentsDoneEvent = v
 }
 
@@ -16097,6 +16351,8 @@ func NewResponseMcpCallArgumentsDoneEventResponseStreamEventSum(v ResponseMcpCal
 // SetResponseMcpCallCompletedEvent sets ResponseStreamEventSum to ResponseMcpCallCompletedEvent.
 func (s *ResponseStreamEventSum) SetResponseMcpCallCompletedEvent(v ResponseMcpCallCompletedEvent) {
 	s.Type = ResponseMcpCallCompletedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseMcpCallCompletedEvent = v
 }
 
@@ -16118,6 +16374,8 @@ func NewResponseMcpCallCompletedEventResponseStreamEventSum(v ResponseMcpCallCom
 // SetResponseMcpCallFailedEvent sets ResponseStreamEventSum to ResponseMcpCallFailedEvent.
 func (s *ResponseStreamEventSum) SetResponseMcpCallFailedEvent(v ResponseMcpCallFailedEvent) {
 	s.Type = ResponseMcpCallFailedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseMcpCallFailedEvent = v
 }
 
@@ -16139,6 +16397,8 @@ func NewResponseMcpCallFailedEventResponseStreamEventSum(v ResponseMcpCallFailed
 // SetResponseMcpApprovalRequestEvent sets ResponseStreamEventSum to ResponseMcpApprovalRequestEvent.
 func (s *ResponseStreamEventSum) SetResponseMcpApprovalRequestEvent(v ResponseMcpApprovalRequestEvent) {
 	s.Type = ResponseMcpApprovalRequestEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseMcpApprovalRequestEvent = v
 }
 
@@ -16160,6 +16420,8 @@ func NewResponseMcpApprovalRequestEventResponseStreamEventSum(v ResponseMcpAppro
 // SetResponseKnowledgeSearchCallInProgressEvent sets ResponseStreamEventSum to ResponseKnowledgeSearchCallInProgressEvent.
 func (s *ResponseStreamEventSum) SetResponseKnowledgeSearchCallInProgressEvent(v ResponseKnowledgeSearchCallInProgressEvent) {
 	s.Type = ResponseKnowledgeSearchCallInProgressEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseKnowledgeSearchCallInProgressEvent = v
 }
 
@@ -16181,6 +16443,8 @@ func NewResponseKnowledgeSearchCallInProgressEventResponseStreamEventSum(v Respo
 // SetResponseKnowledgeSearchCallSearchingEvent sets ResponseStreamEventSum to ResponseKnowledgeSearchCallSearchingEvent.
 func (s *ResponseStreamEventSum) SetResponseKnowledgeSearchCallSearchingEvent(v ResponseKnowledgeSearchCallSearchingEvent) {
 	s.Type = ResponseKnowledgeSearchCallSearchingEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseKnowledgeSearchCallSearchingEvent = v
 }
 
@@ -16202,6 +16466,8 @@ func NewResponseKnowledgeSearchCallSearchingEventResponseStreamEventSum(v Respon
 // SetResponseKnowledgeSearchCallCompletedEvent sets ResponseStreamEventSum to ResponseKnowledgeSearchCallCompletedEvent.
 func (s *ResponseStreamEventSum) SetResponseKnowledgeSearchCallCompletedEvent(v ResponseKnowledgeSearchCallCompletedEvent) {
 	s.Type = ResponseKnowledgeSearchCallCompletedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseKnowledgeSearchCallCompletedEvent = v
 }
 
@@ -16223,6 +16489,8 @@ func NewResponseKnowledgeSearchCallCompletedEventResponseStreamEventSum(v Respon
 // SetResponseKnowledgeSearchCallFailedEvent sets ResponseStreamEventSum to ResponseKnowledgeSearchCallFailedEvent.
 func (s *ResponseStreamEventSum) SetResponseKnowledgeSearchCallFailedEvent(v ResponseKnowledgeSearchCallFailedEvent) {
 	s.Type = ResponseKnowledgeSearchCallFailedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseKnowledgeSearchCallFailedEvent = v
 }
 
@@ -16244,6 +16512,8 @@ func NewResponseKnowledgeSearchCallFailedEventResponseStreamEventSum(v ResponseK
 // SetResponseDoubaoAppCallInProgressEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallInProgressEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallInProgressEvent(v ResponseDoubaoAppCallInProgressEvent) {
 	s.Type = ResponseDoubaoAppCallInProgressEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallInProgressEvent = v
 }
 
@@ -16265,6 +16535,8 @@ func NewResponseDoubaoAppCallInProgressEventResponseStreamEventSum(v ResponseDou
 // SetResponseDoubaoAppCallFailedEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallFailedEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallFailedEvent(v ResponseDoubaoAppCallFailedEvent) {
 	s.Type = ResponseDoubaoAppCallFailedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallFailedEvent = v
 }
 
@@ -16286,6 +16558,8 @@ func NewResponseDoubaoAppCallFailedEventResponseStreamEventSum(v ResponseDoubaoA
 // SetResponseDoubaoAppCallCompletedEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallCompletedEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallCompletedEvent(v ResponseDoubaoAppCallCompletedEvent) {
 	s.Type = ResponseDoubaoAppCallCompletedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallCompletedEvent = v
 }
 
@@ -16307,6 +16581,8 @@ func NewResponseDoubaoAppCallCompletedEventResponseStreamEventSum(v ResponseDoub
 // SetResponseDoubaoAppCallBlockAddedEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallBlockAddedEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallBlockAddedEvent(v ResponseDoubaoAppCallBlockAddedEvent) {
 	s.Type = ResponseDoubaoAppCallBlockAddedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallBlockAddedEvent = v
 }
 
@@ -16328,6 +16604,8 @@ func NewResponseDoubaoAppCallBlockAddedEventResponseStreamEventSum(v ResponseDou
 // SetResponseDoubaoAppCallBlockDoneEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallBlockDoneEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallBlockDoneEvent(v ResponseDoubaoAppCallBlockDoneEvent) {
 	s.Type = ResponseDoubaoAppCallBlockDoneEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallBlockDoneEvent = v
 }
 
@@ -16349,6 +16627,8 @@ func NewResponseDoubaoAppCallBlockDoneEventResponseStreamEventSum(v ResponseDoub
 // SetResponseDoubaoAppCallReasoningTextDeltaEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallReasoningTextDeltaEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallReasoningTextDeltaEvent(v ResponseDoubaoAppCallReasoningTextDeltaEvent) {
 	s.Type = ResponseDoubaoAppCallReasoningTextDeltaEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallReasoningTextDeltaEvent = v
 }
 
@@ -16370,6 +16650,8 @@ func NewResponseDoubaoAppCallReasoningTextDeltaEventResponseStreamEventSum(v Res
 // SetResponseDoubaoAppCallReasoningTextDoneEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallReasoningTextDoneEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallReasoningTextDoneEvent(v ResponseDoubaoAppCallReasoningTextDoneEvent) {
 	s.Type = ResponseDoubaoAppCallReasoningTextDoneEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallReasoningTextDoneEvent = v
 }
 
@@ -16391,6 +16673,8 @@ func NewResponseDoubaoAppCallReasoningTextDoneEventResponseStreamEventSum(v Resp
 // SetResponseDoubaoAppCallOutputTextDeltaEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallOutputTextDeltaEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallOutputTextDeltaEvent(v ResponseDoubaoAppCallOutputTextDeltaEvent) {
 	s.Type = ResponseDoubaoAppCallOutputTextDeltaEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallOutputTextDeltaEvent = v
 }
 
@@ -16412,6 +16696,8 @@ func NewResponseDoubaoAppCallOutputTextDeltaEventResponseStreamEventSum(v Respon
 // SetResponseDoubaoAppCallOutputTextDoneEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallOutputTextDoneEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallOutputTextDoneEvent(v ResponseDoubaoAppCallOutputTextDoneEvent) {
 	s.Type = ResponseDoubaoAppCallOutputTextDoneEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallOutputTextDoneEvent = v
 }
 
@@ -16433,6 +16719,8 @@ func NewResponseDoubaoAppCallOutputTextDoneEventResponseStreamEventSum(v Respons
 // SetResponseDoubaoAppCallReasoningSearchInProgressEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallReasoningSearchInProgressEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallReasoningSearchInProgressEvent(v ResponseDoubaoAppCallReasoningSearchInProgressEvent) {
 	s.Type = ResponseDoubaoAppCallReasoningSearchInProgressEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallReasoningSearchInProgressEvent = v
 }
 
@@ -16454,6 +16742,8 @@ func NewResponseDoubaoAppCallReasoningSearchInProgressEventResponseStreamEventSu
 // SetResponseDoubaoAppCallReasoningSearchSearchingEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallReasoningSearchSearchingEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallReasoningSearchSearchingEvent(v ResponseDoubaoAppCallReasoningSearchSearchingEvent) {
 	s.Type = ResponseDoubaoAppCallReasoningSearchSearchingEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallReasoningSearchSearchingEvent = v
 }
 
@@ -16475,6 +16765,8 @@ func NewResponseDoubaoAppCallReasoningSearchSearchingEventResponseStreamEventSum
 // SetResponseDoubaoAppCallReasoningSearchCompletedEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallReasoningSearchCompletedEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallReasoningSearchCompletedEvent(v ResponseDoubaoAppCallReasoningSearchCompletedEvent) {
 	s.Type = ResponseDoubaoAppCallReasoningSearchCompletedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallReasoningSearchCompletedEvent = v
 }
 
@@ -16496,6 +16788,8 @@ func NewResponseDoubaoAppCallReasoningSearchCompletedEventResponseStreamEventSum
 // SetResponseDoubaoAppCallSearchInProgressEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallSearchInProgressEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallSearchInProgressEvent(v ResponseDoubaoAppCallSearchInProgressEvent) {
 	s.Type = ResponseDoubaoAppCallSearchInProgressEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallSearchInProgressEvent = v
 }
 
@@ -16517,6 +16811,8 @@ func NewResponseDoubaoAppCallSearchInProgressEventResponseStreamEventSum(v Respo
 // SetResponseDoubaoAppCallSearchSearchingEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallSearchSearchingEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallSearchSearchingEvent(v ResponseDoubaoAppCallSearchSearchingEvent) {
 	s.Type = ResponseDoubaoAppCallSearchSearchingEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallSearchSearchingEvent = v
 }
 
@@ -16538,6 +16834,8 @@ func NewResponseDoubaoAppCallSearchSearchingEventResponseStreamEventSum(v Respon
 // SetResponseDoubaoAppCallSearchCompletedEvent sets ResponseStreamEventSum to ResponseDoubaoAppCallSearchCompletedEvent.
 func (s *ResponseStreamEventSum) SetResponseDoubaoAppCallSearchCompletedEvent(v ResponseDoubaoAppCallSearchCompletedEvent) {
 	s.Type = ResponseDoubaoAppCallSearchCompletedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseDoubaoAppCallSearchCompletedEvent = v
 }
 
@@ -16559,6 +16857,8 @@ func NewResponseDoubaoAppCallSearchCompletedEventResponseStreamEventSum(v Respon
 // SetResponseAgentToolCallInProgressEvent sets ResponseStreamEventSum to ResponseAgentToolCallInProgressEvent.
 func (s *ResponseStreamEventSum) SetResponseAgentToolCallInProgressEvent(v ResponseAgentToolCallInProgressEvent) {
 	s.Type = ResponseAgentToolCallInProgressEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseAgentToolCallInProgressEvent = v
 }
 
@@ -16580,6 +16880,8 @@ func NewResponseAgentToolCallInProgressEventResponseStreamEventSum(v ResponseAge
 // SetResponseAgentToolCallCompletedEvent sets ResponseStreamEventSum to ResponseAgentToolCallCompletedEvent.
 func (s *ResponseStreamEventSum) SetResponseAgentToolCallCompletedEvent(v ResponseAgentToolCallCompletedEvent) {
 	s.Type = ResponseAgentToolCallCompletedEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseAgentToolCallCompletedEvent = v
 }
 
@@ -16601,6 +16903,8 @@ func NewResponseAgentToolCallCompletedEventResponseStreamEventSum(v ResponseAgen
 // SetResponseErrorEvent sets ResponseStreamEventSum to ResponseErrorEvent.
 func (s *ResponseStreamEventSum) SetResponseErrorEvent(v ResponseErrorEvent) {
 	s.Type = ResponseErrorEventResponseStreamEventSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ResponseErrorEvent = v
 }
 
@@ -18710,6 +19014,9 @@ func (s *ToolNameList) SetClearToolNames(val []string) {
 
 // ToolSum represents sum type.
 type ToolSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType         string
+	unknownJSON         string
 	Type                ToolSumType // switch on this field
 	FunctionTool        FunctionTool
 	WebSearchTool       WebSearchTool
@@ -18717,6 +19024,16 @@ type ToolSum struct {
 	McpTool             McpTool
 	KnowledgeSearchTool KnowledgeSearchTool
 	DoubaoAppTool       DoubaoAppTool
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s ToolSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
 }
 
 // ToolSumType is oneOf type of ToolSum.
@@ -18753,6 +19070,8 @@ func (s ToolSum) IsDoubaoAppTool() bool { return s.Type == DoubaoAppToolToolSum 
 // SetFunctionTool sets ToolSum to FunctionTool.
 func (s *ToolSum) SetFunctionTool(v FunctionTool) {
 	s.Type = FunctionToolToolSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.FunctionTool = v
 }
 
@@ -18774,6 +19093,8 @@ func NewFunctionToolToolSum(v FunctionTool) ToolSum {
 // SetWebSearchTool sets ToolSum to WebSearchTool.
 func (s *ToolSum) SetWebSearchTool(v WebSearchTool) {
 	s.Type = WebSearchToolToolSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.WebSearchTool = v
 }
 
@@ -18795,6 +19116,8 @@ func NewWebSearchToolToolSum(v WebSearchTool) ToolSum {
 // SetImageProcessTool sets ToolSum to ImageProcessTool.
 func (s *ToolSum) SetImageProcessTool(v ImageProcessTool) {
 	s.Type = ImageProcessToolToolSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ImageProcessTool = v
 }
 
@@ -18816,6 +19139,8 @@ func NewImageProcessToolToolSum(v ImageProcessTool) ToolSum {
 // SetMcpTool sets ToolSum to McpTool.
 func (s *ToolSum) SetMcpTool(v McpTool) {
 	s.Type = McpToolToolSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.McpTool = v
 }
 
@@ -18837,6 +19162,8 @@ func NewMcpToolToolSum(v McpTool) ToolSum {
 // SetKnowledgeSearchTool sets ToolSum to KnowledgeSearchTool.
 func (s *ToolSum) SetKnowledgeSearchTool(v KnowledgeSearchTool) {
 	s.Type = KnowledgeSearchToolToolSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.KnowledgeSearchTool = v
 }
 
@@ -18858,6 +19185,8 @@ func NewKnowledgeSearchToolToolSum(v KnowledgeSearchTool) ToolSum {
 // SetDoubaoAppTool sets ToolSum to DoubaoAppTool.
 func (s *ToolSum) SetDoubaoAppTool(v DoubaoAppTool) {
 	s.Type = DoubaoAppToolToolSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.DoubaoAppTool = v
 }
 
@@ -19235,11 +19564,24 @@ func (s *TypedToolChoice) SetOneOf(val TypedToolChoiceSum) {
 
 // TypedToolChoiceSum represents sum type.
 type TypedToolChoiceSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType               string
+	unknownJSON               string
 	Type                      TypedToolChoiceSumType // switch on this field
 	ToolChoiceFunction        ToolChoiceFunction
 	ToolChoiceMcp             ToolChoiceMcp
 	ToolChoiceWebSearch       ToolChoiceWebSearch
 	ToolChoiceKnowledgeSearch ToolChoiceKnowledgeSearch
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s TypedToolChoiceSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
 }
 
 // TypedToolChoiceSumType is oneOf type of TypedToolChoiceSum.
@@ -19274,6 +19616,8 @@ func (s TypedToolChoiceSum) IsToolChoiceKnowledgeSearch() bool {
 // SetToolChoiceFunction sets TypedToolChoiceSum to ToolChoiceFunction.
 func (s *TypedToolChoiceSum) SetToolChoiceFunction(v ToolChoiceFunction) {
 	s.Type = ToolChoiceFunctionTypedToolChoiceSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ToolChoiceFunction = v
 }
 
@@ -19295,6 +19639,8 @@ func NewToolChoiceFunctionTypedToolChoiceSum(v ToolChoiceFunction) TypedToolChoi
 // SetToolChoiceMcp sets TypedToolChoiceSum to ToolChoiceMcp.
 func (s *TypedToolChoiceSum) SetToolChoiceMcp(v ToolChoiceMcp) {
 	s.Type = ToolChoiceMcpTypedToolChoiceSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ToolChoiceMcp = v
 }
 
@@ -19316,6 +19662,8 @@ func NewToolChoiceMcpTypedToolChoiceSum(v ToolChoiceMcp) TypedToolChoiceSum {
 // SetToolChoiceWebSearch sets TypedToolChoiceSum to ToolChoiceWebSearch.
 func (s *TypedToolChoiceSum) SetToolChoiceWebSearch(v ToolChoiceWebSearch) {
 	s.Type = ToolChoiceWebSearchTypedToolChoiceSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ToolChoiceWebSearch = v
 }
 
@@ -19337,6 +19685,8 @@ func NewToolChoiceWebSearchTypedToolChoiceSum(v ToolChoiceWebSearch) TypedToolCh
 // SetToolChoiceKnowledgeSearch sets TypedToolChoiceSum to ToolChoiceKnowledgeSearch.
 func (s *TypedToolChoiceSum) SetToolChoiceKnowledgeSearch(v ToolChoiceKnowledgeSearch) {
 	s.Type = ToolChoiceKnowledgeSearchTypedToolChoiceSum
+	s.unknownType = ""
+	s.unknownJSON = ""
 	s.ToolChoiceKnowledgeSearch = v
 }
 

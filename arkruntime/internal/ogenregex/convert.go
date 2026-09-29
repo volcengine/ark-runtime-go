@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Adapted from github.com/ogen-go/ogen v1.20.3 (Apache-2.0).
-// See ../validate/README.md for provenance.
 
 package ogenregex
 

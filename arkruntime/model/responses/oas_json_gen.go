@@ -8,6 +8,7 @@ package responses
 import (
 	"math/bits"
 	"strconv"
+	"strings"
 
 	"github.com/go-faster/errors"
 	"github.com/go-faster/jx"
@@ -72,6 +73,13 @@ func (s AnnotationSum) Encode(e *jx.Encoder) {
 }
 
 func (s AnnotationSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
 	switch s.Type {
 	case UrlCitationAnnotationSum:
 		e.FieldStart("type")
@@ -175,6 +183,16 @@ func (s *AnnotationSum) Decode(d *jx.Decoder) error {
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
 
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
@@ -196,7 +214,11 @@ func (s *AnnotationSum) Decode(d *jx.Decoder) error {
 					s.Type = DocCitationAnnotationSum
 					found = true
 				default:
-					return errors.Errorf("unknown type %s", typ)
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
 				}
 				return nil
 			}
@@ -204,6 +226,12 @@ func (s *AnnotationSum) Decode(d *jx.Decoder) error {
 		})
 	}); err != nil {
 		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = AnnotationSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
 	}
 	if !found {
 		return errors.New("unable to detect sum type variant")
@@ -294,6 +322,13 @@ func (s AppliedEditSum) Encode(e *jx.Encoder) {
 }
 
 func (s AppliedEditSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
 	switch s.Type {
 	case ClearToolUsesResponseAppliedEditSum:
 		e.FieldStart("type")
@@ -327,6 +362,16 @@ func (s *AppliedEditSum) Decode(d *jx.Decoder) error {
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
 
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
@@ -348,7 +393,11 @@ func (s *AppliedEditSum) Decode(d *jx.Decoder) error {
 					s.Type = ClearThinkingResponseAppliedEditSum
 					found = true
 				default:
-					return errors.Errorf("unknown type %s", typ)
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
 				}
 				return nil
 			}
@@ -356,6 +405,12 @@ func (s *AppliedEditSum) Decode(d *jx.Decoder) error {
 		})
 	}); err != nil {
 		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = AppliedEditSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
 	}
 	if !found {
 		return errors.New("unable to detect sum type variant")
@@ -2349,6 +2404,13 @@ func (s ContentItemSum) Encode(e *jx.Encoder) {
 }
 
 func (s ContentItemSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
 	switch s.Type {
 	case ContentItemTextContentItemSum:
 		e.FieldStart("type")
@@ -2522,6 +2584,16 @@ func (s *ContentItemSum) Decode(d *jx.Decoder) error {
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
 
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
@@ -2558,7 +2630,11 @@ func (s *ContentItemSum) Decode(d *jx.Decoder) error {
 					s.Type = OutputContentItemReasoningTextContentItemSum
 					found = true
 				default:
-					return errors.Errorf("unknown type %s", typ)
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
 				}
 				return nil
 			}
@@ -2566,6 +2642,12 @@ func (s *ContentItemSum) Decode(d *jx.Decoder) error {
 		})
 	}); err != nil {
 		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = ContentItemSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
 	}
 	if !found {
 		return errors.New("unable to detect sum type variant")
@@ -4668,6 +4750,13 @@ func (s DoubaoAppCallBlockSum) Encode(e *jx.Encoder) {
 }
 
 func (s DoubaoAppCallBlockSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
 	switch s.Type {
 	case DoubaoAppCallBlockOutputTextDoubaoAppCallBlockSum:
 		e.FieldStart("type")
@@ -4841,6 +4930,16 @@ func (s *DoubaoAppCallBlockSum) Decode(d *jx.Decoder) error {
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
 
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
@@ -4868,7 +4967,11 @@ func (s *DoubaoAppCallBlockSum) Decode(d *jx.Decoder) error {
 					s.Type = DoubaoAppCallBlockReasoningSearchDoubaoAppCallBlockSum
 					found = true
 				default:
-					return errors.Errorf("unknown type %s", typ)
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
 				}
 				return nil
 			}
@@ -4876,6 +4979,12 @@ func (s *DoubaoAppCallBlockSum) Decode(d *jx.Decoder) error {
 		})
 	}); err != nil {
 		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = DoubaoAppCallBlockSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
 	}
 	if !found {
 		return errors.New("unable to detect sum type variant")
@@ -6511,6 +6620,13 @@ func (s InputItemSum) Encode(e *jx.Encoder) {
 }
 
 func (s InputItemSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
 	switch s.Type {
 	case ItemEasyMessageInputItemSum:
 		e.FieldStart("type")
@@ -6780,6 +6896,16 @@ func (s *InputItemSum) Decode(d *jx.Decoder) error {
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
 
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
@@ -6819,7 +6945,11 @@ func (s *InputItemSum) Decode(d *jx.Decoder) error {
 					s.Type = ItemFunctionMcpCallInputItemSum
 					found = true
 				default:
-					return errors.Errorf("unknown type %s", typ)
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
 				}
 				return nil
 			}
@@ -6827,6 +6957,12 @@ func (s *InputItemSum) Decode(d *jx.Decoder) error {
 		})
 	}); err != nil {
 		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = InputItemSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
 	}
 	if !found {
 		return errors.New("unable to detect sum type variant")
@@ -14290,6 +14426,13 @@ func (s OutputContentItemSum) Encode(e *jx.Encoder) {
 }
 
 func (s OutputContentItemSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
 	switch s.Type {
 	case OutputContentItemTextOutputContentItemSum:
 		e.FieldStart("type")
@@ -14347,6 +14490,16 @@ func (s *OutputContentItemSum) Decode(d *jx.Decoder) error {
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
 
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
@@ -14368,7 +14521,11 @@ func (s *OutputContentItemSum) Decode(d *jx.Decoder) error {
 					s.Type = OutputContentItemReasoningTextOutputContentItemSum
 					found = true
 				default:
-					return errors.Errorf("unknown type %s", typ)
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
 				}
 				return nil
 			}
@@ -14376,6 +14533,12 @@ func (s *OutputContentItemSum) Decode(d *jx.Decoder) error {
 		})
 	}); err != nil {
 		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = OutputContentItemSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
 	}
 	if !found {
 		return errors.New("unable to detect sum type variant")
@@ -14643,6 +14806,13 @@ func (s OutputItemSum) Encode(e *jx.Encoder) {
 }
 
 func (s OutputItemSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
 	switch s.Type {
 	case ItemOutputMessageOutputItemSum:
 		e.FieldStart("type")
@@ -15022,6 +15192,16 @@ func (s *OutputItemSum) Decode(d *jx.Decoder) error {
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
 
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
@@ -15073,7 +15253,11 @@ func (s *OutputItemSum) Decode(d *jx.Decoder) error {
 					s.Type = ItemAgentToolCallOutputItemSum
 					found = true
 				default:
-					return errors.Errorf("unknown type %s", typ)
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
 				}
 				return nil
 			}
@@ -15081,6 +15265,12 @@ func (s *OutputItemSum) Decode(d *jx.Decoder) error {
 		})
 	}); err != nil {
 		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = OutputItemSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
 	}
 	if !found {
 		return errors.New("unable to detect sum type variant")
@@ -27673,6 +27863,13 @@ func (s ResponseStreamEventSum) Encode(e *jx.Encoder) {
 }
 
 func (s ResponseStreamEventSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
 	switch s.Type {
 	case ResponseCreatedEventResponseStreamEventSum:
 		e.FieldStart("type")
@@ -29208,6 +29405,16 @@ func (s *ResponseStreamEventSum) Decode(d *jx.Decoder) error {
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
 
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
@@ -29412,7 +29619,11 @@ func (s *ResponseStreamEventSum) Decode(d *jx.Decoder) error {
 					s.Type = ResponseErrorEventResponseStreamEventSum
 					found = true
 				default:
-					return errors.Errorf("unknown type %s", typ)
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
 				}
 				return nil
 			}
@@ -29420,6 +29631,12 @@ func (s *ResponseStreamEventSum) Decode(d *jx.Decoder) error {
 		})
 	}); err != nil {
 		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = ResponseStreamEventSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
 	}
 	if !found {
 		return errors.New("unable to detect sum type variant")
@@ -33981,6 +34198,13 @@ func (s ToolSum) Encode(e *jx.Encoder) {
 }
 
 func (s ToolSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
 	switch s.Type {
 	case FunctionToolToolSum:
 		e.FieldStart("type")
@@ -34180,6 +34404,16 @@ func (s *ToolSum) Decode(d *jx.Decoder) error {
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
 
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
@@ -34213,7 +34447,11 @@ func (s *ToolSum) Decode(d *jx.Decoder) error {
 					s.Type = DoubaoAppToolToolSum
 					found = true
 				default:
-					return errors.Errorf("unknown type %s", typ)
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
 				}
 				return nil
 			}
@@ -34221,6 +34459,12 @@ func (s *ToolSum) Decode(d *jx.Decoder) error {
 		})
 	}); err != nil {
 		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = ToolSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
 	}
 	if !found {
 		return errors.New("unable to detect sum type variant")
@@ -35262,6 +35506,13 @@ func (s TypedToolChoiceSum) Encode(e *jx.Encoder) {
 }
 
 func (s TypedToolChoiceSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
 	switch s.Type {
 	case ToolChoiceFunctionTypedToolChoiceSum:
 		e.FieldStart("type")
@@ -35307,6 +35558,16 @@ func (s *TypedToolChoiceSum) Decode(d *jx.Decoder) error {
 	if typ := d.Next(); typ != jx.Object {
 		return errors.Errorf("unexpected json type %q", typ)
 	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
 
 	var found bool
 	if err := d.Capture(func(d *jx.Decoder) error {
@@ -35334,7 +35595,11 @@ func (s *TypedToolChoiceSum) Decode(d *jx.Decoder) error {
 					s.Type = ToolChoiceKnowledgeSearchTypedToolChoiceSum
 					found = true
 				default:
-					return errors.Errorf("unknown type %s", typ)
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
 				}
 				return nil
 			}
@@ -35342,6 +35607,12 @@ func (s *TypedToolChoiceSum) Decode(d *jx.Decoder) error {
 		})
 	}); err != nil {
 		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = TypedToolChoiceSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
 	}
 	if !found {
 		return errors.New("unable to detect sum type variant")
