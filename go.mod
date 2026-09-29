@@ -2,6 +2,11 @@ module github.com/volcengine/ark-runtime-go
 
 go 1.20
 
+// These versions reject unknown response union variants, which can interrupt
+// Responses and Messages decoding when the API adds new event or item types.
+// Upgrade to a newer version with forward-compatible response decoders.
+retract [v0.1.0, v0.9.0]
+
 require (
 	github.com/dlclark/regexp2 v1.11.5
 	github.com/go-faster/errors v0.7.1
