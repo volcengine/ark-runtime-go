@@ -5,6 +5,7 @@ package environments
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -12,10 +13,36 @@ import (
 	"testing"
 	"time"
 
+	"github.com/volcengine/ark-runtime-go/arkruntime/model/environment"
 	selfhosted "github.com/volcengine/ark-runtime-go/arkruntime/selfhosted"
 	"github.com/volcengine/ark-runtime-go/arkruntime/tools/agenttoolset"
 	"github.com/volcengine/ark-runtime-go/arkruntime/toolset"
 )
+
+func TestStopReasonForExit(t *testing.T) {
+	tests := []struct {
+		name      string
+		err       error
+		cause     heartbeatStopCause
+		want      environment.WorkStopReason
+		wantValue bool
+	}{
+		{name: "completed", want: environment.WorkStopReasonCompleted, wantValue: true},
+		{name: "idle timeout", err: selfhosted.ErrIdleTimeout, want: environment.WorkStopReasonCompleted, wantValue: true},
+		{name: "session terminated", err: selfhosted.ErrSessionTerminated, want: environment.WorkStopReasonCompleted, wantValue: true},
+		{name: "external cancellation", err: context.Canceled, want: environment.WorkStopReasonWorkerAbnormal, wantValue: true},
+		{name: "worker abnormal", err: errors.New("worker failed"), want: environment.WorkStopReasonWorkerAbnormal, wantValue: true},
+		{name: "platform stop", err: context.Canceled, cause: heartbeatStopCauseStopRequested},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, ok := stopReasonForExit(tt.err, tt.cause).Get()
+			if ok != tt.wantValue || got != tt.want {
+				t.Fatalf("stop reason = %q, set=%v", got, ok)
+			}
+		})
+	}
+}
 
 type fakeEnvironmentWorkerAPI struct {
 	mu        sync.Mutex
@@ -29,6 +56,7 @@ type fakeEnvironmentWorkerAPI struct {
 
 	heartbeat  func(context.Context, selfhosted.HeartbeatWorkRequest) (*selfhosted.HeartbeatResponse, error)
 	getSession func(context.Context, selfhosted.GetSessionRequest) (*selfhosted.Session, error)
+	listEvents func(context.Context, selfhosted.ListEventsRequest) (*selfhosted.ListEventsResponse, error)
 	onStop     func()
 }
 
@@ -86,7 +114,10 @@ func (f *fakeEnvironmentWorkerAPI) GetSession(ctx context.Context, req selfhoste
 	return &selfhosted.Session{ID: req.SessionID}, nil
 }
 
-func (f *fakeEnvironmentWorkerAPI) ListEvents(context.Context, selfhosted.ListEventsRequest) (*selfhosted.ListEventsResponse, error) {
+func (f *fakeEnvironmentWorkerAPI) ListEvents(ctx context.Context, req selfhosted.ListEventsRequest) (*selfhosted.ListEventsResponse, error) {
+	if f.listEvents != nil {
+		return f.listEvents(ctx, req)
+	}
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	if len(f.events) == 0 {
@@ -95,6 +126,57 @@ func (f *fakeEnvironmentWorkerAPI) ListEvents(context.Context, selfhosted.ListEv
 	events := append([]selfhosted.Event(nil), f.events...)
 	f.events = nil
 	return &selfhosted.ListEventsResponse{Events: events}, nil
+}
+
+func TestEnvironmentWorkerExternalCancellationReportsWorkerAbnormal(t *testing.T) {
+	listStarted := make(chan struct{})
+	api := &fakeEnvironmentWorkerAPI{
+		listEvents: func(ctx context.Context, _ selfhosted.ListEventsRequest) (*selfhosted.ListEventsResponse, error) {
+			close(listStarted)
+			<-ctx.Done()
+			return nil, ctx.Err()
+		},
+	}
+	worker := NewEnvironmentWorker(api, EnvironmentWorkerOptions{
+		EnvironmentID: "env_local",
+		WorkerID:      "worker_local",
+		Workdir:       t.TempDir(),
+	})
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+	done := make(chan error, 1)
+	go func() {
+		done <- worker.HandleItem(ctx, HandleItemOptions{
+			WorkID:        "work_local",
+			EnvironmentID: "env_local",
+			SessionID:     "sess_local",
+		})
+	}()
+
+	select {
+	case <-listStarted:
+	case <-time.After(time.Second):
+		t.Fatal("worker did not start event polling")
+	}
+	cancel()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("HandleItem err = %v", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("worker did not stop after context cancellation")
+	}
+
+	api.mu.Lock()
+	defer api.mu.Unlock()
+	if len(api.stops) != 1 {
+		t.Fatalf("stop count = %d, want 1", len(api.stops))
+	}
+	reason, ok := api.stops[0].Reason.Get()
+	if !ok || reason != environment.WorkStopReasonWorkerAbnormal {
+		t.Fatalf("stop reason = %q, set=%v, want worker_abnormal", reason, ok)
+	}
 }
 
 func (f *fakeEnvironmentWorkerAPI) SendEvent(_ context.Context, req selfhosted.SendEventRequest) error {
@@ -155,6 +237,9 @@ func TestEnvironmentWorkerRunHandlesPolledWorkInProcess(t *testing.T) {
 	}
 	if force, ok := api.stops[0].Force.Get(); !ok || !force {
 		t.Fatalf("worker stop should be force=true: %+v", api.stops[0])
+	}
+	if reason, ok := api.stops[0].Reason.Get(); !ok || reason != environment.WorkStopReasonCompleted {
+		t.Fatalf("worker stop reason = %q, want completed", reason)
 	}
 	if len(api.sent) != 1 {
 		t.Fatalf("sent events = %+v", api.sent)
@@ -305,6 +390,8 @@ func TestEnvironmentWorkerStopsWorkOnSessionIdleEvent(t *testing.T) {
 		t.Fatalf("worker stop = %+v", got)
 	} else if force, ok := got.Force.Get(); !ok || !force {
 		t.Fatalf("worker stop should be force=true: %+v", got)
+	} else if reason, ok := got.Reason.Get(); !ok || reason != environment.WorkStopReasonCompleted {
+		t.Fatalf("worker stop reason = %q, want completed", reason)
 	}
 	if len(api.sent) != 0 {
 		t.Fatalf("sent events = %+v", api.sent)

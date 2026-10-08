@@ -365,6 +365,36 @@ func (s PackagesConfigType) Validate() error {
 	}
 }
 
+func (s *StopWorkBody) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if value, ok := s.Reason.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "reason",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
 func (s *UpdateEnvironmentRequest) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -431,6 +461,24 @@ func (s *WorkItem) Validate() error {
 		})
 	}
 	if err := func() error {
+		if value, ok := s.StopReason.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "stop_reason",
+			Error: err,
+		})
+	}
+	if err := func() error {
 		if err := s.Type.Validate(); err != nil {
 			return err
 		}
@@ -467,6 +515,25 @@ func (s WorkState) Validate() error {
 	case "stopping":
 		return nil
 	case "stopped":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s WorkStopReason) Validate() error {
+	switch s {
+	case "lease_expired":
+		return nil
+	case "worker_abnormal":
+		return nil
+	case "user_cancelled":
+		return nil
+	case "admin_stopped":
+		return nil
+	case "completed":
+		return nil
+	case "others":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)

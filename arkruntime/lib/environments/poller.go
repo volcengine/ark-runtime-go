@@ -224,6 +224,7 @@ func (p *WorkPoller) discardInvalidWork(item selfhosted.WorkItem, _ string) {
 		EnvironmentID: item.EnvironmentID,
 		WorkID:        item.ID,
 		Force:         environment.NewOptBool(true),
+		Reason:        environment.NewOptWorkStopReason(environment.WorkStopReasonOthers),
 	}); err != nil && !isResolvedStatus(err) {
 		p.logger.Warn("stop invalid work failed", "work_id", item.ID, "err", err)
 	}

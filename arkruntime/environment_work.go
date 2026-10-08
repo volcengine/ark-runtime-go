@@ -138,6 +138,10 @@ func (c *Client) StopWork(
 	if body.WorkID == "" {
 		return errors.New("missing required work_id")
 	}
+	force, forceSet := body.Force.Get()
+	if _, reasonSet := body.Reason.Get(); reasonSet && (!forceSet || !force) {
+		return errors.New("reason requires force=true")
+	}
 	u := c.fullURL(fmt.Sprintf("%s/%s/work/%s/stop",
 		environmentsPrefix,
 		environment.PathEscape(body.EnvironmentID),
@@ -148,15 +152,24 @@ func (c *Client) StopWork(
 }
 
 type stopWorkRequestBody struct {
-	Force *bool `json:"force,omitempty"`
+	Force  *bool                       `json:"force,omitempty"`
+	Reason *environment.WorkStopReason `json:"reason,omitempty"`
 }
 
 func stopWorkBody(body *environment.StopWorkRequest) any {
+	request := stopWorkRequestBody{}
 	force, ok := body.Force.Get()
-	if !ok {
+	if ok {
+		request.Force = &force
+	}
+	reason, ok := body.Reason.Get()
+	if ok {
+		request.Reason = &reason
+	}
+	if request.Force == nil && request.Reason == nil {
 		return nil
 	}
-	return stopWorkRequestBody{Force: &force}
+	return request
 }
 
 func (c *Client) doControlPlaneRequest(

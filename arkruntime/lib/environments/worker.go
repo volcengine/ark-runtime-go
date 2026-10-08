@@ -172,7 +172,11 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work claimedWork) (e
 		<-heartbeatDone
 		cause := loadHeartbeatStopCause(&heartbeatCause)
 		if shouldStopItem(cause) {
-			_ = w.stopItem(api, work)
+			exitErr := err
+			if exitErr == nil {
+				exitErr = ctx.Err()
+			}
+			_ = w.stopItem(api, work, stopReasonForExit(exitErr, cause))
 		} else {
 			logger.Info("skip stop work after heartbeat ownership became uncertain", "cause", cause)
 		}
@@ -301,13 +305,18 @@ func (w *EnvironmentWorker) workdir() (string, error) {
 	return filepath.Abs(root)
 }
 
-func (w *EnvironmentWorker) stopItem(api selfhosted.API, work claimedWork) error {
+func (w *EnvironmentWorker) stopItem(
+	api selfhosted.API,
+	work claimedWork,
+	reason environment.OptWorkStopReason,
+) error {
 	stopCtx, stopCancel := context.WithTimeout(context.Background(), stopTimeout)
 	defer stopCancel()
 	req := selfhosted.StopWorkRequest{
 		EnvironmentID: work.EnvironmentID,
 		WorkID:        work.ID,
 		Force:         environment.NewOptBool(true),
+		Reason:        reason,
 	}
 	if err := api.StopWork(stopCtx, req); err != nil {
 		if selfhosted.IsStatus(err, 409) || selfhosted.IsStatus(err, 412) {
@@ -318,6 +327,16 @@ func (w *EnvironmentWorker) stopItem(api selfhosted.API, work claimedWork) error
 		return err
 	}
 	return nil
+}
+
+func stopReasonForExit(err error, cause heartbeatStopCause) environment.OptWorkStopReason {
+	if cause == heartbeatStopCauseStopRequested {
+		return environment.OptWorkStopReason{}
+	}
+	if err == nil || errors.Is(err, selfhosted.ErrIdleTimeout) || errors.Is(err, selfhosted.ErrSessionTerminated) {
+		return environment.NewOptWorkStopReason(environment.WorkStopReasonCompleted)
+	}
+	return environment.NewOptWorkStopReason(environment.WorkStopReasonWorkerAbnormal)
 }
 
 func (w *EnvironmentWorker) logger() *selfhostedlog.Logger {
