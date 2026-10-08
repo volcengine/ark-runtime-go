@@ -45,7 +45,20 @@ func TestEnvironmentWorkRequests(t *testing.T) {
 			if got := r.URL.Query().Get("max_items"); got != "" {
 				t.Fatalf("unexpected max_items query = %q", got)
 			}
-			_, _ = w.Write([]byte(`{"id":"work-1","created_at":"2026-08-10T00:00:00Z","data":{"id":"sess-1","type":"session"},"environment_id":"env-1","latest_heartbeat_at":"2026-08-10T00:00:00Z","state":"queued","type":"work"}`))
+			pollResponse := map[string]any{
+				"id":                  "work-1",
+				"created_at":          "2026-08-10T00:00:00Z",
+				"data":                map[string]any{"id": "sess-1", "type": "session"},
+				"environment_id":      "env-1",
+				"latest_heartbeat_at": "2026-08-10T00:00:00Z",
+				"state":               "queued",
+				"stop_reason":         "worker_abnormal",
+				"recovery_count":      5,
+				"type":                "work",
+			}
+			if err := json.NewEncoder(w).Encode(pollResponse); err != nil {
+				t.Errorf("encode poll response: %v", err)
+			}
 		case "POST /environments/env-1/work/work-1/ack":
 			assertNoBody(t, r)
 			if got := r.Header.Get(environmentWorkWorkerIDHeader); got != "worker-1" {
@@ -62,9 +75,9 @@ func TestEnvironmentWorkRequests(t *testing.T) {
 			}
 			_, _ = w.Write([]byte(`{"last_heartbeat":"2026-08-10T00:00:00Z","lease_extended":true,"state":"active","ttl_seconds":30,"type":"work_heartbeat"}`))
 		case "POST /environments/env-1/work/work-1/stop":
-			var body map[string]bool
+			var body map[string]any
 			decodeJSONBody(t, r, &body)
-			if len(body) != 1 || !body["force"] {
+			if len(body) != 2 || body["force"] != true || body["reason"] != "worker_abnormal" {
 				t.Fatalf("stop body = %+v", body)
 			}
 			_, _ = w.Write([]byte(`{"id":"work-1","created_at":"2026-08-10T00:00:00Z","data":{"id":"sess-1","type":"session"},"environment_id":"env-1","state":"stopping","type":"work"}`))
@@ -94,6 +107,9 @@ func TestEnvironmentWorkRequests(t *testing.T) {
 	if got := work.LatestHeartbeatValue(); got != "2026-08-10T00:00:00Z" {
 		t.Fatalf("PollWork().LatestHeartbeatValue() = %q", got)
 	}
+	if got, ok := work.RecoveryCount.Get(); !ok || got != 5 {
+		t.Fatalf("PollWork().RecoveryCount = %d, set=%v", got, ok)
+	}
 	if err := client.AckWork(ctx, &environment.AckWorkRequest{
 		EnvironmentID: "env-1",
 		WorkID:        "work-1",
@@ -118,8 +134,16 @@ func TestEnvironmentWorkRequests(t *testing.T) {
 	}
 	if err := client.StopWork(ctx, &environment.StopWorkRequest{
 		EnvironmentID: "env-1",
+		WorkID:        "work-invalid",
+		Reason:        environment.NewOptWorkStopReason(environment.WorkStopReasonWorkerAbnormal),
+	}); err == nil || err.Error() != "reason requires force=true" {
+		t.Fatalf("StopWork() error = %v", err)
+	}
+	if err := client.StopWork(ctx, &environment.StopWorkRequest{
+		EnvironmentID: "env-1",
 		WorkID:        "work-1",
 		Force:         environment.NewOptBool(true),
+		Reason:        environment.NewOptWorkStopReason(environment.WorkStopReasonWorkerAbnormal),
 	}); err != nil {
 		t.Fatalf("StopWork() error = %v", err)
 	}

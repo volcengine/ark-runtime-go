@@ -385,6 +385,12 @@ func (s *EnvConfig) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.ActiveRecovery.Set {
+			e.FieldStart("active_recovery")
+			s.ActiveRecovery.Encode(e)
+		}
+	}
+	{
 		if s.Tos.Set {
 			e.FieldStart("tos")
 			s.Tos.Encode(e)
@@ -392,13 +398,14 @@ func (s *EnvConfig) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfEnvConfig = [6]string{
+var jsonFieldsNameOfEnvConfig = [7]string{
 	0: "type",
 	1: "networking",
 	2: "packages",
 	3: "env",
 	4: "setup_script",
-	5: "tos",
+	5: "active_recovery",
+	6: "tos",
 }
 
 // Decode decodes EnvConfig from json.
@@ -459,6 +466,16 @@ func (s *EnvConfig) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"setup_script\"")
+			}
+		case "active_recovery":
+			if err := func() error {
+				s.ActiveRecovery.Reset()
+				if err := s.ActiveRecovery.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"active_recovery\"")
 			}
 		case "tos":
 			if err := func() error {
@@ -1739,6 +1756,41 @@ func (s *OptEnvironmentScope) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes int32 as json.
+func (o OptInt32) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	e.Int32(int32(o.Value))
+}
+
+// Decode decodes int32 from json.
+func (o *OptInt32) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptInt32 to nil")
+	}
+	o.Set = true
+	v, err := d.Int32()
+	if err != nil {
+		return err
+	}
+	o.Value = int32(v)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptInt32) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptInt32) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes NetworkingConfig as json.
 func (o OptNetworkingConfig) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -1969,6 +2021,39 @@ func (s OptUpdateEnvironmentRequestMetadata) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptUpdateEnvironmentRequestMetadata) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes WorkStopReason as json.
+func (o OptWorkStopReason) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	e.Str(string(o.Value))
+}
+
+// Decode decodes WorkStopReason from json.
+func (o *OptWorkStopReason) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptWorkStopReason to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptWorkStopReason) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptWorkStopReason) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -2269,10 +2354,17 @@ func (s *StopWorkBody) encodeFields(e *jx.Encoder) {
 			s.Force.Encode(e)
 		}
 	}
+	{
+		if s.Reason.Set {
+			e.FieldStart("reason")
+			s.Reason.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfStopWorkBody = [1]string{
+var jsonFieldsNameOfStopWorkBody = [2]string{
 	0: "force",
+	1: "reason",
 }
 
 // Decode decodes StopWorkBody from json.
@@ -2292,6 +2384,16 @@ func (s *StopWorkBody) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"force\"")
+			}
+		case "reason":
+			if err := func() error {
+				s.Reason.Reset()
+				if err := s.Reason.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"reason\"")
 			}
 		default:
 			return d.Skip()
@@ -2886,12 +2988,24 @@ func (s *WorkItem) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.StopReason.Set {
+			e.FieldStart("stop_reason")
+			s.StopReason.Encode(e)
+		}
+	}
+	{
+		if s.RecoveryCount.Set {
+			e.FieldStart("recovery_count")
+			s.RecoveryCount.Encode(e)
+		}
+	}
+	{
 		e.FieldStart("type")
 		s.Type.Encode(e)
 	}
 }
 
-var jsonFieldsNameOfWorkItem = [13]string{
+var jsonFieldsNameOfWorkItem = [15]string{
 	0:  "id",
 	1:  "acknowledged_at",
 	2:  "created_at",
@@ -2904,7 +3018,9 @@ var jsonFieldsNameOfWorkItem = [13]string{
 	9:  "state",
 	10: "stop_requested_at",
 	11: "stopped_at",
-	12: "type",
+	12: "stop_reason",
+	13: "recovery_count",
+	14: "type",
 }
 
 // Decode decodes WorkItem from json.
@@ -3049,8 +3165,28 @@ func (s *WorkItem) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"stopped_at\"")
 			}
+		case "stop_reason":
+			if err := func() error {
+				s.StopReason.Reset()
+				if err := s.StopReason.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"stop_reason\"")
+			}
+		case "recovery_count":
+			if err := func() error {
+				s.RecoveryCount.Reset()
+				if err := s.RecoveryCount.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"recovery_count\"")
+			}
 		case "type":
-			requiredBitSet[1] |= 1 << 4
+			requiredBitSet[1] |= 1 << 6
 			if err := func() error {
 				if err := s.Type.Decode(d); err != nil {
 					return err
@@ -3070,7 +3206,7 @@ func (s *WorkItem) Decode(d *jx.Decoder) error {
 	var failures []validate.FieldError
 	for i, mask := range [2]uint8{
 		0b00011101,
-		0b00010010,
+		0b01000010,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -3196,6 +3332,54 @@ func (s WorkState) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *WorkState) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes WorkStopReason as json.
+func (s WorkStopReason) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes WorkStopReason from json.
+func (s *WorkStopReason) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode WorkStopReason to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch WorkStopReason(v) {
+	case WorkStopReasonLeaseExpired:
+		*s = WorkStopReasonLeaseExpired
+	case WorkStopReasonWorkerAbnormal:
+		*s = WorkStopReasonWorkerAbnormal
+	case WorkStopReasonUserCancelled:
+		*s = WorkStopReasonUserCancelled
+	case WorkStopReasonAdminStopped:
+		*s = WorkStopReasonAdminStopped
+	case WorkStopReasonCompleted:
+		*s = WorkStopReasonCompleted
+	case WorkStopReasonOthers:
+		*s = WorkStopReasonOthers
+	default:
+		*s = WorkStopReason(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s WorkStopReason) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *WorkStopReason) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

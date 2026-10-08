@@ -54,6 +54,8 @@ type StopWorkRequest struct {
 	EnvironmentID string  `json:"environment_id"`
 	WorkID        string  `json:"work_id"`
 	Force         OptBool `json:"force,omitempty"`
+	// Reason is only valid when Force is true.
+	Reason OptWorkStopReason `json:"reason,omitempty"`
 }
 
 // SessionIDValue returns the session id carried by the work item.

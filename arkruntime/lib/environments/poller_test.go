@@ -207,6 +207,28 @@ func TestWorkPollerStopsPollingOnPermanentAckFailure(t *testing.T) {
 	}
 }
 
+func TestWorkPollerMarksInvalidWorkAsOther(t *testing.T) {
+	api := &fakePollerAPI{
+		pollItem: newTestWorkItem(testWorkID, "env_1", ""),
+	}
+	poller := NewWorkPoller(context.Background(), api, WorkPollerOptions{
+		EnvironmentID: "env_1",
+		WorkerID:      "worker_1",
+		Drain:         true,
+	})
+
+	if poller.Next() {
+		t.Fatal("Next should discard work without a session id")
+	}
+	if api.stopCount != 1 {
+		t.Fatalf("stop_count=%d", api.stopCount)
+	}
+	reason, ok := api.stops[0].Reason.Get()
+	if !ok || reason != environment.WorkStopReasonOthers {
+		t.Fatalf("stop reason = %q, set=%v", reason, ok)
+	}
+}
+
 func TestWorkPollerTreatsEmptyWorkIDAsEmptyPoll(t *testing.T) {
 	api := &fakePollerAPI{
 		pollItem: newTestWorkItem("", "env_1", testSessionID),

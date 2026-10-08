@@ -128,6 +128,15 @@ type EnvConfig struct {
 	Env OptEnvConfigEnv `json:"env"`
 	// 沙箱启动阶段执行的初始化脚本。.
 	SetupScript OptString `json:"setup_script"`
+	// 是否启用 Work 积极恢复；仅 self_hosted Environment 支持，省略时等同于
+	// false。该配置
+	// 仅允许在 Environment 级设置，不允许通过 Session override/upgrade
+	// 覆盖。开启后，平台在
+	// Work 已 stopped、仍有未闭合 agent.tool_use 且 recovery_count 少于 5 次时将 Work
+	// 重新排队，
+	// 不按 stop_reason 排除。只有 Worker 上报 completed 且全部 tool_use
+	// 已闭合后才会清零计数。.
+	ActiveRecovery OptBool `json:"active_recovery"`
 	// Environment outputs 的 TOS 存储配置。.
 	Tos OptTosConfig `json:"tos"`
 }
@@ -155,6 +164,11 @@ func (s *EnvConfig) GetEnv() OptEnvConfigEnv {
 // GetSetupScript returns the value of SetupScript.
 func (s *EnvConfig) GetSetupScript() OptString {
 	return s.SetupScript
+}
+
+// GetActiveRecovery returns the value of ActiveRecovery.
+func (s *EnvConfig) GetActiveRecovery() OptBool {
+	return s.ActiveRecovery
 }
 
 // GetTos returns the value of Tos.
@@ -185,6 +199,11 @@ func (s *EnvConfig) SetEnv(val OptEnvConfigEnv) {
 // SetSetupScript sets the value of SetupScript.
 func (s *EnvConfig) SetSetupScript(val OptString) {
 	s.SetupScript = val
+}
+
+// SetActiveRecovery sets the value of ActiveRecovery.
+func (s *EnvConfig) SetActiveRecovery(val OptBool) {
+	s.ActiveRecovery = val
 }
 
 // SetTos sets the value of Tos.
@@ -1380,6 +1399,52 @@ func (o OptUpdateEnvironmentRequestMetadata) Or(d UpdateEnvironmentRequestMetada
 	return d
 }
 
+// NewOptWorkStopReason returns new OptWorkStopReason with value set to v.
+func NewOptWorkStopReason(v WorkStopReason) OptWorkStopReason {
+	return OptWorkStopReason{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptWorkStopReason is optional WorkStopReason.
+type OptWorkStopReason struct {
+	Value WorkStopReason
+	Set   bool
+}
+
+// IsSet returns true if OptWorkStopReason was set.
+func (o OptWorkStopReason) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptWorkStopReason) Reset() {
+	var v WorkStopReason
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptWorkStopReason) SetTo(v WorkStopReason) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptWorkStopReason) Get() (v WorkStopReason, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptWorkStopReason) Or(d WorkStopReason) WorkStopReason {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // 启动时预装的依赖包。版本通过包管理器自身语义指定 (e.g. pip 用
 // `"pkg==1.0.0"`；不指定版本则装最新)。.
 // Ref: #/components/schemas/PackagesConfig
@@ -1510,6 +1575,16 @@ func (s *PackagesConfigType) UnmarshalText(data []byte) error {
 type StopWorkBody struct {
 	// 是否强制停止。.
 	Force OptBool `json:"force"`
+	// 强制停止原因；仅允许与 `force=true` 一起提交，省略时按 `others` 记录。
+	// Worker 正常完成时传 `completed`，异常退出时传
+	// `worker_abnormal`；用户或管理员操作分别传
+	// `user_cancelled` 或 `admin_stopped`，无法归类时传 `others`。`lease_expired`
+	// 仅由平台在租约
+	// 过期时写入，不应通过 StopWork 上报。该字段用于停止诊断，并在 Worker
+	// 上报 `completed`
+	// 且全部 tool_use
+	// 已闭合时作为清零恢复次数的信号；平台不会按停止原因排除积极恢复。.
+	Reason OptWorkStopReason `json:"reason"`
 }
 
 // GetForce returns the value of Force.
@@ -1517,9 +1592,19 @@ func (s *StopWorkBody) GetForce() OptBool {
 	return s.Force
 }
 
+// GetReason returns the value of Reason.
+func (s *StopWorkBody) GetReason() OptWorkStopReason {
+	return s.Reason
+}
+
 // SetForce sets the value of Force.
 func (s *StopWorkBody) SetForce(val OptBool) {
 	s.Force = val
+}
+
+// SetReason sets the value of Reason.
+func (s *StopWorkBody) SetReason(val OptWorkStopReason) {
+	s.Reason = val
 }
 
 // Environment 产物存储位置。设置后 outputs 文件会注册到用户指定的 TOS
@@ -1718,6 +1803,16 @@ type WorkItem struct {
 	StopRequestedAt OptString `json:"stop_requested_at"`
 	// Work 停止时间，RFC 3339。.
 	StoppedAt OptString `json:"stopped_at"`
+	// 最近一次停止原因。首次停止前省略；state 为 stopping / stopped
+	// 时返回本次停止原因；
+	// 自动恢复到 queued / starting / active
+	// 后仍保留上一次停止原因，当前生命周期状态以
+	// `state` 为准。.
+	StopReason OptWorkStopReason `json:"stop_reason"`
+	// 自上次成功完成且全部 tool_use 已闭合后，平台已自动将本 Work
+	// 重新排队的次数；
+	// 首次执行或字段省略时按 0 处理。手动 Ensure 不会清零该计数。.
+	RecoveryCount OptInt32 `json:"recovery_count"`
 	// 对象类型，固定为 `work`。.
 	Type WorkItemType `json:"type"`
 }
@@ -1780,6 +1875,16 @@ func (s *WorkItem) GetStopRequestedAt() OptString {
 // GetStoppedAt returns the value of StoppedAt.
 func (s *WorkItem) GetStoppedAt() OptString {
 	return s.StoppedAt
+}
+
+// GetStopReason returns the value of StopReason.
+func (s *WorkItem) GetStopReason() OptWorkStopReason {
+	return s.StopReason
+}
+
+// GetRecoveryCount returns the value of RecoveryCount.
+func (s *WorkItem) GetRecoveryCount() OptInt32 {
+	return s.RecoveryCount
 }
 
 // GetType returns the value of Type.
@@ -1845,6 +1950,16 @@ func (s *WorkItem) SetStopRequestedAt(val OptString) {
 // SetStoppedAt sets the value of StoppedAt.
 func (s *WorkItem) SetStoppedAt(val OptString) {
 	s.StoppedAt = val
+}
+
+// SetStopReason sets the value of StopReason.
+func (s *WorkItem) SetStopReason(val OptWorkStopReason) {
+	s.StopReason = val
+}
+
+// SetRecoveryCount sets the value of RecoveryCount.
+func (s *WorkItem) SetRecoveryCount(val OptInt32) {
+	s.RecoveryCount = val
 }
 
 // SetType sets the value of Type.
@@ -1945,6 +2060,77 @@ func (s *WorkState) UnmarshalText(data []byte) error {
 		return nil
 	case WorkStateStopped:
 		*s = WorkStateStopped
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Work 停止原因。.
+// Ref: #/components/schemas/WorkStopReason
+type WorkStopReason string
+
+const (
+	WorkStopReasonLeaseExpired   WorkStopReason = "lease_expired"
+	WorkStopReasonWorkerAbnormal WorkStopReason = "worker_abnormal"
+	WorkStopReasonUserCancelled  WorkStopReason = "user_cancelled"
+	WorkStopReasonAdminStopped   WorkStopReason = "admin_stopped"
+	WorkStopReasonCompleted      WorkStopReason = "completed"
+	WorkStopReasonOthers         WorkStopReason = "others"
+)
+
+// AllValues returns all WorkStopReason values.
+func (WorkStopReason) AllValues() []WorkStopReason {
+	return []WorkStopReason{
+		WorkStopReasonLeaseExpired,
+		WorkStopReasonWorkerAbnormal,
+		WorkStopReasonUserCancelled,
+		WorkStopReasonAdminStopped,
+		WorkStopReasonCompleted,
+		WorkStopReasonOthers,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s WorkStopReason) MarshalText() ([]byte, error) {
+	switch s {
+	case WorkStopReasonLeaseExpired:
+		return []byte(s), nil
+	case WorkStopReasonWorkerAbnormal:
+		return []byte(s), nil
+	case WorkStopReasonUserCancelled:
+		return []byte(s), nil
+	case WorkStopReasonAdminStopped:
+		return []byte(s), nil
+	case WorkStopReasonCompleted:
+		return []byte(s), nil
+	case WorkStopReasonOthers:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *WorkStopReason) UnmarshalText(data []byte) error {
+	switch WorkStopReason(data) {
+	case WorkStopReasonLeaseExpired:
+		*s = WorkStopReasonLeaseExpired
+		return nil
+	case WorkStopReasonWorkerAbnormal:
+		*s = WorkStopReasonWorkerAbnormal
+		return nil
+	case WorkStopReasonUserCancelled:
+		*s = WorkStopReasonUserCancelled
+		return nil
+	case WorkStopReasonAdminStopped:
+		*s = WorkStopReasonAdminStopped
+		return nil
+	case WorkStopReasonCompleted:
+		*s = WorkStopReasonCompleted
+		return nil
+	case WorkStopReasonOthers:
+		*s = WorkStopReasonOthers
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
