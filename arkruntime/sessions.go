@@ -96,6 +96,28 @@ func (c *Client) UpdateSession(
 	return &wrap.Session, nil
 }
 
+// UpgradeSession upgrades the runtime configuration of an existing Session.
+func (c *Client) UpgradeSession(
+	ctx context.Context,
+	sessionID string,
+	body *session.CreateSessionUpgradeRequest,
+	setters ...requestOption,
+) (*session.Session, error) {
+	if sessionID == "" {
+		return nil, errors.New("missing required session_id")
+	}
+	if body == nil {
+		return nil, errors.New("missing required request body")
+	}
+	u := c.fullURL(fmt.Sprintf("%s/%s/upgrades", sessionsPrefix, session.PathEscape(sessionID)))
+	opts := append(setters, withBody(body))
+	wrap := &session.SessionResponse{}
+	if err := c.Do(ctx, http.MethodPost, u, "", "", wrap, opts...); err != nil {
+		return nil, err
+	}
+	return &wrap.Session, nil
+}
+
 // DeleteSession deletes a Session (must be idle / terminated).
 func (c *Client) DeleteSession(
 	ctx context.Context,
