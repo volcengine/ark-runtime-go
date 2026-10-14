@@ -41,6 +41,7 @@ func (w *EnvironmentWorker) heartbeatLoop(ctx context.Context, work claimedWork,
 		resp, err := api.HeartbeatWork(beatCtx, selfhosted.HeartbeatWorkRequest{
 			EnvironmentID:         work.EnvironmentID,
 			WorkID:                work.ID,
+			WorkerID:              environment.NewOptString(w.opts.WorkerID),
 			ExpectedLastHeartbeat: environment.NewOptString(last),
 			DesiredTTLSeconds:     environment.NewOptInt64(int64(ttl / time.Second)),
 		})

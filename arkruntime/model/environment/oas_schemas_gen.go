@@ -128,15 +128,6 @@ type EnvConfig struct {
 	Env OptEnvConfigEnv `json:"env"`
 	// 沙箱启动阶段执行的初始化脚本。.
 	SetupScript OptString `json:"setup_script"`
-	// 是否启用 Work 积极恢复；仅 self_hosted Environment 支持，省略时等同于
-	// false。该配置
-	// 仅允许在 Environment 级设置，不允许通过 Session override/upgrade
-	// 覆盖。开启后，平台在
-	// Work 已 stopped、仍有未闭合 agent.tool_use 且 recovery_count 少于 5 次时将 Work
-	// 重新排队，
-	// 不按 stop_reason 排除。只有 Worker 上报 completed 且全部 tool_use
-	// 已闭合后才会清零计数。.
-	ActiveRecovery OptBool `json:"active_recovery"`
 	// Environment outputs 的 TOS 存储配置。.
 	Tos OptTosConfig `json:"tos"`
 }
@@ -164,11 +155,6 @@ func (s *EnvConfig) GetEnv() OptEnvConfigEnv {
 // GetSetupScript returns the value of SetupScript.
 func (s *EnvConfig) GetSetupScript() OptString {
 	return s.SetupScript
-}
-
-// GetActiveRecovery returns the value of ActiveRecovery.
-func (s *EnvConfig) GetActiveRecovery() OptBool {
-	return s.ActiveRecovery
 }
 
 // GetTos returns the value of Tos.
@@ -199,11 +185,6 @@ func (s *EnvConfig) SetEnv(val OptEnvConfigEnv) {
 // SetSetupScript sets the value of SetupScript.
 func (s *EnvConfig) SetSetupScript(val OptString) {
 	s.SetupScript = val
-}
-
-// SetActiveRecovery sets the value of ActiveRecovery.
-func (s *EnvConfig) SetActiveRecovery(val OptBool) {
-	s.ActiveRecovery = val
 }
 
 // SetTos sets the value of Tos.
@@ -1580,10 +1561,8 @@ type StopWorkBody struct {
 	// `worker_abnormal`；用户或管理员操作分别传
 	// `user_cancelled` 或 `admin_stopped`，无法归类时传 `others`。`lease_expired`
 	// 仅由平台在租约
-	// 过期时写入，不应通过 StopWork 上报。该字段用于停止诊断，并在 Worker
-	// 上报 `completed`
-	// 且全部 tool_use
-	// 已闭合时作为清零恢复次数的信号；平台不会按停止原因排除积极恢复。.
+	// 过期时写入，不应通过 StopWork
+	// 上报。该字段仅用于停止诊断；强停不会自动重新排队。.
 	Reason OptWorkStopReason `json:"reason"`
 }
 
@@ -1804,15 +1783,9 @@ type WorkItem struct {
 	// Work 停止时间，RFC 3339。.
 	StoppedAt OptString `json:"stopped_at"`
 	// 最近一次停止原因。首次停止前省略；state 为 stopping / stopped
-	// 时返回本次停止原因；
-	// 自动恢复到 queued / starting / active
-	// 后仍保留上一次停止原因，当前生命周期状态以
-	// `state` 为准。.
+	// 时返回本次停止原因。
+	// 原 owner 通过 Heartbeat 将 `stopped + lease_expired` 恢复为 active 时清除此字段。.
 	StopReason OptWorkStopReason `json:"stop_reason"`
-	// 自上次成功完成且全部 tool_use 已闭合后，平台已自动将本 Work
-	// 重新排队的次数；
-	// 首次执行或字段省略时按 0 处理。手动 Ensure 不会清零该计数。.
-	RecoveryCount OptInt32 `json:"recovery_count"`
 	// 对象类型，固定为 `work`。.
 	Type WorkItemType `json:"type"`
 }
@@ -1880,11 +1853,6 @@ func (s *WorkItem) GetStoppedAt() OptString {
 // GetStopReason returns the value of StopReason.
 func (s *WorkItem) GetStopReason() OptWorkStopReason {
 	return s.StopReason
-}
-
-// GetRecoveryCount returns the value of RecoveryCount.
-func (s *WorkItem) GetRecoveryCount() OptInt32 {
-	return s.RecoveryCount
 }
 
 // GetType returns the value of Type.
@@ -1955,11 +1923,6 @@ func (s *WorkItem) SetStoppedAt(val OptString) {
 // SetStopReason sets the value of StopReason.
 func (s *WorkItem) SetStopReason(val OptWorkStopReason) {
 	s.StopReason = val
-}
-
-// SetRecoveryCount sets the value of RecoveryCount.
-func (s *WorkItem) SetRecoveryCount(val OptInt32) {
-	s.RecoveryCount = val
 }
 
 // SetType sets the value of Type.

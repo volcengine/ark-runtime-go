@@ -9,7 +9,9 @@ package environment
 type EnvironmentWorkAckParams struct {
 	EnvironmentId string
 	WorkId        string
-	// Worker 实例 ID，用于控制面记录 work 归属和排障。.
+	// Worker 实例 ID。Poll/Ack 用于记录 work owner；Heartbeat 携带非空值时必须与
+	// Ack 保存的 owner 精确一致，否则返回 412。匹配 owner 的 Heartbeat 可将
+	// `stopped + lease_expired` 直接恢复为 `active`。.
 	ArkWorkerID OptString `json:",omitempty,omitzero"`
 }
 
@@ -21,6 +23,10 @@ type EnvironmentWorkHeartbeatParams struct {
 	DesiredTTLSeconds OptInt64 `json:",omitempty,omitzero" query:"desired_ttl_seconds"`
 	// Worker 上一次看到的 last_heartbeat，用于并发校验。.
 	ExpectedLastHeartbeat OptString `json:",omitempty,omitzero" query:"expected_last_heartbeat"`
+	// Worker 实例 ID。Poll/Ack 用于记录 work owner；Heartbeat 携带非空值时必须与
+	// Ack 保存的 owner 精确一致，否则返回 412。匹配 owner 的 Heartbeat 可将
+	// `stopped + lease_expired` 直接恢复为 `active`。.
+	ArkWorkerID OptString `json:",omitempty,omitzero"`
 }
 
 // EnvironmentWorkPollParams is parameters of EnvironmentWork_poll operation.
@@ -30,7 +36,9 @@ type EnvironmentWorkPollParams struct {
 	BlockMs OptInt64 `json:",omitempty,omitzero" query:"block_ms"`
 	// 允许控制面回收超过指定时长未 heartbeat 的 work，单位毫秒。.
 	ReclaimOlderThanMs OptInt64 `json:",omitempty,omitzero" query:"reclaim_older_than_ms"`
-	// Worker 实例 ID，用于控制面记录 work 归属和排障。.
+	// Worker 实例 ID。Poll/Ack 用于记录 work owner；Heartbeat 携带非空值时必须与
+	// Ack 保存的 owner 精确一致，否则返回 412。匹配 owner 的 Heartbeat 可将
+	// `stopped + lease_expired` 直接恢复为 `active`。.
 	ArkWorkerID OptString `json:",omitempty,omitzero"`
 }
 

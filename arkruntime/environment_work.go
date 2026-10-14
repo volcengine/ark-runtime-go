@@ -108,6 +108,9 @@ func (c *Client) HeartbeatWork(
 	if expectedLastHeartbeat, ok := body.ExpectedLastHeartbeat.Get(); ok && expectedLastHeartbeat != "" {
 		q.Set("expected_last_heartbeat", expectedLastHeartbeat)
 	}
+	if workerID, ok := body.WorkerID.Get(); ok && workerID != "" {
+		setters = append(setters, WithCustomHeader(environmentWorkWorkerIDHeader, workerID))
+	}
 	u := c.fullURL(fmt.Sprintf("%s/%s/work/%s/heartbeat",
 		environmentsPrefix,
 		environment.PathEscape(body.EnvironmentID),

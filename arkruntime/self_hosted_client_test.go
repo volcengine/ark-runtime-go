@@ -17,7 +17,10 @@ import (
 	"github.com/volcengine/ark-runtime-go/arkruntime/model/session"
 )
 
-const testBearerToken = "Bearer test-api-key"
+const (
+	testBearerToken = "Bearer test-api-key"
+	testWorkerID    = "worker-1"
+)
 
 func TestEnvironmentWorkRequests(t *testing.T) {
 	var seen []string
@@ -33,7 +36,7 @@ func TestEnvironmentWorkRequests(t *testing.T) {
 
 		switch r.Method + " " + r.URL.Path {
 		case "GET /environments/env-1/work/poll":
-			if got := r.Header.Get(environmentWorkWorkerIDHeader); got != "worker-1" {
+			if got := r.Header.Get(environmentWorkWorkerIDHeader); got != testWorkerID {
 				t.Fatalf("Ark-Worker-ID = %q", got)
 			}
 			if got := r.URL.Query().Get("block_ms"); got != "999" {
@@ -53,7 +56,6 @@ func TestEnvironmentWorkRequests(t *testing.T) {
 				"latest_heartbeat_at": "2026-08-10T00:00:00Z",
 				"state":               "queued",
 				"stop_reason":         "worker_abnormal",
-				"recovery_count":      5,
 				"type":                "work",
 			}
 			if err := json.NewEncoder(w).Encode(pollResponse); err != nil {
@@ -61,12 +63,15 @@ func TestEnvironmentWorkRequests(t *testing.T) {
 			}
 		case "POST /environments/env-1/work/work-1/ack":
 			assertNoBody(t, r)
-			if got := r.Header.Get(environmentWorkWorkerIDHeader); got != "worker-1" {
+			if got := r.Header.Get(environmentWorkWorkerIDHeader); got != testWorkerID {
 				t.Fatalf("Ark-Worker-ID = %q", got)
 			}
 			_, _ = w.Write([]byte(`{"id":"work-1","created_at":"2026-08-10T00:00:00Z","data":{"id":"sess-1","type":"session"},"environment_id":"env-1","state":"starting","type":"work"}`))
 		case "POST /environments/env-1/work/work-1/heartbeat":
 			assertNoBody(t, r)
+			if got := r.Header.Get(environmentWorkWorkerIDHeader); got != testWorkerID {
+				t.Fatalf("Ark-Worker-ID = %q", got)
+			}
 			if got := r.URL.Query().Get("desired_ttl_seconds"); got != "30" {
 				t.Fatalf("desired_ttl_seconds = %q", got)
 			}
@@ -95,7 +100,7 @@ func TestEnvironmentWorkRequests(t *testing.T) {
 
 	work, err := client.PollWork(ctx, &environment.PollWorkRequest{
 		EnvironmentID: "env-1",
-		WorkerID:      "worker-1",
+		WorkerID:      testWorkerID,
 		BlockMS:       999,
 	})
 	if err != nil {
@@ -107,19 +112,17 @@ func TestEnvironmentWorkRequests(t *testing.T) {
 	if got := work.LatestHeartbeatValue(); got != "2026-08-10T00:00:00Z" {
 		t.Fatalf("PollWork().LatestHeartbeatValue() = %q", got)
 	}
-	if got, ok := work.RecoveryCount.Get(); !ok || got != 5 {
-		t.Fatalf("PollWork().RecoveryCount = %d, set=%v", got, ok)
-	}
 	if err := client.AckWork(ctx, &environment.AckWorkRequest{
 		EnvironmentID: "env-1",
 		WorkID:        "work-1",
-		WorkerID:      environment.NewOptString("worker-1"),
+		WorkerID:      environment.NewOptString(testWorkerID),
 	}); err != nil {
 		t.Fatalf("AckWork() error = %v", err)
 	}
 	heartbeat, err := client.HeartbeatWork(ctx, &environment.HeartbeatWorkRequest{
 		EnvironmentID:         "env-1",
 		WorkID:                "work-1",
+		WorkerID:              environment.NewOptString(testWorkerID),
 		DesiredTTLSeconds:     environment.NewOptInt64(30),
 		ExpectedLastHeartbeat: environment.NewOptString("2026-08-10T00:00:00Z"),
 	})

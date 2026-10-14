@@ -45,6 +45,7 @@ type AckWorkRequest struct {
 type HeartbeatWorkRequest struct {
 	EnvironmentID         string    `json:"environment_id"`
 	WorkID                string    `json:"work_id"`
+	WorkerID              OptString `json:"worker_id,omitempty"`
 	ExpectedLastHeartbeat OptString `json:"expected_last_heartbeat,omitempty"`
 	DesiredTTLSeconds     OptInt64  `json:"desired_ttl_seconds,omitempty"`
 }
