@@ -450,6 +450,9 @@ func TestEnvironmentWorkerHeartbeatLeaseLostOnPreconditionFailed(t *testing.T) {
 	if value, ok := got.ExpectedLastHeartbeat.Get(); !ok || value != selfhosted.ExpectedLastHeartbeatNoHeartbeat {
 		t.Fatalf("expected_last_heartbeat=%+v", got.ExpectedLastHeartbeat)
 	}
+	if value, ok := got.WorkerID.Get(); !ok || value != "worker_local" {
+		t.Fatalf("worker_id=%+v", got.WorkerID)
+	}
 	if value, ok := got.DesiredTTLSeconds.Get(); !ok || value != int64(heartbeatDefault/time.Second) {
 		t.Fatalf("desired_ttl_seconds=%+v", got.DesiredTTLSeconds)
 	}
