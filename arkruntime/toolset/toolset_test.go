@@ -5,6 +5,7 @@ package toolset
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -274,6 +275,72 @@ func TestReadKeepsLegacyPathAliases(t *testing.T) {
 	))
 	if !rangeConflict.IsError || !strings.Contains(rangeConflict.Content[0].Text, "cannot be combined") {
 		t.Fatalf("conflicting range result = %+v", rangeConflict)
+	}
+}
+
+func TestFileToolsAcceptPathAliases(t *testing.T) {
+	for _, key := range []string{"file_path", "path", "file"} {
+		t.Run(key, func(t *testing.T) {
+			root := t.TempDir()
+			set, err := NewDefault(Options{Workdir: root})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer set.Close()
+
+			writeInput := fmt.Sprintf(`{%q:"example.txt","content":"old"}`, key)
+			if res := set.Execute(context.Background(), "write", []byte(writeInput)); res.IsError {
+				t.Fatalf("write(%s) result = %+v", writeInput, res)
+			}
+			readInput := fmt.Sprintf(`{%q:"example.txt"}`, key)
+			if res := set.Execute(context.Background(), "read", []byte(readInput)); res.IsError {
+				t.Fatalf("read(%s) result = %+v", readInput, res)
+			}
+			editInput := fmt.Sprintf(
+				`{%q:"example.txt","old_string":"old","new_string":"new"}`,
+				key,
+			)
+			if res := set.Execute(context.Background(), "edit", []byte(editInput)); res.IsError {
+				t.Fatalf("edit(%s) result = %+v", editInput, res)
+			}
+			data, err := os.ReadFile(filepath.Join(root, "example.txt"))
+			if err != nil || string(data) != "new" {
+				t.Fatalf("edited data=%q err=%v", data, err)
+			}
+		})
+	}
+}
+
+func TestFileToolsValidatePathAliases(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "example.txt"), []byte("old"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	set, err := NewDefault(Options{Workdir: root})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer set.Close()
+
+	for _, tool := range []string{"read", "write", "edit"} {
+		same := set.Execute(context.Background(), tool, []byte(
+			`{"file_path":"example.txt","path":"example.txt","file":"example.txt","content":"old","old_string":"old","new_string":"new"}`,
+		))
+		if same.IsError {
+			t.Fatalf("%s with matching aliases result = %+v", tool, same)
+		}
+		conflict := set.Execute(context.Background(), tool, []byte(
+			`{"file_path":"example.txt","path":"other.txt","content":"new","old_string":"old","new_string":"new"}`,
+		))
+		if !conflict.IsError || conflict.Content[0].Text != "file_path, path, and file must not conflict" {
+			t.Fatalf("%s conflicting aliases result = %+v", tool, conflict)
+		}
+		missing := set.Execute(context.Background(), tool, []byte(
+			`{"content":"new","old_string":"old","new_string":"new"}`,
+		))
+		if !missing.IsError || missing.Content[0].Text != "file_path is required" {
+			t.Fatalf("%s missing path result = %+v", tool, missing)
+		}
 	}
 }
 

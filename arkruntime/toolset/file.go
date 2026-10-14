@@ -29,13 +29,34 @@ type ReadTool struct {
 	limits   Limits
 }
 
+type filePathRequest struct {
+	FilePath string `json:"file_path"`
+	Path     string `json:"path"`
+	File     string `json:"file"`
+}
+
+func (r filePathRequest) resolvedPath() (string, error) {
+	path := ""
+	for _, candidate := range []string{r.FilePath, r.Path, r.File} {
+		if candidate == "" {
+			continue
+		}
+		if path != "" && path != candidate {
+			return "", errors.New("file_path, path, and file must not conflict")
+		}
+		path = candidate
+	}
+	if path == "" {
+		return "", errors.New("file_path is required")
+	}
+	return path, nil
+}
+
 type readRequest struct {
-	FilePath  string `json:"file_path"`
-	Path      string `json:"path"`
-	File      string `json:"file"`
-	ViewRange []int  `json:"view_range,omitempty"`
-	Offset    *int   `json:"offset,omitempty"`
-	Limit     *int   `json:"limit,omitempty"`
+	filePathRequest
+	ViewRange []int `json:"view_range,omitempty"`
+	Offset    *int  `json:"offset,omitempty"`
+	Limit     *int  `json:"limit,omitempty"`
 }
 
 // NewReadTool 创建 read 工具。
@@ -193,23 +214,6 @@ func (t *ReadTool) Execute(ctx context.Context, input json.RawMessage) Result {
 	return TextResult(b.String())
 }
 
-func (r readRequest) resolvedPath() (string, error) {
-	path := ""
-	for _, candidate := range []string{r.FilePath, r.Path, r.File} {
-		if candidate == "" {
-			continue
-		}
-		if path != "" && path != candidate {
-			return "", errors.New("file_path, path, and file must not conflict")
-		}
-		path = candidate
-	}
-	if path == "" {
-		return "", errors.New("file_path is required")
-	}
-	return path, nil
-}
-
 func detectReadMedia(path string) (string, string, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -266,8 +270,8 @@ func (t *WriteTool) Name() string { return "write" }
 // Execute 执行 write。
 func (t *WriteTool) Execute(_ context.Context, input json.RawMessage) Result {
 	var req struct {
-		FilePath string `json:"file_path"`
-		Content  string `json:"content"`
+		filePathRequest
+		Content string `json:"content"`
 	}
 	if err := decodeInput(input, &req); err != nil {
 		return ErrorResult(err.Error())
@@ -275,14 +279,18 @@ func (t *WriteTool) Execute(_ context.Context, input json.RawMessage) Result {
 	if t.limits.MaxInputFileBytes > 0 && int64(len(req.Content)) > t.limits.MaxInputFileBytes {
 		return ErrorResult(fmt.Sprintf("content too large: %d bytes", len(req.Content)))
 	}
-	host, err := t.resolver.ResolveForWrite(req.FilePath)
+	path, err := req.resolvedPath()
+	if err != nil {
+		return ErrorResult(err.Error())
+	}
+	host, err := t.resolver.ResolveForWrite(path)
 	if err != nil {
 		return ErrorResult(err.Error())
 	}
 	if err := os.MkdirAll(filepath.Dir(host), 0o755); err != nil {
 		return ErrorResult(err.Error())
 	}
-	verified, err := t.resolver.ResolveForWrite(req.FilePath)
+	verified, err := t.resolver.ResolveForWrite(path)
 	if err != nil {
 		return ErrorResult(err.Error())
 	}
@@ -292,7 +300,7 @@ func (t *WriteTool) Execute(_ context.Context, input json.RawMessage) Result {
 	if err := writeFileAtomically(host, []byte(req.Content), 0o600); err != nil {
 		return ErrorResult(err.Error())
 	}
-	return TextResult(fmt.Sprintf("wrote %d bytes to %s", len(req.Content), req.FilePath))
+	return TextResult(fmt.Sprintf("wrote %d bytes to %s", len(req.Content), path))
 }
 
 // EditTool 实现 edit 工具。
@@ -312,7 +320,7 @@ func (t *EditTool) Name() string { return "edit" }
 // Execute 执行 edit。
 func (t *EditTool) Execute(_ context.Context, input json.RawMessage) Result {
 	var req struct {
-		FilePath   string `json:"file_path"`
+		filePathRequest
 		OldString  string `json:"old_string"`
 		NewString  string `json:"new_string"`
 		ReplaceAll bool   `json:"replace_all,omitempty"`
@@ -323,11 +331,15 @@ func (t *EditTool) Execute(_ context.Context, input json.RawMessage) Result {
 	if req.OldString == "" {
 		return ErrorResult("old_string must not be empty")
 	}
-	host, err := t.resolver.ResolveExisting(req.FilePath)
+	path, err := req.resolvedPath()
 	if err != nil {
 		return ErrorResult(err.Error())
 	}
-	writable, err := t.resolver.ResolveForWrite(req.FilePath)
+	host, err := t.resolver.ResolveExisting(path)
+	if err != nil {
+		return ErrorResult(err.Error())
+	}
+	writable, err := t.resolver.ResolveForWrite(path)
 	if err != nil {
 		return ErrorResult(err.Error())
 	}
@@ -364,7 +376,7 @@ func (t *EditTool) Execute(_ context.Context, input json.RawMessage) Result {
 	if int64(len(next)) > t.limits.MaxInputFileBytes && t.limits.MaxInputFileBytes > 0 {
 		return ErrorResult(fmt.Sprintf("edited file too large: %d bytes", len(next)))
 	}
-	verified, err := t.resolver.ResolveForWrite(req.FilePath)
+	verified, err := t.resolver.ResolveForWrite(path)
 	if err != nil {
 		return ErrorResult(err.Error())
 	}
@@ -374,7 +386,7 @@ func (t *EditTool) Execute(_ context.Context, input json.RawMessage) Result {
 	if err := writeFileAtomically(host, []byte(next), info.Mode().Perm()); err != nil {
 		return ErrorResult(err.Error())
 	}
-	return TextResult(fmt.Sprintf("replaced %d occurrence(s) in %s", count, req.FilePath))
+	return TextResult(fmt.Sprintf("replaced %d occurrence(s) in %s", count, path))
 }
 
 func writeFileAtomically(target string, data []byte, mode os.FileMode) error {
