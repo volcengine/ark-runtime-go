@@ -36,6 +36,19 @@ jobs:
           go-version: "1.22.x"
           cache: true
 
+      # Go reads retractions from the latest release. Keep the historical notice
+      # when regenerating workflows or publishing later SDK versions.
+      - name: Check historical version retractions
+        run: |
+          python3 - <<'PYTHON'
+          import json
+          import subprocess
+          data = json.loads(subprocess.check_output(["go", "mod", "edit", "-json"]))
+          entries = data.get("Retract") or []
+          if not any(e["Low"] == "v0.1.0" and e["High"] == "v0.9.0" for e in entries):
+              raise SystemExit("Keep the v0.1.0–v0.9.0 SDK retraction in go.mod")
+          PYTHON
+
       - name: Download modules
         run: go mod download
 
