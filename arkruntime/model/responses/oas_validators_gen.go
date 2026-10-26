@@ -1439,6 +1439,16 @@ func (s InputItemSum) Validate() error {
 			return err
 		}
 		return nil
+	case ItemToolSearchCallInputItemSum:
+		if err := s.ItemToolSearchCall.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case ItemToolSearchOutputInputItemSum:
+		if err := s.ItemToolSearchOutput.Validate(); err != nil {
+			return err
+		}
+		return nil
 	case ItemFunctionToolCallOutputInputItemSum:
 		if err := s.ItemFunctionToolCallOutput.Validate(); err != nil {
 			return err
@@ -2262,6 +2272,170 @@ func (s ItemStatus) Validate() error {
 	}
 }
 
+func (s *ItemToolSearchCall) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.Status.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "status",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.Execution.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "execution",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ItemToolSearchCallType) Validate() error {
+	switch s {
+	case "tool_search_call":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *ItemToolSearchOutput) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.Status.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "status",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.Execution.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "execution",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if s.Tools == nil {
+			return errors.New("nil is invalid value")
+		}
+		var failures []validate.FieldError
+		for i, elem := range s.Tools {
+			if err := func() error {
+				if err := elem.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				failures = append(failures, validate.FieldError{
+					Name:  fmt.Sprintf("[%d]", i),
+					Error: err,
+				})
+			}
+		}
+		if len(failures) > 0 {
+			return &validate.Error{Fields: failures}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "tools",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ItemToolSearchOutputType) Validate() error {
+	switch s {
+	case "tool_search_output":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
 func (s *ItemTranscription) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -2716,6 +2890,66 @@ func (s MessageRole) Validate() error {
 	}
 }
 
+func (s *NamespaceTool) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if s.Tools == nil {
+			return errors.New("nil is invalid value")
+		}
+		var failures []validate.FieldError
+		for i, elem := range s.Tools {
+			if err := func() error {
+				if err := elem.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				failures = append(failures, validate.FieldError{
+					Name:  fmt.Sprintf("[%d]", i),
+					Error: err,
+				})
+			}
+		}
+		if len(failures) > 0 {
+			return &validate.Error{Fields: failures}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "tools",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s NamespaceToolType) Validate() error {
+	switch s {
+	case "namespace":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
 func (s Order) Validate() error {
 	switch s {
 	case "asc":
@@ -2913,6 +3147,16 @@ func (s OutputItemSum) Validate() error {
 		return nil
 	case ItemFunctionToolCallOutputItemSum:
 		if err := s.ItemFunctionToolCall.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case ItemToolSearchCallOutputItemSum:
+		if err := s.ItemToolSearchCall.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case ItemToolSearchOutputOutputItemSum:
+		if err := s.ItemToolSearchOutput.Validate(); err != nil {
 			return err
 		}
 		return nil
@@ -6620,10 +6864,123 @@ func (s *ToolNameList) Validate() error {
 	return nil
 }
 
+func (s ToolSearchExecution) Validate() error {
+	switch s {
+	case "server":
+		return nil
+	case "client":
+		return nil
+	case "":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *ToolSearchResultTool) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.OneOf.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "OneOf",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ToolSearchResultToolSum) Validate() error {
+	switch s.Type {
+	case FunctionToolToolSearchResultToolSum:
+		if err := s.FunctionTool.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case NamespaceToolToolSearchResultToolSum:
+		if err := s.NamespaceTool.Validate(); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return errors.Errorf("invalid type %q", s.Type)
+	}
+}
+
+func (s *ToolSearchTool) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.Execution.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "execution",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ToolSearchToolType) Validate() error {
+	switch s {
+	case "tool_search":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
 func (s ToolSum) Validate() error {
 	switch s.Type {
 	case FunctionToolToolSum:
 		if err := s.FunctionTool.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case NamespaceToolToolSum:
+		if err := s.NamespaceTool.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case ToolSearchToolToolSum:
+		if err := s.ToolSearchTool.Validate(); err != nil {
 			return err
 		}
 		return nil

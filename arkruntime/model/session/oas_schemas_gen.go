@@ -467,10 +467,16 @@ func (s *AgentWithUpgradesType) UnmarshalText(data []byte) error {
 // 直接以 base64 携带的文档数据。.
 // Ref: #/components/schemas/Base64DocumentSource
 type Base64DocumentSource struct {
+	Type Base64DocumentSourceType `json:"type"`
 	// Base64 文档数据。.
 	Data string `json:"data"`
 	// MIME 类型，如 `application/pdf`。.
 	MediaType string `json:"media_type"`
+}
+
+// GetType returns the value of Type.
+func (s *Base64DocumentSource) GetType() Base64DocumentSourceType {
+	return s.Type
 }
 
 // GetData returns the value of Data.
@@ -483,6 +489,11 @@ func (s *Base64DocumentSource) GetMediaType() string {
 	return s.MediaType
 }
 
+// SetType sets the value of Type.
+func (s *Base64DocumentSource) SetType(val Base64DocumentSourceType) {
+	s.Type = val
+}
+
 // SetData sets the value of Data.
 func (s *Base64DocumentSource) SetData(val string) {
 	s.Data = val
@@ -493,13 +504,53 @@ func (s *Base64DocumentSource) SetMediaType(val string) {
 	s.MediaType = val
 }
 
+type Base64DocumentSourceType string
+
+const (
+	Base64DocumentSourceTypeBase64 Base64DocumentSourceType = "base64"
+)
+
+// AllValues returns all Base64DocumentSourceType values.
+func (Base64DocumentSourceType) AllValues() []Base64DocumentSourceType {
+	return []Base64DocumentSourceType{
+		Base64DocumentSourceTypeBase64,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s Base64DocumentSourceType) MarshalText() ([]byte, error) {
+	switch s {
+	case Base64DocumentSourceTypeBase64:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *Base64DocumentSourceType) UnmarshalText(data []byte) error {
+	switch Base64DocumentSourceType(data) {
+	case Base64DocumentSourceTypeBase64:
+		*s = Base64DocumentSourceTypeBase64
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // 直接以 base64 携带的图片数据。.
 // Ref: #/components/schemas/Base64ImageSource
 type Base64ImageSource struct {
+	Type Base64ImageSourceType `json:"type"`
 	// Base64 图片数据。.
 	Data string `json:"data"`
 	// MIME 类型，如 `image/png` / `image/jpeg`。.
 	MediaType string `json:"media_type"`
+}
+
+// GetType returns the value of Type.
+func (s *Base64ImageSource) GetType() Base64ImageSourceType {
+	return s.Type
 }
 
 // GetData returns the value of Data.
@@ -512,6 +563,11 @@ func (s *Base64ImageSource) GetMediaType() string {
 	return s.MediaType
 }
 
+// SetType sets the value of Type.
+func (s *Base64ImageSource) SetType(val Base64ImageSourceType) {
+	s.Type = val
+}
+
 // SetData sets the value of Data.
 func (s *Base64ImageSource) SetData(val string) {
 	s.Data = val
@@ -520,6 +576,126 @@ func (s *Base64ImageSource) SetData(val string) {
 // SetMediaType sets the value of MediaType.
 func (s *Base64ImageSource) SetMediaType(val string) {
 	s.MediaType = val
+}
+
+type Base64ImageSourceType string
+
+const (
+	Base64ImageSourceTypeBase64 Base64ImageSourceType = "base64"
+)
+
+// AllValues returns all Base64ImageSourceType values.
+func (Base64ImageSourceType) AllValues() []Base64ImageSourceType {
+	return []Base64ImageSourceType{
+		Base64ImageSourceTypeBase64,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s Base64ImageSourceType) MarshalText() ([]byte, error) {
+	switch s {
+	case Base64ImageSourceTypeBase64:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *Base64ImageSourceType) UnmarshalText(data []byte) error {
+	switch Base64ImageSourceType(data) {
+	case Base64ImageSourceTypeBase64:
+		*s = Base64ImageSourceTypeBase64
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// 直接以 base64 携带的视频。.
+// Ref: #/components/schemas/Base64VideoSource
+type Base64VideoSource struct {
+	Type Base64VideoSourceType `json:"type"`
+	// Base64 编码的视频数据。.
+	Data string `json:"data"`
+	// 视频 MIME 类型：`video/mp4` / `video/x-msvideo` / `video/quicktime`。.
+	MediaType string `json:"media_type"`
+	// 视频抽帧帧率；省略时由下游模型默认策略决定。.
+	Fps OptFloat64 `json:"fps"`
+}
+
+// GetType returns the value of Type.
+func (s *Base64VideoSource) GetType() Base64VideoSourceType {
+	return s.Type
+}
+
+// GetData returns the value of Data.
+func (s *Base64VideoSource) GetData() string {
+	return s.Data
+}
+
+// GetMediaType returns the value of MediaType.
+func (s *Base64VideoSource) GetMediaType() string {
+	return s.MediaType
+}
+
+// GetFps returns the value of Fps.
+func (s *Base64VideoSource) GetFps() OptFloat64 {
+	return s.Fps
+}
+
+// SetType sets the value of Type.
+func (s *Base64VideoSource) SetType(val Base64VideoSourceType) {
+	s.Type = val
+}
+
+// SetData sets the value of Data.
+func (s *Base64VideoSource) SetData(val string) {
+	s.Data = val
+}
+
+// SetMediaType sets the value of MediaType.
+func (s *Base64VideoSource) SetMediaType(val string) {
+	s.MediaType = val
+}
+
+// SetFps sets the value of Fps.
+func (s *Base64VideoSource) SetFps(val OptFloat64) {
+	s.Fps = val
+}
+
+type Base64VideoSourceType string
+
+const (
+	Base64VideoSourceTypeBase64 Base64VideoSourceType = "base64"
+)
+
+// AllValues returns all Base64VideoSourceType values.
+func (Base64VideoSourceType) AllValues() []Base64VideoSourceType {
+	return []Base64VideoSourceType{
+		Base64VideoSourceTypeBase64,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s Base64VideoSourceType) MarshalText() ([]byte, error) {
+	switch s {
+	case Base64VideoSourceTypeBase64:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *Base64VideoSourceType) UnmarshalText(data []byte) error {
+	switch Base64VideoSourceType(data) {
+	case Base64VideoSourceTypeBase64:
+		*s = Base64VideoSourceTypeBase64
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // Token-usage 子段：每种缓存口径的输入 token 数。.
@@ -1849,8 +2025,14 @@ func (s *EnvironmentWithUpgradesType) UnmarshalText(data []byte) error {
 // 通过 Files API 上传后引用的文档。.
 // Ref: #/components/schemas/FileDocumentSource
 type FileDocumentSource struct {
+	Type FileDocumentSourceType `json:"type"`
 	// File id，形如 `file_...`。.
 	FileID string `json:"file_id"`
+}
+
+// GetType returns the value of Type.
+func (s *FileDocumentSource) GetType() FileDocumentSourceType {
+	return s.Type
 }
 
 // GetFileID returns the value of FileID.
@@ -1858,16 +2040,61 @@ func (s *FileDocumentSource) GetFileID() string {
 	return s.FileID
 }
 
+// SetType sets the value of Type.
+func (s *FileDocumentSource) SetType(val FileDocumentSourceType) {
+	s.Type = val
+}
+
 // SetFileID sets the value of FileID.
 func (s *FileDocumentSource) SetFileID(val string) {
 	s.FileID = val
 }
 
+type FileDocumentSourceType string
+
+const (
+	FileDocumentSourceTypeFile FileDocumentSourceType = "file"
+)
+
+// AllValues returns all FileDocumentSourceType values.
+func (FileDocumentSourceType) AllValues() []FileDocumentSourceType {
+	return []FileDocumentSourceType{
+		FileDocumentSourceTypeFile,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s FileDocumentSourceType) MarshalText() ([]byte, error) {
+	switch s {
+	case FileDocumentSourceTypeFile:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *FileDocumentSourceType) UnmarshalText(data []byte) error {
+	switch FileDocumentSourceType(data) {
+	case FileDocumentSourceTypeFile:
+		*s = FileDocumentSourceTypeFile
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // 通过 Files API 上传后引用的图片。.
 // Ref: #/components/schemas/FileImageSource
 type FileImageSource struct {
+	Type FileImageSourceType `json:"type"`
 	// File id，形如 `file_...`。.
 	FileID string `json:"file_id"`
+}
+
+// GetType returns the value of Type.
+func (s *FileImageSource) GetType() FileImageSourceType {
+	return s.Type
 }
 
 // GetFileID returns the value of FileID.
@@ -1875,9 +2102,122 @@ func (s *FileImageSource) GetFileID() string {
 	return s.FileID
 }
 
+// SetType sets the value of Type.
+func (s *FileImageSource) SetType(val FileImageSourceType) {
+	s.Type = val
+}
+
 // SetFileID sets the value of FileID.
 func (s *FileImageSource) SetFileID(val string) {
 	s.FileID = val
+}
+
+type FileImageSourceType string
+
+const (
+	FileImageSourceTypeFile FileImageSourceType = "file"
+)
+
+// AllValues returns all FileImageSourceType values.
+func (FileImageSourceType) AllValues() []FileImageSourceType {
+	return []FileImageSourceType{
+		FileImageSourceTypeFile,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s FileImageSourceType) MarshalText() ([]byte, error) {
+	switch s {
+	case FileImageSourceTypeFile:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *FileImageSourceType) UnmarshalText(data []byte) error {
+	switch FileImageSourceType(data) {
+	case FileImageSourceTypeFile:
+		*s = FileImageSourceTypeFile
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// 通过 Files API 上传后引用的视频。.
+// Ref: #/components/schemas/FileVideoSource
+type FileVideoSource struct {
+	Type FileVideoSourceType `json:"type"`
+	// 已上传的视频 file id。.
+	FileID string `json:"file_id"`
+	// 视频抽帧帧率；file 改写为 URL 时透传此值。.
+	Fps OptFloat64 `json:"fps"`
+}
+
+// GetType returns the value of Type.
+func (s *FileVideoSource) GetType() FileVideoSourceType {
+	return s.Type
+}
+
+// GetFileID returns the value of FileID.
+func (s *FileVideoSource) GetFileID() string {
+	return s.FileID
+}
+
+// GetFps returns the value of Fps.
+func (s *FileVideoSource) GetFps() OptFloat64 {
+	return s.Fps
+}
+
+// SetType sets the value of Type.
+func (s *FileVideoSource) SetType(val FileVideoSourceType) {
+	s.Type = val
+}
+
+// SetFileID sets the value of FileID.
+func (s *FileVideoSource) SetFileID(val string) {
+	s.FileID = val
+}
+
+// SetFps sets the value of Fps.
+func (s *FileVideoSource) SetFps(val OptFloat64) {
+	s.Fps = val
+}
+
+type FileVideoSourceType string
+
+const (
+	FileVideoSourceTypeFile FileVideoSourceType = "file"
+)
+
+// AllValues returns all FileVideoSourceType values.
+func (FileVideoSourceType) AllValues() []FileVideoSourceType {
+	return []FileVideoSourceType{
+		FileVideoSourceTypeFile,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s FileVideoSourceType) MarshalText() ([]byte, error) {
+	switch s {
+	case FileVideoSourceTypeFile:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *FileVideoSourceType) UnmarshalText(data []byte) error {
+	switch FileVideoSourceType(data) {
+	case FileVideoSourceTypeFile:
+		*s = FileVideoSourceTypeFile
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // `GET /checkpoints/{checkpoint_id}` 响应体。.
@@ -2199,12 +2539,18 @@ func (s *ListSessionsResponse) SetNextPage(val OptString) {
 // 文档块。.
 // Ref: #/components/schemas/ManagedAgentsDocumentBlock
 type ManagedAgentsDocumentBlock struct {
+	Type ManagedAgentsDocumentBlockType `json:"type"`
 	// 文档来源。.
 	Source DocumentSource `json:"source"`
 	// 文档标题。.
 	Title OptString `json:"title"`
 	// 上下文说明。.
 	Context OptString `json:"context"`
+}
+
+// GetType returns the value of Type.
+func (s *ManagedAgentsDocumentBlock) GetType() ManagedAgentsDocumentBlockType {
+	return s.Type
 }
 
 // GetSource returns the value of Source.
@@ -2222,6 +2568,11 @@ func (s *ManagedAgentsDocumentBlock) GetContext() OptString {
 	return s.Context
 }
 
+// SetType sets the value of Type.
+func (s *ManagedAgentsDocumentBlock) SetType(val ManagedAgentsDocumentBlockType) {
+	s.Type = val
+}
+
 // SetSource sets the value of Source.
 func (s *ManagedAgentsDocumentBlock) SetSource(val DocumentSource) {
 	s.Source = val
@@ -2235,6 +2586,40 @@ func (s *ManagedAgentsDocumentBlock) SetTitle(val OptString) {
 // SetContext sets the value of Context.
 func (s *ManagedAgentsDocumentBlock) SetContext(val OptString) {
 	s.Context = val
+}
+
+type ManagedAgentsDocumentBlockType string
+
+const (
+	ManagedAgentsDocumentBlockTypeDocument ManagedAgentsDocumentBlockType = "document"
+)
+
+// AllValues returns all ManagedAgentsDocumentBlockType values.
+func (ManagedAgentsDocumentBlockType) AllValues() []ManagedAgentsDocumentBlockType {
+	return []ManagedAgentsDocumentBlockType{
+		ManagedAgentsDocumentBlockTypeDocument,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ManagedAgentsDocumentBlockType) MarshalText() ([]byte, error) {
+	switch s {
+	case ManagedAgentsDocumentBlockTypeDocument:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ManagedAgentsDocumentBlockType) UnmarshalText(data []byte) error {
+	switch ManagedAgentsDocumentBlockType(data) {
+	case ManagedAgentsDocumentBlockTypeDocument:
+		*s = ManagedAgentsDocumentBlockTypeDocument
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // 客户端可提交的 7 种事件 tagged union（discriminator = `type`）。
@@ -2484,8 +2869,14 @@ func (s *ManagedAgentsFileRubricParams) SetFileID(val string) {
 // 图片块。.
 // Ref: #/components/schemas/ManagedAgentsImageBlock
 type ManagedAgentsImageBlock struct {
+	Type ManagedAgentsImageBlockType `json:"type"`
 	// 图片来源。.
 	Source ImageSource `json:"source"`
+}
+
+// GetType returns the value of Type.
+func (s *ManagedAgentsImageBlock) GetType() ManagedAgentsImageBlockType {
+	return s.Type
 }
 
 // GetSource returns the value of Source.
@@ -2493,13 +2884,52 @@ func (s *ManagedAgentsImageBlock) GetSource() ImageSource {
 	return s.Source
 }
 
+// SetType sets the value of Type.
+func (s *ManagedAgentsImageBlock) SetType(val ManagedAgentsImageBlockType) {
+	s.Type = val
+}
+
 // SetSource sets the value of Source.
 func (s *ManagedAgentsImageBlock) SetSource(val ImageSource) {
 	s.Source = val
 }
 
+type ManagedAgentsImageBlockType string
+
+const (
+	ManagedAgentsImageBlockTypeImage ManagedAgentsImageBlockType = "image"
+)
+
+// AllValues returns all ManagedAgentsImageBlockType values.
+func (ManagedAgentsImageBlockType) AllValues() []ManagedAgentsImageBlockType {
+	return []ManagedAgentsImageBlockType{
+		ManagedAgentsImageBlockTypeImage,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ManagedAgentsImageBlockType) MarshalText() ([]byte, error) {
+	switch s {
+	case ManagedAgentsImageBlockTypeImage:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ManagedAgentsImageBlockType) UnmarshalText(data []byte) error {
+	switch ManagedAgentsImageBlockType(data) {
+	case ManagedAgentsImageBlockTypeImage:
+		*s = ManagedAgentsImageBlockTypeImage
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // `user.message` 的 content 列表元素 tagged union（discriminator = `type`）。
-// 支持 3 种模态：`text` / `image` / `document`。.
+// 支持 4 种模态：`text` / `image` / `document` / `video`。.
 // Ref: #/components/schemas/ManagedAgentsMessageContentBlock
 type ManagedAgentsMessageContentBlock struct {
 	OneOf ManagedAgentsMessageContentBlockSum
@@ -2521,6 +2951,7 @@ type ManagedAgentsMessageContentBlockSum struct {
 	ManagedAgentsTextBlock     ManagedAgentsTextBlock
 	ManagedAgentsImageBlock    ManagedAgentsImageBlock
 	ManagedAgentsDocumentBlock ManagedAgentsDocumentBlock
+	ManagedAgentsVideoBlock    ManagedAgentsVideoBlock
 }
 
 // ManagedAgentsMessageContentBlockSumType is oneOf type of ManagedAgentsMessageContentBlockSum.
@@ -2531,6 +2962,7 @@ const (
 	ManagedAgentsTextBlockManagedAgentsMessageContentBlockSum     ManagedAgentsMessageContentBlockSumType = "text"
 	ManagedAgentsImageBlockManagedAgentsMessageContentBlockSum    ManagedAgentsMessageContentBlockSumType = "image"
 	ManagedAgentsDocumentBlockManagedAgentsMessageContentBlockSum ManagedAgentsMessageContentBlockSumType = "document"
+	ManagedAgentsVideoBlockManagedAgentsMessageContentBlockSum    ManagedAgentsMessageContentBlockSumType = "video"
 )
 
 // IsManagedAgentsTextBlock reports whether ManagedAgentsMessageContentBlockSum is ManagedAgentsTextBlock.
@@ -2546,6 +2978,11 @@ func (s ManagedAgentsMessageContentBlockSum) IsManagedAgentsImageBlock() bool {
 // IsManagedAgentsDocumentBlock reports whether ManagedAgentsMessageContentBlockSum is ManagedAgentsDocumentBlock.
 func (s ManagedAgentsMessageContentBlockSum) IsManagedAgentsDocumentBlock() bool {
 	return s.Type == ManagedAgentsDocumentBlockManagedAgentsMessageContentBlockSum
+}
+
+// IsManagedAgentsVideoBlock reports whether ManagedAgentsMessageContentBlockSum is ManagedAgentsVideoBlock.
+func (s ManagedAgentsMessageContentBlockSum) IsManagedAgentsVideoBlock() bool {
+	return s.Type == ManagedAgentsVideoBlockManagedAgentsMessageContentBlockSum
 }
 
 // SetManagedAgentsTextBlock sets ManagedAgentsMessageContentBlockSum to ManagedAgentsTextBlock.
@@ -2608,6 +3045,27 @@ func (s ManagedAgentsMessageContentBlockSum) GetManagedAgentsDocumentBlock() (v 
 func NewManagedAgentsDocumentBlockManagedAgentsMessageContentBlockSum(v ManagedAgentsDocumentBlock) ManagedAgentsMessageContentBlockSum {
 	var s ManagedAgentsMessageContentBlockSum
 	s.SetManagedAgentsDocumentBlock(v)
+	return s
+}
+
+// SetManagedAgentsVideoBlock sets ManagedAgentsMessageContentBlockSum to ManagedAgentsVideoBlock.
+func (s *ManagedAgentsMessageContentBlockSum) SetManagedAgentsVideoBlock(v ManagedAgentsVideoBlock) {
+	s.Type = ManagedAgentsVideoBlockManagedAgentsMessageContentBlockSum
+	s.ManagedAgentsVideoBlock = v
+}
+
+// GetManagedAgentsVideoBlock returns ManagedAgentsVideoBlock and true boolean if ManagedAgentsMessageContentBlockSum is ManagedAgentsVideoBlock.
+func (s ManagedAgentsMessageContentBlockSum) GetManagedAgentsVideoBlock() (v ManagedAgentsVideoBlock, ok bool) {
+	if !s.IsManagedAgentsVideoBlock() {
+		return v, false
+	}
+	return s.ManagedAgentsVideoBlock, true
+}
+
+// NewManagedAgentsVideoBlockManagedAgentsMessageContentBlockSum returns new ManagedAgentsMessageContentBlockSum from ManagedAgentsVideoBlock.
+func NewManagedAgentsVideoBlockManagedAgentsMessageContentBlockSum(v ManagedAgentsVideoBlock) ManagedAgentsMessageContentBlockSum {
+	var s ManagedAgentsMessageContentBlockSum
+	s.SetManagedAgentsVideoBlock(v)
 	return s
 }
 
@@ -2698,6 +3156,7 @@ func NewManagedAgentsTextRubricParamsManagedAgentsRubricSum(v ManagedAgentsTextR
 // 搜索结果块——多个 SearchResultContent 文本片段 + 元信息。.
 // Ref: #/components/schemas/ManagedAgentsSearchResultBlock
 type ManagedAgentsSearchResultBlock struct {
+	Type ManagedAgentsSearchResultBlockType `json:"type"`
 	// Citation 控制。.
 	Citations SearchResultCitations `json:"citations"`
 	// 结果内容片段。.
@@ -2706,6 +3165,11 @@ type ManagedAgentsSearchResultBlock struct {
 	Source string `json:"source"`
 	// 结果标题。.
 	Title string `json:"title"`
+}
+
+// GetType returns the value of Type.
+func (s *ManagedAgentsSearchResultBlock) GetType() ManagedAgentsSearchResultBlockType {
+	return s.Type
 }
 
 // GetCitations returns the value of Citations.
@@ -2728,6 +3192,11 @@ func (s *ManagedAgentsSearchResultBlock) GetTitle() string {
 	return s.Title
 }
 
+// SetType sets the value of Type.
+func (s *ManagedAgentsSearchResultBlock) SetType(val ManagedAgentsSearchResultBlockType) {
+	s.Type = val
+}
+
 // SetCitations sets the value of Citations.
 func (s *ManagedAgentsSearchResultBlock) SetCitations(val SearchResultCitations) {
 	s.Citations = val
@@ -2746,6 +3215,40 @@ func (s *ManagedAgentsSearchResultBlock) SetSource(val string) {
 // SetTitle sets the value of Title.
 func (s *ManagedAgentsSearchResultBlock) SetTitle(val string) {
 	s.Title = val
+}
+
+type ManagedAgentsSearchResultBlockType string
+
+const (
+	ManagedAgentsSearchResultBlockTypeSearchResult ManagedAgentsSearchResultBlockType = "search_result"
+)
+
+// AllValues returns all ManagedAgentsSearchResultBlockType values.
+func (ManagedAgentsSearchResultBlockType) AllValues() []ManagedAgentsSearchResultBlockType {
+	return []ManagedAgentsSearchResultBlockType{
+		ManagedAgentsSearchResultBlockTypeSearchResult,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ManagedAgentsSearchResultBlockType) MarshalText() ([]byte, error) {
+	switch s {
+	case ManagedAgentsSearchResultBlockTypeSearchResult:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ManagedAgentsSearchResultBlockType) UnmarshalText(data []byte) error {
+	switch ManagedAgentsSearchResultBlockType(data) {
+	case ManagedAgentsSearchResultBlockTypeSearchResult:
+		*s = ManagedAgentsSearchResultBlockTypeSearchResult
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // `system.message` 的 content 列表元素——目前仅支持文本块，保留 union 语义以便
@@ -2850,8 +3353,14 @@ func (s *ManagedAgentsSystemMessageEventParams) SetSessionThreadID(val OptString
 // 文本块。用于 user.message / tool_result / system.message 的 content 列表。.
 // Ref: #/components/schemas/ManagedAgentsTextBlock
 type ManagedAgentsTextBlock struct {
+	Type ManagedAgentsTextBlockType `json:"type"`
 	// 文本内容。.
 	Text string `json:"text"`
+}
+
+// GetType returns the value of Type.
+func (s *ManagedAgentsTextBlock) GetType() ManagedAgentsTextBlockType {
+	return s.Type
 }
 
 // GetText returns the value of Text.
@@ -2859,9 +3368,48 @@ func (s *ManagedAgentsTextBlock) GetText() string {
 	return s.Text
 }
 
+// SetType sets the value of Type.
+func (s *ManagedAgentsTextBlock) SetType(val ManagedAgentsTextBlockType) {
+	s.Type = val
+}
+
 // SetText sets the value of Text.
 func (s *ManagedAgentsTextBlock) SetText(val string) {
 	s.Text = val
+}
+
+type ManagedAgentsTextBlockType string
+
+const (
+	ManagedAgentsTextBlockTypeText ManagedAgentsTextBlockType = "text"
+)
+
+// AllValues returns all ManagedAgentsTextBlockType values.
+func (ManagedAgentsTextBlockType) AllValues() []ManagedAgentsTextBlockType {
+	return []ManagedAgentsTextBlockType{
+		ManagedAgentsTextBlockTypeText,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ManagedAgentsTextBlockType) MarshalText() ([]byte, error) {
+	switch s {
+	case ManagedAgentsTextBlockTypeText:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ManagedAgentsTextBlockType) UnmarshalText(data []byte) error {
+	switch ManagedAgentsTextBlockType(data) {
+	case ManagedAgentsTextBlockTypeText:
+		*s = ManagedAgentsTextBlockTypeText
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // 直接以字符串内联的 rubric 文本。.
@@ -2882,7 +3430,7 @@ func (s *ManagedAgentsTextRubricParams) SetContent(val string) {
 }
 
 // `user.tool_result.content` / `user.custom_tool_result.content` 允许的 block
-// 类型 tagged union：`text` / `image` / `document` / `search_result`。.
+// 类型 tagged union：`text` / `image` / `document` / `search_result` / `video`。.
 // Ref: #/components/schemas/ManagedAgentsToolResultContentBlock
 type ManagedAgentsToolResultContentBlock struct {
 	OneOf ManagedAgentsToolResultContentBlockSum
@@ -2905,6 +3453,7 @@ type ManagedAgentsToolResultContentBlockSum struct {
 	ManagedAgentsImageBlock        ManagedAgentsImageBlock
 	ManagedAgentsDocumentBlock     ManagedAgentsDocumentBlock
 	ManagedAgentsSearchResultBlock ManagedAgentsSearchResultBlock
+	ManagedAgentsVideoBlock        ManagedAgentsVideoBlock
 }
 
 // ManagedAgentsToolResultContentBlockSumType is oneOf type of ManagedAgentsToolResultContentBlockSum.
@@ -2916,6 +3465,7 @@ const (
 	ManagedAgentsImageBlockManagedAgentsToolResultContentBlockSum        ManagedAgentsToolResultContentBlockSumType = "image"
 	ManagedAgentsDocumentBlockManagedAgentsToolResultContentBlockSum     ManagedAgentsToolResultContentBlockSumType = "document"
 	ManagedAgentsSearchResultBlockManagedAgentsToolResultContentBlockSum ManagedAgentsToolResultContentBlockSumType = "search_result"
+	ManagedAgentsVideoBlockManagedAgentsToolResultContentBlockSum        ManagedAgentsToolResultContentBlockSumType = "video"
 )
 
 // IsManagedAgentsTextBlock reports whether ManagedAgentsToolResultContentBlockSum is ManagedAgentsTextBlock.
@@ -2936,6 +3486,11 @@ func (s ManagedAgentsToolResultContentBlockSum) IsManagedAgentsDocumentBlock() b
 // IsManagedAgentsSearchResultBlock reports whether ManagedAgentsToolResultContentBlockSum is ManagedAgentsSearchResultBlock.
 func (s ManagedAgentsToolResultContentBlockSum) IsManagedAgentsSearchResultBlock() bool {
 	return s.Type == ManagedAgentsSearchResultBlockManagedAgentsToolResultContentBlockSum
+}
+
+// IsManagedAgentsVideoBlock reports whether ManagedAgentsToolResultContentBlockSum is ManagedAgentsVideoBlock.
+func (s ManagedAgentsToolResultContentBlockSum) IsManagedAgentsVideoBlock() bool {
+	return s.Type == ManagedAgentsVideoBlockManagedAgentsToolResultContentBlockSum
 }
 
 // SetManagedAgentsTextBlock sets ManagedAgentsToolResultContentBlockSum to ManagedAgentsTextBlock.
@@ -3019,6 +3574,27 @@ func (s ManagedAgentsToolResultContentBlockSum) GetManagedAgentsSearchResultBloc
 func NewManagedAgentsSearchResultBlockManagedAgentsToolResultContentBlockSum(v ManagedAgentsSearchResultBlock) ManagedAgentsToolResultContentBlockSum {
 	var s ManagedAgentsToolResultContentBlockSum
 	s.SetManagedAgentsSearchResultBlock(v)
+	return s
+}
+
+// SetManagedAgentsVideoBlock sets ManagedAgentsToolResultContentBlockSum to ManagedAgentsVideoBlock.
+func (s *ManagedAgentsToolResultContentBlockSum) SetManagedAgentsVideoBlock(v ManagedAgentsVideoBlock) {
+	s.Type = ManagedAgentsVideoBlockManagedAgentsToolResultContentBlockSum
+	s.ManagedAgentsVideoBlock = v
+}
+
+// GetManagedAgentsVideoBlock returns ManagedAgentsVideoBlock and true boolean if ManagedAgentsToolResultContentBlockSum is ManagedAgentsVideoBlock.
+func (s ManagedAgentsToolResultContentBlockSum) GetManagedAgentsVideoBlock() (v ManagedAgentsVideoBlock, ok bool) {
+	if !s.IsManagedAgentsVideoBlock() {
+		return v, false
+	}
+	return s.ManagedAgentsVideoBlock, true
+}
+
+// NewManagedAgentsVideoBlockManagedAgentsToolResultContentBlockSum returns new ManagedAgentsToolResultContentBlockSum from ManagedAgentsVideoBlock.
+func NewManagedAgentsVideoBlockManagedAgentsToolResultContentBlockSum(v ManagedAgentsVideoBlock) ManagedAgentsToolResultContentBlockSum {
+	var s ManagedAgentsToolResultContentBlockSum
+	s.SetManagedAgentsVideoBlock(v)
 	return s
 }
 
@@ -3203,7 +3779,7 @@ func (s *ManagedAgentsUserInterruptEventParams) SetSessionThreadID(val OptString
 // declare 成 optional，让 SDK 可以 marshal 出不带 `content` 字段的 wire body。.
 // Ref: #/components/schemas/ManagedAgentsUserMessageEventParams
 type ManagedAgentsUserMessageEventParams struct {
-	// 消息 content：多模态 block 列表（text / image / document）。.
+	// 消息 content：多模态 block 列表（text / image / document / video）。.
 	Content []ManagedAgentsMessageContentBlock `json:"content"`
 	// 目标 session id；SDK 通常从 URL 路径推断，此字段可省。.
 	SessionID OptString `json:"session_id"`
@@ -3371,6 +3947,68 @@ func (s *ManagedAgentsUserToolResultEventParams) SetSessionID(val OptString) {
 // SetSessionThreadID sets the value of SessionThreadID.
 func (s *ManagedAgentsUserToolResultEventParams) SetSessionThreadID(val OptString) {
 	s.SessionThreadID = val
+}
+
+// 视频块；支持 base64 / URL / file 来源。.
+// Ref: #/components/schemas/ManagedAgentsVideoBlock
+type ManagedAgentsVideoBlock struct {
+	Type ManagedAgentsVideoBlockType `json:"type"`
+	// 视频来源。.
+	Source VideoSource `json:"source"`
+}
+
+// GetType returns the value of Type.
+func (s *ManagedAgentsVideoBlock) GetType() ManagedAgentsVideoBlockType {
+	return s.Type
+}
+
+// GetSource returns the value of Source.
+func (s *ManagedAgentsVideoBlock) GetSource() VideoSource {
+	return s.Source
+}
+
+// SetType sets the value of Type.
+func (s *ManagedAgentsVideoBlock) SetType(val ManagedAgentsVideoBlockType) {
+	s.Type = val
+}
+
+// SetSource sets the value of Source.
+func (s *ManagedAgentsVideoBlock) SetSource(val VideoSource) {
+	s.Source = val
+}
+
+type ManagedAgentsVideoBlockType string
+
+const (
+	ManagedAgentsVideoBlockTypeVideo ManagedAgentsVideoBlockType = "video"
+)
+
+// AllValues returns all ManagedAgentsVideoBlockType values.
+func (ManagedAgentsVideoBlockType) AllValues() []ManagedAgentsVideoBlockType {
+	return []ManagedAgentsVideoBlockType{
+		ManagedAgentsVideoBlockTypeVideo,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ManagedAgentsVideoBlockType) MarshalText() ([]byte, error) {
+	switch s {
+	case ManagedAgentsVideoBlockTypeVideo:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ManagedAgentsVideoBlockType) UnmarshalText(data []byte) error {
+	switch ManagedAgentsVideoBlockType(data) {
+	case ManagedAgentsVideoBlockTypeVideo:
+		*s = ManagedAgentsVideoBlockTypeVideo
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // Session 创建时允许临时覆写的模型运行参数与接入配置。
@@ -4440,6 +5078,52 @@ func (o OptEnvironmentWithUpgrades) Or(d EnvironmentWithUpgrades) EnvironmentWit
 	return d
 }
 
+// NewOptFloat64 returns new OptFloat64 with value set to v.
+func NewOptFloat64(v float64) OptFloat64 {
+	return OptFloat64{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptFloat64 is optional float64.
+type OptFloat64 struct {
+	Value float64
+	Set   bool
+}
+
+// IsSet returns true if OptFloat64 was set.
+func (o OptFloat64) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptFloat64) Reset() {
+	var v float64
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptFloat64) SetTo(v float64) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptFloat64) Get() (v float64, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptFloat64) Or(d float64) float64 {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptInt32 returns new OptInt32 with value set to v.
 func NewOptInt32(v int32) OptInt32 {
 	return OptInt32{
@@ -5280,10 +5964,16 @@ func (s *OverrideTokenLimits) SetMaxOutputTokenLength(val int64) {
 // 纯文本文档；`media_type` 必须为 `text/plain`；`data` 是原文。.
 // Ref: #/components/schemas/PlainTextDocumentSource
 type PlainTextDocumentSource struct {
+	Type PlainTextDocumentSourceType `json:"type"`
 	// 文档原文。.
 	Data string `json:"data"`
 	// MIME 类型，固定 `text/plain`。.
 	MediaType string `json:"media_type"`
+}
+
+// GetType returns the value of Type.
+func (s *PlainTextDocumentSource) GetType() PlainTextDocumentSourceType {
+	return s.Type
 }
 
 // GetData returns the value of Data.
@@ -5296,6 +5986,11 @@ func (s *PlainTextDocumentSource) GetMediaType() string {
 	return s.MediaType
 }
 
+// SetType sets the value of Type.
+func (s *PlainTextDocumentSource) SetType(val PlainTextDocumentSourceType) {
+	s.Type = val
+}
+
 // SetData sets the value of Data.
 func (s *PlainTextDocumentSource) SetData(val string) {
 	s.Data = val
@@ -5304,6 +5999,40 @@ func (s *PlainTextDocumentSource) SetData(val string) {
 // SetMediaType sets the value of MediaType.
 func (s *PlainTextDocumentSource) SetMediaType(val string) {
 	s.MediaType = val
+}
+
+type PlainTextDocumentSourceType string
+
+const (
+	PlainTextDocumentSourceTypeText PlainTextDocumentSourceType = "text"
+)
+
+// AllValues returns all PlainTextDocumentSourceType values.
+func (PlainTextDocumentSourceType) AllValues() []PlainTextDocumentSourceType {
+	return []PlainTextDocumentSourceType{
+		PlainTextDocumentSourceTypeText,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s PlainTextDocumentSourceType) MarshalText() ([]byte, error) {
+	switch s {
+	case PlainTextDocumentSourceTypeText:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *PlainTextDocumentSourceType) UnmarshalText(data []byte) error {
+	switch PlainTextDocumentSourceType(data) {
+	case PlainTextDocumentSourceTypeText:
+		*s = PlainTextDocumentSourceTypeText
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // 搜索结果 citation 控制——是否在最终回答中显式标注引用。.
@@ -5326,8 +6055,14 @@ func (s *SearchResultCitations) SetEnabled(val bool) {
 // 搜索结果内的纯文本片段。.
 // Ref: #/components/schemas/SearchResultContent
 type SearchResultContent struct {
+	Type SearchResultContentType `json:"type"`
 	// 文本内容。.
 	Text string `json:"text"`
+}
+
+// GetType returns the value of Type.
+func (s *SearchResultContent) GetType() SearchResultContentType {
+	return s.Type
 }
 
 // GetText returns the value of Text.
@@ -5335,9 +6070,48 @@ func (s *SearchResultContent) GetText() string {
 	return s.Text
 }
 
+// SetType sets the value of Type.
+func (s *SearchResultContent) SetType(val SearchResultContentType) {
+	s.Type = val
+}
+
 // SetText sets the value of Text.
 func (s *SearchResultContent) SetText(val string) {
 	s.Text = val
+}
+
+type SearchResultContentType string
+
+const (
+	SearchResultContentTypeText SearchResultContentType = "text"
+)
+
+// AllValues returns all SearchResultContentType values.
+func (SearchResultContentType) AllValues() []SearchResultContentType {
+	return []SearchResultContentType{
+		SearchResultContentTypeText,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s SearchResultContentType) MarshalText() ([]byte, error) {
+	switch s {
+	case SearchResultContentTypeText:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *SearchResultContentType) UnmarshalText(data []byte) error {
+	switch SearchResultContentType(data) {
+	case SearchResultContentTypeText:
+		*s = SearchResultContentTypeText
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // SendSessionEvents 请求体。.
@@ -6438,8 +7212,14 @@ func (s *UpdateSessionRequest) SetTitle(val OptString) {
 // 通过 URL 引用的文档。.
 // Ref: #/components/schemas/UrlDocumentSource
 type UrlDocumentSource struct {
+	Type UrlDocumentSourceType `json:"type"`
 	// 文档 URL。.
 	URL string `json:"url"`
+}
+
+// GetType returns the value of Type.
+func (s *UrlDocumentSource) GetType() UrlDocumentSourceType {
+	return s.Type
 }
 
 // GetURL returns the value of URL.
@@ -6447,16 +7227,61 @@ func (s *UrlDocumentSource) GetURL() string {
 	return s.URL
 }
 
+// SetType sets the value of Type.
+func (s *UrlDocumentSource) SetType(val UrlDocumentSourceType) {
+	s.Type = val
+}
+
 // SetURL sets the value of URL.
 func (s *UrlDocumentSource) SetURL(val string) {
 	s.URL = val
 }
 
+type UrlDocumentSourceType string
+
+const (
+	UrlDocumentSourceTypeURL UrlDocumentSourceType = "url"
+)
+
+// AllValues returns all UrlDocumentSourceType values.
+func (UrlDocumentSourceType) AllValues() []UrlDocumentSourceType {
+	return []UrlDocumentSourceType{
+		UrlDocumentSourceTypeURL,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s UrlDocumentSourceType) MarshalText() ([]byte, error) {
+	switch s {
+	case UrlDocumentSourceTypeURL:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *UrlDocumentSourceType) UnmarshalText(data []byte) error {
+	switch UrlDocumentSourceType(data) {
+	case UrlDocumentSourceTypeURL:
+		*s = UrlDocumentSourceTypeURL
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // 通过 URL 引用的图片。.
 // Ref: #/components/schemas/UrlImageSource
 type UrlImageSource struct {
+	Type UrlImageSourceType `json:"type"`
 	// 图片 URL。.
 	URL string `json:"url"`
+}
+
+// GetType returns the value of Type.
+func (s *UrlImageSource) GetType() UrlImageSourceType {
+	return s.Type
 }
 
 // GetURL returns the value of URL.
@@ -6464,7 +7289,226 @@ func (s *UrlImageSource) GetURL() string {
 	return s.URL
 }
 
+// SetType sets the value of Type.
+func (s *UrlImageSource) SetType(val UrlImageSourceType) {
+	s.Type = val
+}
+
 // SetURL sets the value of URL.
 func (s *UrlImageSource) SetURL(val string) {
 	s.URL = val
+}
+
+type UrlImageSourceType string
+
+const (
+	UrlImageSourceTypeURL UrlImageSourceType = "url"
+)
+
+// AllValues returns all UrlImageSourceType values.
+func (UrlImageSourceType) AllValues() []UrlImageSourceType {
+	return []UrlImageSourceType{
+		UrlImageSourceTypeURL,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s UrlImageSourceType) MarshalText() ([]byte, error) {
+	switch s {
+	case UrlImageSourceTypeURL:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *UrlImageSourceType) UnmarshalText(data []byte) error {
+	switch UrlImageSourceType(data) {
+	case UrlImageSourceTypeURL:
+		*s = UrlImageSourceTypeURL
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// 通过 URL 引用的视频。.
+// Ref: #/components/schemas/UrlVideoSource
+type UrlVideoSource struct {
+	Type UrlVideoSourceType `json:"type"`
+	// 视频 URL。.
+	URL string `json:"url"`
+	// 视频抽帧帧率；省略时由下游模型默认策略决定。.
+	Fps OptFloat64 `json:"fps"`
+}
+
+// GetType returns the value of Type.
+func (s *UrlVideoSource) GetType() UrlVideoSourceType {
+	return s.Type
+}
+
+// GetURL returns the value of URL.
+func (s *UrlVideoSource) GetURL() string {
+	return s.URL
+}
+
+// GetFps returns the value of Fps.
+func (s *UrlVideoSource) GetFps() OptFloat64 {
+	return s.Fps
+}
+
+// SetType sets the value of Type.
+func (s *UrlVideoSource) SetType(val UrlVideoSourceType) {
+	s.Type = val
+}
+
+// SetURL sets the value of URL.
+func (s *UrlVideoSource) SetURL(val string) {
+	s.URL = val
+}
+
+// SetFps sets the value of Fps.
+func (s *UrlVideoSource) SetFps(val OptFloat64) {
+	s.Fps = val
+}
+
+type UrlVideoSourceType string
+
+const (
+	UrlVideoSourceTypeURL UrlVideoSourceType = "url"
+)
+
+// AllValues returns all UrlVideoSourceType values.
+func (UrlVideoSourceType) AllValues() []UrlVideoSourceType {
+	return []UrlVideoSourceType{
+		UrlVideoSourceTypeURL,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s UrlVideoSourceType) MarshalText() ([]byte, error) {
+	switch s {
+	case UrlVideoSourceTypeURL:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *UrlVideoSourceType) UnmarshalText(data []byte) error {
+	switch UrlVideoSourceType(data) {
+	case UrlVideoSourceTypeURL:
+		*s = UrlVideoSourceTypeURL
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// 视频来源 tagged union：`base64` / `url` / `file`。.
+// Ref: #/components/schemas/VideoSource
+type VideoSource struct {
+	OneOf VideoSourceSum
+}
+
+// GetOneOf returns the value of OneOf.
+func (s *VideoSource) GetOneOf() VideoSourceSum {
+	return s.OneOf
+}
+
+// SetOneOf sets the value of OneOf.
+func (s *VideoSource) SetOneOf(val VideoSourceSum) {
+	s.OneOf = val
+}
+
+// VideoSourceSum represents sum type.
+type VideoSourceSum struct {
+	Type              VideoSourceSumType // switch on this field
+	Base64VideoSource Base64VideoSource
+	UrlVideoSource    UrlVideoSource
+	FileVideoSource   FileVideoSource
+}
+
+// VideoSourceSumType is oneOf type of VideoSourceSum.
+type VideoSourceSumType string
+
+// Possible values for VideoSourceSumType.
+const (
+	Base64VideoSourceVideoSourceSum VideoSourceSumType = "base64"
+	UrlVideoSourceVideoSourceSum    VideoSourceSumType = "url"
+	FileVideoSourceVideoSourceSum   VideoSourceSumType = "file"
+)
+
+// IsBase64VideoSource reports whether VideoSourceSum is Base64VideoSource.
+func (s VideoSourceSum) IsBase64VideoSource() bool { return s.Type == Base64VideoSourceVideoSourceSum }
+
+// IsUrlVideoSource reports whether VideoSourceSum is UrlVideoSource.
+func (s VideoSourceSum) IsUrlVideoSource() bool { return s.Type == UrlVideoSourceVideoSourceSum }
+
+// IsFileVideoSource reports whether VideoSourceSum is FileVideoSource.
+func (s VideoSourceSum) IsFileVideoSource() bool { return s.Type == FileVideoSourceVideoSourceSum }
+
+// SetBase64VideoSource sets VideoSourceSum to Base64VideoSource.
+func (s *VideoSourceSum) SetBase64VideoSource(v Base64VideoSource) {
+	s.Type = Base64VideoSourceVideoSourceSum
+	s.Base64VideoSource = v
+}
+
+// GetBase64VideoSource returns Base64VideoSource and true boolean if VideoSourceSum is Base64VideoSource.
+func (s VideoSourceSum) GetBase64VideoSource() (v Base64VideoSource, ok bool) {
+	if !s.IsBase64VideoSource() {
+		return v, false
+	}
+	return s.Base64VideoSource, true
+}
+
+// NewBase64VideoSourceVideoSourceSum returns new VideoSourceSum from Base64VideoSource.
+func NewBase64VideoSourceVideoSourceSum(v Base64VideoSource) VideoSourceSum {
+	var s VideoSourceSum
+	s.SetBase64VideoSource(v)
+	return s
+}
+
+// SetUrlVideoSource sets VideoSourceSum to UrlVideoSource.
+func (s *VideoSourceSum) SetUrlVideoSource(v UrlVideoSource) {
+	s.Type = UrlVideoSourceVideoSourceSum
+	s.UrlVideoSource = v
+}
+
+// GetUrlVideoSource returns UrlVideoSource and true boolean if VideoSourceSum is UrlVideoSource.
+func (s VideoSourceSum) GetUrlVideoSource() (v UrlVideoSource, ok bool) {
+	if !s.IsUrlVideoSource() {
+		return v, false
+	}
+	return s.UrlVideoSource, true
+}
+
+// NewUrlVideoSourceVideoSourceSum returns new VideoSourceSum from UrlVideoSource.
+func NewUrlVideoSourceVideoSourceSum(v UrlVideoSource) VideoSourceSum {
+	var s VideoSourceSum
+	s.SetUrlVideoSource(v)
+	return s
+}
+
+// SetFileVideoSource sets VideoSourceSum to FileVideoSource.
+func (s *VideoSourceSum) SetFileVideoSource(v FileVideoSource) {
+	s.Type = FileVideoSourceVideoSourceSum
+	s.FileVideoSource = v
+}
+
+// GetFileVideoSource returns FileVideoSource and true boolean if VideoSourceSum is FileVideoSource.
+func (s VideoSourceSum) GetFileVideoSource() (v FileVideoSource, ok bool) {
+	if !s.IsFileVideoSource() {
+		return v, false
+	}
+	return s.FileVideoSource, true
+}
+
+// NewFileVideoSourceVideoSourceSum returns new VideoSourceSum from FileVideoSource.
+func NewFileVideoSourceVideoSourceSum(v FileVideoSource) VideoSourceSum {
+	var s VideoSourceSum
+	s.SetFileVideoSource(v)
+	return s
 }

@@ -88,6 +88,120 @@ func (s AgentWithUpgradesType) Validate() error {
 	}
 }
 
+func (s *Base64DocumentSource) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s Base64DocumentSourceType) Validate() error {
+	switch s {
+	case "base64":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *Base64ImageSource) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s Base64ImageSourceType) Validate() error {
+	switch s {
+	case "base64":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *Base64VideoSource) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.Fps.Get(); ok {
+			if err := func() error {
+				if err := (validate.Float{}).Validate(float64(value)); err != nil {
+					return errors.Wrap(err, "float")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "fps",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s Base64VideoSourceType) Validate() error {
+	switch s {
+	case "base64":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
 func (s *CheckpointComponent) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -404,6 +518,56 @@ func (s *DeleteSessionCheckpointResponse) Validate() error {
 	return nil
 }
 
+func (s *DocumentSource) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.OneOf.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "OneOf",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s DocumentSourceSum) Validate() error {
+	switch s.Type {
+	case Base64DocumentSourceDocumentSourceSum:
+		if err := s.Base64DocumentSource.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case PlainTextDocumentSourceDocumentSourceSum:
+		if err := s.PlainTextDocumentSource.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case UrlDocumentSourceDocumentSourceSum:
+		if err := s.UrlDocumentSource.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case FileDocumentSourceDocumentSourceSum:
+		if err := s.FileDocumentSource.Validate(); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return errors.Errorf("invalid type %q", s.Type)
+	}
+}
+
 func (s *EnvironmentConfigOverride) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -573,6 +737,120 @@ func (s EnvironmentWithUpgradesType) Validate() error {
 	}
 }
 
+func (s *FileDocumentSource) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s FileDocumentSourceType) Validate() error {
+	switch s {
+	case "file":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *FileImageSource) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s FileImageSourceType) Validate() error {
+	switch s {
+	case "file":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *FileVideoSource) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.Fps.Get(); ok {
+			if err := func() error {
+				if err := (validate.Float{}).Validate(float64(value)); err != nil {
+					return errors.Wrap(err, "float")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "fps",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s FileVideoSourceType) Validate() error {
+	switch s {
+	case "file":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
 func (s *GetSessionCheckpointResponse) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -594,6 +872,51 @@ func (s *GetSessionCheckpointResponse) Validate() error {
 		return &validate.Error{Fields: failures}
 	}
 	return nil
+}
+
+func (s *ImageSource) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.OneOf.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "OneOf",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ImageSourceSum) Validate() error {
+	switch s.Type {
+	case Base64ImageSourceImageSourceSum:
+		if err := s.Base64ImageSource.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case UrlImageSourceImageSourceSum:
+		if err := s.UrlImageSource.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case FileImageSourceImageSourceSum:
+		if err := s.FileImageSource.Validate(); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return errors.Errorf("invalid type %q", s.Type)
+	}
 }
 
 func (s *ListSessionCheckpointsResponse) Validate() error {
@@ -790,6 +1113,49 @@ func (s *ListSessionsResponse) Validate() error {
 	return nil
 }
 
+func (s *ManagedAgentsDocumentBlock) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Source.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "source",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ManagedAgentsDocumentBlockType) Validate() error {
+	switch s {
+	case "document":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
 func (s *ManagedAgentsEventParams) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -816,9 +1182,15 @@ func (s *ManagedAgentsEventParams) Validate() error {
 func (s ManagedAgentsEventParamsSum) Validate() error {
 	switch s.Type {
 	case ManagedAgentsUserMessageEventParamsManagedAgentsEventParamsSum:
-		return nil // no validation needed
+		if err := s.ManagedAgentsUserMessageEventParams.Validate(); err != nil {
+			return err
+		}
+		return nil
 	case ManagedAgentsSystemMessageEventParamsManagedAgentsEventParamsSum:
-		return nil // no validation needed
+		if err := s.ManagedAgentsSystemMessageEventParams.Validate(); err != nil {
+			return err
+		}
+		return nil
 	case ManagedAgentsUserInterruptEventParamsManagedAgentsEventParamsSum:
 		return nil // no validation needed
 	case ManagedAgentsUserToolConfirmationEventParamsManagedAgentsEventParamsSum:
@@ -843,6 +1215,99 @@ func (s ManagedAgentsEventParamsSum) Validate() error {
 	}
 }
 
+func (s *ManagedAgentsImageBlock) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Source.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "source",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ManagedAgentsImageBlockType) Validate() error {
+	switch s {
+	case "image":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *ManagedAgentsMessageContentBlock) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.OneOf.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "OneOf",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ManagedAgentsMessageContentBlockSum) Validate() error {
+	switch s.Type {
+	case ManagedAgentsTextBlockManagedAgentsMessageContentBlockSum:
+		if err := s.ManagedAgentsTextBlock.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case ManagedAgentsImageBlockManagedAgentsMessageContentBlockSum:
+		if err := s.ManagedAgentsImageBlock.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case ManagedAgentsDocumentBlockManagedAgentsMessageContentBlockSum:
+		if err := s.ManagedAgentsDocumentBlock.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case ManagedAgentsVideoBlockManagedAgentsMessageContentBlockSum:
+		if err := s.ManagedAgentsVideoBlock.Validate(); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return errors.Errorf("invalid type %q", s.Type)
+	}
+}
+
 func (s *ManagedAgentsSearchResultBlock) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -850,8 +1315,36 @@ func (s *ManagedAgentsSearchResultBlock) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
 		if s.Content == nil {
 			return errors.New("nil is invalid value")
+		}
+		var failures []validate.FieldError
+		for i, elem := range s.Content {
+			if err := func() error {
+				if err := elem.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				failures = append(failures, validate.FieldError{
+					Name:  fmt.Sprintf("[%d]", i),
+					Error: err,
+				})
+			}
+		}
+		if len(failures) > 0 {
+			return &validate.Error{Fields: failures}
 		}
 		return nil
 	}(); err != nil {
@@ -864,6 +1357,119 @@ func (s *ManagedAgentsSearchResultBlock) Validate() error {
 		return &validate.Error{Fields: failures}
 	}
 	return nil
+}
+
+func (s ManagedAgentsSearchResultBlockType) Validate() error {
+	switch s {
+	case "search_result":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *ManagedAgentsSystemContentBlock) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.OneOf.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "OneOf",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ManagedAgentsSystemContentBlockSum) Validate() error {
+	switch s.Type {
+	case ManagedAgentsTextBlockManagedAgentsSystemContentBlockSum:
+		if err := s.ManagedAgentsTextBlock.Validate(); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return errors.Errorf("invalid type %q", s.Type)
+	}
+}
+
+func (s *ManagedAgentsSystemMessageEventParams) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		var failures []validate.FieldError
+		for i, elem := range s.Content {
+			if err := func() error {
+				if err := elem.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				failures = append(failures, validate.FieldError{
+					Name:  fmt.Sprintf("[%d]", i),
+					Error: err,
+				})
+			}
+		}
+		if len(failures) > 0 {
+			return &validate.Error{Fields: failures}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "content",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s *ManagedAgentsTextBlock) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ManagedAgentsTextBlockType) Validate() error {
+	switch s {
+	case "text":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
 }
 
 func (s *ManagedAgentsToolResultContentBlock) Validate() error {
@@ -892,13 +1498,27 @@ func (s *ManagedAgentsToolResultContentBlock) Validate() error {
 func (s ManagedAgentsToolResultContentBlockSum) Validate() error {
 	switch s.Type {
 	case ManagedAgentsTextBlockManagedAgentsToolResultContentBlockSum:
-		return nil // no validation needed
+		if err := s.ManagedAgentsTextBlock.Validate(); err != nil {
+			return err
+		}
+		return nil
 	case ManagedAgentsImageBlockManagedAgentsToolResultContentBlockSum:
-		return nil // no validation needed
+		if err := s.ManagedAgentsImageBlock.Validate(); err != nil {
+			return err
+		}
+		return nil
 	case ManagedAgentsDocumentBlockManagedAgentsToolResultContentBlockSum:
-		return nil // no validation needed
+		if err := s.ManagedAgentsDocumentBlock.Validate(); err != nil {
+			return err
+		}
+		return nil
 	case ManagedAgentsSearchResultBlockManagedAgentsToolResultContentBlockSum:
 		if err := s.ManagedAgentsSearchResultBlock.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case ManagedAgentsVideoBlockManagedAgentsToolResultContentBlockSum:
+		if err := s.ManagedAgentsVideoBlock.Validate(); err != nil {
 			return err
 		}
 		return nil
@@ -908,6 +1528,43 @@ func (s ManagedAgentsToolResultContentBlockSum) Validate() error {
 }
 
 func (s *ManagedAgentsUserCustomToolResultEventParams) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		var failures []validate.FieldError
+		for i, elem := range s.Content {
+			if err := func() error {
+				if err := elem.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				failures = append(failures, validate.FieldError{
+					Name:  fmt.Sprintf("[%d]", i),
+					Error: err,
+				})
+			}
+		}
+		if len(failures) > 0 {
+			return &validate.Error{Fields: failures}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "content",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s *ManagedAgentsUserMessageEventParams) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
@@ -1002,6 +1659,49 @@ func (s *ManagedAgentsUserToolResultEventParams) Validate() error {
 		return &validate.Error{Fields: failures}
 	}
 	return nil
+}
+
+func (s *ManagedAgentsVideoBlock) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if err := s.Source.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "source",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s ManagedAgentsVideoBlockType) Validate() error {
+	switch s {
+	case "video":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
 }
 
 func (s *ModelOverrides) Validate() error {
@@ -1107,6 +1807,70 @@ func (s *OverrideTokenLimits) Validate() error {
 		return &validate.Error{Fields: failures}
 	}
 	return nil
+}
+
+func (s *PlainTextDocumentSource) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s PlainTextDocumentSourceType) Validate() error {
+	switch s {
+	case "text":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *SearchResultContent) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s SearchResultContentType) Validate() error {
+	switch s {
+	case "text":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
 }
 
 func (s *SendSessionEventsRequest) Validate() error {
@@ -1504,5 +2268,164 @@ func (s ToolConfirmationResult) Validate() error {
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *UrlDocumentSource) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s UrlDocumentSourceType) Validate() error {
+	switch s {
+	case "url":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *UrlImageSource) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s UrlImageSourceType) Validate() error {
+	switch s {
+	case "url":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *UrlVideoSource) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.Type.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "type",
+			Error: err,
+		})
+	}
+	if err := func() error {
+		if value, ok := s.Fps.Get(); ok {
+			if err := func() error {
+				if err := (validate.Float{}).Validate(float64(value)); err != nil {
+					return errors.Wrap(err, "float")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "fps",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s UrlVideoSourceType) Validate() error {
+	switch s {
+	case "url":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
+func (s *VideoSource) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if err := s.OneOf.Validate(); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "OneOf",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
+func (s VideoSourceSum) Validate() error {
+	switch s.Type {
+	case Base64VideoSourceVideoSourceSum:
+		if err := s.Base64VideoSource.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case UrlVideoSourceVideoSourceSum:
+		if err := s.UrlVideoSource.Validate(); err != nil {
+			return err
+		}
+		return nil
+	case FileVideoSourceVideoSourceSum:
+		if err := s.FileVideoSource.Validate(); err != nil {
+			return err
+		}
+		return nil
+	default:
+		return errors.Errorf("invalid type %q", s.Type)
 	}
 }

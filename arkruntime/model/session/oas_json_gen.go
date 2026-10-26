@@ -1138,6 +1138,10 @@ func (s *Base64DocumentSource) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *Base64DocumentSource) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
 		e.FieldStart("data")
 		e.Str(s.Data)
 	}
@@ -1147,9 +1151,10 @@ func (s *Base64DocumentSource) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfBase64DocumentSource = [2]string{
-	0: "data",
-	1: "media_type",
+var jsonFieldsNameOfBase64DocumentSource = [3]string{
+	0: "type",
+	1: "data",
+	2: "media_type",
 }
 
 // Decode decodes Base64DocumentSource from json.
@@ -1161,8 +1166,18 @@ func (s *Base64DocumentSource) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "data":
+		case "type":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "data":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.Data = string(v)
@@ -1174,7 +1189,7 @@ func (s *Base64DocumentSource) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"data\"")
 			}
 		case "media_type":
-			requiredBitSet[0] |= 1 << 1
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
 				s.MediaType = string(v)
@@ -1195,7 +1210,7 @@ func (s *Base64DocumentSource) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000011,
+		0b00000111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -1241,6 +1256,44 @@ func (s *Base64DocumentSource) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes Base64DocumentSourceType as json.
+func (s Base64DocumentSourceType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes Base64DocumentSourceType from json.
+func (s *Base64DocumentSourceType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode Base64DocumentSourceType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch Base64DocumentSourceType(v) {
+	case Base64DocumentSourceTypeBase64:
+		*s = Base64DocumentSourceTypeBase64
+	default:
+		*s = Base64DocumentSourceType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s Base64DocumentSourceType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *Base64DocumentSourceType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode implements json.Marshaler.
 func (s *Base64ImageSource) Encode(e *jx.Encoder) {
 	e.ObjStart()
@@ -1251,6 +1304,10 @@ func (s *Base64ImageSource) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *Base64ImageSource) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
 		e.FieldStart("data")
 		e.Str(s.Data)
 	}
@@ -1260,9 +1317,10 @@ func (s *Base64ImageSource) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfBase64ImageSource = [2]string{
-	0: "data",
-	1: "media_type",
+var jsonFieldsNameOfBase64ImageSource = [3]string{
+	0: "type",
+	1: "data",
+	2: "media_type",
 }
 
 // Decode decodes Base64ImageSource from json.
@@ -1274,8 +1332,18 @@ func (s *Base64ImageSource) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "data":
+		case "type":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "data":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.Data = string(v)
@@ -1287,7 +1355,7 @@ func (s *Base64ImageSource) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"data\"")
 			}
 		case "media_type":
-			requiredBitSet[0] |= 1 << 1
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
 				s.MediaType = string(v)
@@ -1308,7 +1376,7 @@ func (s *Base64ImageSource) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000011,
+		0b00000111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -1350,6 +1418,227 @@ func (s *Base64ImageSource) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *Base64ImageSource) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes Base64ImageSourceType as json.
+func (s Base64ImageSourceType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes Base64ImageSourceType from json.
+func (s *Base64ImageSourceType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode Base64ImageSourceType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch Base64ImageSourceType(v) {
+	case Base64ImageSourceTypeBase64:
+		*s = Base64ImageSourceTypeBase64
+	default:
+		*s = Base64ImageSourceType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s Base64ImageSourceType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *Base64ImageSourceType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *Base64VideoSource) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *Base64VideoSource) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
+		e.FieldStart("data")
+		e.Str(s.Data)
+	}
+	{
+		e.FieldStart("media_type")
+		e.Str(s.MediaType)
+	}
+	{
+		if s.Fps.Set {
+			e.FieldStart("fps")
+			s.Fps.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfBase64VideoSource = [4]string{
+	0: "type",
+	1: "data",
+	2: "media_type",
+	3: "fps",
+}
+
+// Decode decodes Base64VideoSource from json.
+func (s *Base64VideoSource) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode Base64VideoSource to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "type":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "data":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.Data = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"data\"")
+			}
+		case "media_type":
+			requiredBitSet[0] |= 1 << 2
+			if err := func() error {
+				v, err := d.Str()
+				s.MediaType = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"media_type\"")
+			}
+		case "fps":
+			if err := func() error {
+				s.Fps.Reset()
+				if err := s.Fps.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"fps\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode Base64VideoSource")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000111,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfBase64VideoSource) {
+					name = jsonFieldsNameOfBase64VideoSource[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *Base64VideoSource) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *Base64VideoSource) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes Base64VideoSourceType as json.
+func (s Base64VideoSourceType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes Base64VideoSourceType from json.
+func (s *Base64VideoSourceType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode Base64VideoSourceType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch Base64VideoSourceType(v) {
+	case Base64VideoSourceTypeBase64:
+		*s = Base64VideoSourceTypeBase64
+	default:
+		*s = Base64VideoSourceType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s Base64VideoSourceType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *Base64VideoSourceType) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -4344,13 +4633,18 @@ func (s *FileDocumentSource) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *FileDocumentSource) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
 		e.FieldStart("file_id")
 		e.Str(s.FileID)
 	}
 }
 
-var jsonFieldsNameOfFileDocumentSource = [1]string{
-	0: "file_id",
+var jsonFieldsNameOfFileDocumentSource = [2]string{
+	0: "type",
+	1: "file_id",
 }
 
 // Decode decodes FileDocumentSource from json.
@@ -4362,8 +4656,18 @@ func (s *FileDocumentSource) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "file_id":
+		case "type":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "file_id":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.FileID = string(v)
@@ -4384,7 +4688,7 @@ func (s *FileDocumentSource) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000001,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -4430,6 +4734,44 @@ func (s *FileDocumentSource) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes FileDocumentSourceType as json.
+func (s FileDocumentSourceType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes FileDocumentSourceType from json.
+func (s *FileDocumentSourceType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode FileDocumentSourceType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch FileDocumentSourceType(v) {
+	case FileDocumentSourceTypeFile:
+		*s = FileDocumentSourceTypeFile
+	default:
+		*s = FileDocumentSourceType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s FileDocumentSourceType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *FileDocumentSourceType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode implements json.Marshaler.
 func (s *FileImageSource) Encode(e *jx.Encoder) {
 	e.ObjStart()
@@ -4440,13 +4782,18 @@ func (s *FileImageSource) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *FileImageSource) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
 		e.FieldStart("file_id")
 		e.Str(s.FileID)
 	}
 }
 
-var jsonFieldsNameOfFileImageSource = [1]string{
-	0: "file_id",
+var jsonFieldsNameOfFileImageSource = [2]string{
+	0: "type",
+	1: "file_id",
 }
 
 // Decode decodes FileImageSource from json.
@@ -4458,8 +4805,18 @@ func (s *FileImageSource) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "file_id":
+		case "type":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "file_id":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.FileID = string(v)
@@ -4480,7 +4837,7 @@ func (s *FileImageSource) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000001,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -4522,6 +4879,210 @@ func (s *FileImageSource) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *FileImageSource) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes FileImageSourceType as json.
+func (s FileImageSourceType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes FileImageSourceType from json.
+func (s *FileImageSourceType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode FileImageSourceType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch FileImageSourceType(v) {
+	case FileImageSourceTypeFile:
+		*s = FileImageSourceTypeFile
+	default:
+		*s = FileImageSourceType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s FileImageSourceType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *FileImageSourceType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *FileVideoSource) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *FileVideoSource) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
+		e.FieldStart("file_id")
+		e.Str(s.FileID)
+	}
+	{
+		if s.Fps.Set {
+			e.FieldStart("fps")
+			s.Fps.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfFileVideoSource = [3]string{
+	0: "type",
+	1: "file_id",
+	2: "fps",
+}
+
+// Decode decodes FileVideoSource from json.
+func (s *FileVideoSource) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode FileVideoSource to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "type":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "file_id":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.FileID = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"file_id\"")
+			}
+		case "fps":
+			if err := func() error {
+				s.Fps.Reset()
+				if err := s.Fps.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"fps\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode FileVideoSource")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000011,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfFileVideoSource) {
+					name = jsonFieldsNameOfFileVideoSource[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *FileVideoSource) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *FileVideoSource) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes FileVideoSourceType as json.
+func (s FileVideoSourceType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes FileVideoSourceType from json.
+func (s *FileVideoSourceType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode FileVideoSourceType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch FileVideoSourceType(v) {
+	case FileVideoSourceTypeFile:
+		*s = FileVideoSourceTypeFile
+	default:
+		*s = FileVideoSourceType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s FileVideoSourceType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *FileVideoSourceType) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -5459,6 +6020,10 @@ func (s *ManagedAgentsDocumentBlock) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *ManagedAgentsDocumentBlock) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
 		e.FieldStart("source")
 		s.Source.Encode(e)
 	}
@@ -5476,10 +6041,11 @@ func (s *ManagedAgentsDocumentBlock) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfManagedAgentsDocumentBlock = [3]string{
-	0: "source",
-	1: "title",
-	2: "context",
+var jsonFieldsNameOfManagedAgentsDocumentBlock = [4]string{
+	0: "type",
+	1: "source",
+	2: "title",
+	3: "context",
 }
 
 // Decode decodes ManagedAgentsDocumentBlock from json.
@@ -5491,8 +6057,18 @@ func (s *ManagedAgentsDocumentBlock) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "source":
+		case "type":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "source":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				if err := s.Source.Decode(d); err != nil {
 					return err
@@ -5531,7 +6107,7 @@ func (s *ManagedAgentsDocumentBlock) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000001,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -5573,6 +6149,44 @@ func (s *ManagedAgentsDocumentBlock) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *ManagedAgentsDocumentBlock) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ManagedAgentsDocumentBlockType as json.
+func (s ManagedAgentsDocumentBlockType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes ManagedAgentsDocumentBlockType from json.
+func (s *ManagedAgentsDocumentBlockType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ManagedAgentsDocumentBlockType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch ManagedAgentsDocumentBlockType(v) {
+	case ManagedAgentsDocumentBlockTypeDocument:
+		*s = ManagedAgentsDocumentBlockTypeDocument
+	default:
+		*s = ManagedAgentsDocumentBlockType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ManagedAgentsDocumentBlockType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ManagedAgentsDocumentBlockType) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -6070,13 +6684,18 @@ func (s *ManagedAgentsImageBlock) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *ManagedAgentsImageBlock) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
 		e.FieldStart("source")
 		s.Source.Encode(e)
 	}
 }
 
-var jsonFieldsNameOfManagedAgentsImageBlock = [1]string{
-	0: "source",
+var jsonFieldsNameOfManagedAgentsImageBlock = [2]string{
+	0: "type",
+	1: "source",
 }
 
 // Decode decodes ManagedAgentsImageBlock from json.
@@ -6088,8 +6707,18 @@ func (s *ManagedAgentsImageBlock) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "source":
+		case "type":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "source":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				if err := s.Source.Decode(d); err != nil {
 					return err
@@ -6108,7 +6737,7 @@ func (s *ManagedAgentsImageBlock) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000001,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -6150,6 +6779,44 @@ func (s *ManagedAgentsImageBlock) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *ManagedAgentsImageBlock) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ManagedAgentsImageBlockType as json.
+func (s ManagedAgentsImageBlockType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes ManagedAgentsImageBlockType from json.
+func (s *ManagedAgentsImageBlockType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ManagedAgentsImageBlockType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch ManagedAgentsImageBlockType(v) {
+	case ManagedAgentsImageBlockTypeImage:
+		*s = ManagedAgentsImageBlockTypeImage
+	default:
+		*s = ManagedAgentsImageBlockType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ManagedAgentsImageBlockType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ManagedAgentsImageBlockType) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -6255,6 +6922,16 @@ func (s ManagedAgentsMessageContentBlockSum) encodeFields(e *jx.Encoder) {
 				}
 			}
 		}
+	case ManagedAgentsVideoBlockManagedAgentsMessageContentBlockSum:
+		e.FieldStart("type")
+		e.Str("video")
+		{
+			s := s.ManagedAgentsVideoBlock
+			{
+				e.FieldStart("source")
+				s.Source.Encode(e)
+			}
+		}
 	}
 }
 
@@ -6290,6 +6967,9 @@ func (s *ManagedAgentsMessageContentBlockSum) Decode(d *jx.Decoder) error {
 				case "document":
 					s.Type = ManagedAgentsDocumentBlockManagedAgentsMessageContentBlockSum
 					found = true
+				case "video":
+					s.Type = ManagedAgentsVideoBlockManagedAgentsMessageContentBlockSum
+					found = true
 				default:
 					return errors.Errorf("unknown type %s", typ)
 				}
@@ -6314,6 +6994,10 @@ func (s *ManagedAgentsMessageContentBlockSum) Decode(d *jx.Decoder) error {
 		}
 	case ManagedAgentsDocumentBlockManagedAgentsMessageContentBlockSum:
 		if err := s.ManagedAgentsDocumentBlock.Decode(d); err != nil {
+			return err
+		}
+	case ManagedAgentsVideoBlockManagedAgentsMessageContentBlockSum:
+		if err := s.ManagedAgentsVideoBlock.Decode(d); err != nil {
 			return err
 		}
 	default:
@@ -6497,6 +7181,10 @@ func (s *ManagedAgentsSearchResultBlock) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *ManagedAgentsSearchResultBlock) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
 		e.FieldStart("citations")
 		s.Citations.Encode(e)
 	}
@@ -6518,11 +7206,12 @@ func (s *ManagedAgentsSearchResultBlock) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfManagedAgentsSearchResultBlock = [4]string{
-	0: "citations",
-	1: "content",
-	2: "source",
-	3: "title",
+var jsonFieldsNameOfManagedAgentsSearchResultBlock = [5]string{
+	0: "type",
+	1: "citations",
+	2: "content",
+	3: "source",
+	4: "title",
 }
 
 // Decode decodes ManagedAgentsSearchResultBlock from json.
@@ -6534,8 +7223,18 @@ func (s *ManagedAgentsSearchResultBlock) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "citations":
+		case "type":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "citations":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				if err := s.Citations.Decode(d); err != nil {
 					return err
@@ -6545,7 +7244,7 @@ func (s *ManagedAgentsSearchResultBlock) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"citations\"")
 			}
 		case "content":
-			requiredBitSet[0] |= 1 << 1
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				s.Content = make([]SearchResultContent, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
@@ -6563,7 +7262,7 @@ func (s *ManagedAgentsSearchResultBlock) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"content\"")
 			}
 		case "source":
-			requiredBitSet[0] |= 1 << 2
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				v, err := d.Str()
 				s.Source = string(v)
@@ -6575,7 +7274,7 @@ func (s *ManagedAgentsSearchResultBlock) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"source\"")
 			}
 		case "title":
-			requiredBitSet[0] |= 1 << 3
+			requiredBitSet[0] |= 1 << 4
 			if err := func() error {
 				v, err := d.Str()
 				s.Title = string(v)
@@ -6596,7 +7295,7 @@ func (s *ManagedAgentsSearchResultBlock) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00001111,
+		0b00011111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -6638,6 +7337,44 @@ func (s *ManagedAgentsSearchResultBlock) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *ManagedAgentsSearchResultBlock) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ManagedAgentsSearchResultBlockType as json.
+func (s ManagedAgentsSearchResultBlockType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes ManagedAgentsSearchResultBlockType from json.
+func (s *ManagedAgentsSearchResultBlockType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ManagedAgentsSearchResultBlockType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch ManagedAgentsSearchResultBlockType(v) {
+	case ManagedAgentsSearchResultBlockTypeSearchResult:
+		*s = ManagedAgentsSearchResultBlockTypeSearchResult
+	default:
+		*s = ManagedAgentsSearchResultBlockType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ManagedAgentsSearchResultBlockType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ManagedAgentsSearchResultBlockType) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -6895,13 +7632,18 @@ func (s *ManagedAgentsTextBlock) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *ManagedAgentsTextBlock) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
 		e.FieldStart("text")
 		e.Str(s.Text)
 	}
 }
 
-var jsonFieldsNameOfManagedAgentsTextBlock = [1]string{
-	0: "text",
+var jsonFieldsNameOfManagedAgentsTextBlock = [2]string{
+	0: "type",
+	1: "text",
 }
 
 // Decode decodes ManagedAgentsTextBlock from json.
@@ -6913,8 +7655,18 @@ func (s *ManagedAgentsTextBlock) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "text":
+		case "type":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "text":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.Text = string(v)
@@ -6935,7 +7687,7 @@ func (s *ManagedAgentsTextBlock) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000001,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -6977,6 +7729,44 @@ func (s *ManagedAgentsTextBlock) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *ManagedAgentsTextBlock) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ManagedAgentsTextBlockType as json.
+func (s ManagedAgentsTextBlockType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes ManagedAgentsTextBlockType from json.
+func (s *ManagedAgentsTextBlockType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ManagedAgentsTextBlockType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch ManagedAgentsTextBlockType(v) {
+	case ManagedAgentsTextBlockTypeText:
+		*s = ManagedAgentsTextBlockTypeText
+	default:
+		*s = ManagedAgentsTextBlockType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ManagedAgentsTextBlockType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ManagedAgentsTextBlockType) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -7204,6 +7994,16 @@ func (s ManagedAgentsToolResultContentBlockSum) encodeFields(e *jx.Encoder) {
 				e.Str(s.Title)
 			}
 		}
+	case ManagedAgentsVideoBlockManagedAgentsToolResultContentBlockSum:
+		e.FieldStart("type")
+		e.Str("video")
+		{
+			s := s.ManagedAgentsVideoBlock
+			{
+				e.FieldStart("source")
+				s.Source.Encode(e)
+			}
+		}
 	}
 }
 
@@ -7242,6 +8042,9 @@ func (s *ManagedAgentsToolResultContentBlockSum) Decode(d *jx.Decoder) error {
 				case "search_result":
 					s.Type = ManagedAgentsSearchResultBlockManagedAgentsToolResultContentBlockSum
 					found = true
+				case "video":
+					s.Type = ManagedAgentsVideoBlockManagedAgentsToolResultContentBlockSum
+					found = true
 				default:
 					return errors.Errorf("unknown type %s", typ)
 				}
@@ -7270,6 +8073,10 @@ func (s *ManagedAgentsToolResultContentBlockSum) Decode(d *jx.Decoder) error {
 		}
 	case ManagedAgentsSearchResultBlockManagedAgentsToolResultContentBlockSum:
 		if err := s.ManagedAgentsSearchResultBlock.Decode(d); err != nil {
+			return err
+		}
+	case ManagedAgentsVideoBlockManagedAgentsToolResultContentBlockSum:
+		if err := s.ManagedAgentsVideoBlock.Decode(d); err != nil {
 			return err
 		}
 	default:
@@ -8166,6 +8973,153 @@ func (s *ManagedAgentsUserToolResultEventParams) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *ManagedAgentsUserToolResultEventParams) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *ManagedAgentsVideoBlock) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *ManagedAgentsVideoBlock) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
+		e.FieldStart("source")
+		s.Source.Encode(e)
+	}
+}
+
+var jsonFieldsNameOfManagedAgentsVideoBlock = [2]string{
+	0: "type",
+	1: "source",
+}
+
+// Decode decodes ManagedAgentsVideoBlock from json.
+func (s *ManagedAgentsVideoBlock) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ManagedAgentsVideoBlock to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "type":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "source":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				if err := s.Source.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"source\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ManagedAgentsVideoBlock")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000011,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfManagedAgentsVideoBlock) {
+					name = jsonFieldsNameOfManagedAgentsVideoBlock[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *ManagedAgentsVideoBlock) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ManagedAgentsVideoBlock) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ManagedAgentsVideoBlockType as json.
+func (s ManagedAgentsVideoBlockType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes ManagedAgentsVideoBlockType from json.
+func (s *ManagedAgentsVideoBlockType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ManagedAgentsVideoBlockType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch ManagedAgentsVideoBlockType(v) {
+	case ManagedAgentsVideoBlockTypeVideo:
+		*s = ManagedAgentsVideoBlockTypeVideo
+	default:
+		*s = ManagedAgentsVideoBlockType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ManagedAgentsVideoBlockType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ManagedAgentsVideoBlockType) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -9204,6 +10158,41 @@ func (s *OptEnvironmentWithUpgrades) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes float64 as json.
+func (o OptFloat64) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	e.Float64(float64(o.Value))
+}
+
+// Decode decodes float64 from json.
+func (o *OptFloat64) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptFloat64 to nil")
+	}
+	o.Set = true
+	v, err := d.Float64()
+	if err != nil {
+		return err
+	}
+	o.Value = float64(v)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptFloat64) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptFloat64) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes int32 as json.
 func (o OptInt32) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -9950,6 +10939,10 @@ func (s *PlainTextDocumentSource) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *PlainTextDocumentSource) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
 		e.FieldStart("data")
 		e.Str(s.Data)
 	}
@@ -9959,9 +10952,10 @@ func (s *PlainTextDocumentSource) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfPlainTextDocumentSource = [2]string{
-	0: "data",
-	1: "media_type",
+var jsonFieldsNameOfPlainTextDocumentSource = [3]string{
+	0: "type",
+	1: "data",
+	2: "media_type",
 }
 
 // Decode decodes PlainTextDocumentSource from json.
@@ -9973,8 +10967,18 @@ func (s *PlainTextDocumentSource) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "data":
+		case "type":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "data":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.Data = string(v)
@@ -9986,7 +10990,7 @@ func (s *PlainTextDocumentSource) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"data\"")
 			}
 		case "media_type":
-			requiredBitSet[0] |= 1 << 1
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Str()
 				s.MediaType = string(v)
@@ -10007,7 +11011,7 @@ func (s *PlainTextDocumentSource) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000011,
+		0b00000111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -10049,6 +11053,44 @@ func (s *PlainTextDocumentSource) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *PlainTextDocumentSource) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes PlainTextDocumentSourceType as json.
+func (s PlainTextDocumentSourceType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes PlainTextDocumentSourceType from json.
+func (s *PlainTextDocumentSourceType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode PlainTextDocumentSourceType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch PlainTextDocumentSourceType(v) {
+	case PlainTextDocumentSourceTypeText:
+		*s = PlainTextDocumentSourceTypeText
+	default:
+		*s = PlainTextDocumentSourceType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s PlainTextDocumentSourceType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *PlainTextDocumentSourceType) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -10159,13 +11201,18 @@ func (s *SearchResultContent) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *SearchResultContent) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
 		e.FieldStart("text")
 		e.Str(s.Text)
 	}
 }
 
-var jsonFieldsNameOfSearchResultContent = [1]string{
-	0: "text",
+var jsonFieldsNameOfSearchResultContent = [2]string{
+	0: "type",
+	1: "text",
 }
 
 // Decode decodes SearchResultContent from json.
@@ -10177,8 +11224,18 @@ func (s *SearchResultContent) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "text":
+		case "type":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "text":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.Text = string(v)
@@ -10199,7 +11256,7 @@ func (s *SearchResultContent) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000001,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -10241,6 +11298,44 @@ func (s *SearchResultContent) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *SearchResultContent) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes SearchResultContentType as json.
+func (s SearchResultContentType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes SearchResultContentType from json.
+func (s *SearchResultContentType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode SearchResultContentType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch SearchResultContentType(v) {
+	case SearchResultContentTypeText:
+		*s = SearchResultContentTypeText
+	default:
+		*s = SearchResultContentType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s SearchResultContentType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *SearchResultContentType) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -12365,13 +13460,18 @@ func (s *UrlDocumentSource) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *UrlDocumentSource) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
 		e.FieldStart("url")
 		e.Str(s.URL)
 	}
 }
 
-var jsonFieldsNameOfUrlDocumentSource = [1]string{
-	0: "url",
+var jsonFieldsNameOfUrlDocumentSource = [2]string{
+	0: "type",
+	1: "url",
 }
 
 // Decode decodes UrlDocumentSource from json.
@@ -12383,8 +13483,18 @@ func (s *UrlDocumentSource) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "url":
+		case "type":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "url":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.URL = string(v)
@@ -12405,7 +13515,7 @@ func (s *UrlDocumentSource) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000001,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -12451,6 +13561,44 @@ func (s *UrlDocumentSource) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes UrlDocumentSourceType as json.
+func (s UrlDocumentSourceType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes UrlDocumentSourceType from json.
+func (s *UrlDocumentSourceType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode UrlDocumentSourceType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch UrlDocumentSourceType(v) {
+	case UrlDocumentSourceTypeURL:
+		*s = UrlDocumentSourceTypeURL
+	default:
+		*s = UrlDocumentSourceType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s UrlDocumentSourceType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *UrlDocumentSourceType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode implements json.Marshaler.
 func (s *UrlImageSource) Encode(e *jx.Encoder) {
 	e.ObjStart()
@@ -12461,13 +13609,18 @@ func (s *UrlImageSource) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *UrlImageSource) encodeFields(e *jx.Encoder) {
 	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
 		e.FieldStart("url")
 		e.Str(s.URL)
 	}
 }
 
-var jsonFieldsNameOfUrlImageSource = [1]string{
-	0: "url",
+var jsonFieldsNameOfUrlImageSource = [2]string{
+	0: "type",
+	1: "url",
 }
 
 // Decode decodes UrlImageSource from json.
@@ -12479,8 +13632,18 @@ func (s *UrlImageSource) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "url":
+		case "type":
 			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "url":
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.URL = string(v)
@@ -12501,7 +13664,7 @@ func (s *UrlImageSource) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000001,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -12543,6 +13706,401 @@ func (s *UrlImageSource) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *UrlImageSource) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes UrlImageSourceType as json.
+func (s UrlImageSourceType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes UrlImageSourceType from json.
+func (s *UrlImageSourceType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode UrlImageSourceType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch UrlImageSourceType(v) {
+	case UrlImageSourceTypeURL:
+		*s = UrlImageSourceTypeURL
+	default:
+		*s = UrlImageSourceType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s UrlImageSourceType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *UrlImageSourceType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *UrlVideoSource) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *UrlVideoSource) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
+		e.FieldStart("url")
+		e.Str(s.URL)
+	}
+	{
+		if s.Fps.Set {
+			e.FieldStart("fps")
+			s.Fps.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfUrlVideoSource = [3]string{
+	0: "type",
+	1: "url",
+	2: "fps",
+}
+
+// Decode decodes UrlVideoSource from json.
+func (s *UrlVideoSource) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode UrlVideoSource to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "type":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "url":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.URL = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"url\"")
+			}
+		case "fps":
+			if err := func() error {
+				s.Fps.Reset()
+				if err := s.Fps.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"fps\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode UrlVideoSource")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000011,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfUrlVideoSource) {
+					name = jsonFieldsNameOfUrlVideoSource[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *UrlVideoSource) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *UrlVideoSource) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes UrlVideoSourceType as json.
+func (s UrlVideoSourceType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes UrlVideoSourceType from json.
+func (s *UrlVideoSourceType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode UrlVideoSourceType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch UrlVideoSourceType(v) {
+	case UrlVideoSourceTypeURL:
+		*s = UrlVideoSourceTypeURL
+	default:
+		*s = UrlVideoSourceType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s UrlVideoSourceType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *UrlVideoSourceType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *VideoSource) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *VideoSource) encodeFields(e *jx.Encoder) {
+	s.OneOf.encodeFields(e)
+}
+
+var jsonFieldsNameOfVideoSource = [0]string{}
+
+// Decode decodes VideoSource from json.
+func (s *VideoSource) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode VideoSource to nil")
+	}
+	if err := d.Capture(func(d *jx.Decoder) error {
+		return s.OneOf.Decode(d)
+	}); err != nil {
+		return errors.Wrap(err, "decode field OneOf")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		default:
+			return d.Skip()
+		}
+	}); err != nil {
+		return errors.Wrap(err, "decode VideoSource")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *VideoSource) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *VideoSource) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes VideoSourceSum as json.
+func (s VideoSourceSum) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+func (s VideoSourceSum) encodeFields(e *jx.Encoder) {
+	switch s.Type {
+	case Base64VideoSourceVideoSourceSum:
+		e.FieldStart("type")
+		e.Str("base64")
+		{
+			s := s.Base64VideoSource
+			{
+				e.FieldStart("data")
+				e.Str(s.Data)
+			}
+			{
+				e.FieldStart("media_type")
+				e.Str(s.MediaType)
+			}
+			{
+				if s.Fps.Set {
+					e.FieldStart("fps")
+					s.Fps.Encode(e)
+				}
+			}
+		}
+	case UrlVideoSourceVideoSourceSum:
+		e.FieldStart("type")
+		e.Str("url")
+		{
+			s := s.UrlVideoSource
+			{
+				e.FieldStart("url")
+				e.Str(s.URL)
+			}
+			{
+				if s.Fps.Set {
+					e.FieldStart("fps")
+					s.Fps.Encode(e)
+				}
+			}
+		}
+	case FileVideoSourceVideoSourceSum:
+		e.FieldStart("type")
+		e.Str("file")
+		{
+			s := s.FileVideoSource
+			{
+				e.FieldStart("file_id")
+				e.Str(s.FileID)
+			}
+			{
+				if s.Fps.Set {
+					e.FieldStart("fps")
+					s.Fps.Encode(e)
+				}
+			}
+		}
+	}
+}
+
+// Decode decodes VideoSourceSum from json.
+func (s *VideoSourceSum) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode VideoSourceSum to nil")
+	}
+	// Sum type discriminator.
+	if typ := d.Next(); typ != jx.Object {
+		return errors.Errorf("unexpected json type %q", typ)
+	}
+
+	var found bool
+	if err := d.Capture(func(d *jx.Decoder) error {
+		return d.ObjBytes(func(d *jx.Decoder, key []byte) error {
+			if found {
+				return d.Skip()
+			}
+			switch string(key) {
+			case "type":
+				typ, err := d.Str()
+				if err != nil {
+					return err
+				}
+				switch typ {
+				case "base64":
+					s.Type = Base64VideoSourceVideoSourceSum
+					found = true
+				case "url":
+					s.Type = UrlVideoSourceVideoSourceSum
+					found = true
+				case "file":
+					s.Type = FileVideoSourceVideoSourceSum
+					found = true
+				default:
+					return errors.Errorf("unknown type %s", typ)
+				}
+				return nil
+			}
+			return d.Skip()
+		})
+	}); err != nil {
+		return errors.Wrap(err, "capture")
+	}
+	if !found {
+		return errors.New("unable to detect sum type variant")
+	}
+	switch s.Type {
+	case Base64VideoSourceVideoSourceSum:
+		if err := s.Base64VideoSource.Decode(d); err != nil {
+			return err
+		}
+	case UrlVideoSourceVideoSourceSum:
+		if err := s.UrlVideoSource.Decode(d); err != nil {
+			return err
+		}
+	case FileVideoSourceVideoSourceSum:
+		if err := s.FileVideoSource.Decode(d); err != nil {
+			return err
+		}
+	default:
+		return errors.Errorf("inferred invalid type: %s", s.Type)
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s VideoSourceSum) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *VideoSourceSum) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
