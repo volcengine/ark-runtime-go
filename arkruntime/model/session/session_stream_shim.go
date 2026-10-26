@@ -87,6 +87,8 @@ func (e sessionEventBase) GetProcessedAt() string { return e.ProcessedAt }
 // Common values: "end_turn", "retries_exhausted", "user_interrupt".
 type ManagedAgentsStopReason struct {
 	Type string `json:"type"`
+	// Pending input event IDs when Type is requires_action.
+	EventIDs *[]string `json:"event_ids,omitempty"`
 }
 
 // ManagedAgentsRetryStatus optionally accompanies a session error to
