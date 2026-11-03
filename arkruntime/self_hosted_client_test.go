@@ -19,6 +19,7 @@ import (
 
 const (
 	testBearerToken = "Bearer test-api-key"
+	testSessionID   = "sess-1"
 	testWorkerID    = "worker-1"
 )
 
@@ -51,7 +52,7 @@ func TestEnvironmentWorkRequests(t *testing.T) {
 			pollResponse := map[string]any{
 				"id":                  "work-1",
 				"created_at":          "2026-08-10T00:00:00Z",
-				"data":                map[string]any{"id": "sess-1", "type": "session"},
+				"data":                map[string]any{"id": testSessionID, "type": "session"},
 				"environment_id":      "env-1",
 				"latest_heartbeat_at": "2026-08-10T00:00:00Z",
 				"state":               "queued",
@@ -106,7 +107,7 @@ func TestEnvironmentWorkRequests(t *testing.T) {
 	if err != nil {
 		t.Fatalf("PollWork() error = %v", err)
 	}
-	if work == nil || work.SessionIDValue() != "sess-1" {
+	if work == nil || work.SessionIDValue() != testSessionID {
 		t.Fatalf("PollWork() = %+v", work)
 	}
 	if got := work.LatestHeartbeatValue(); got != "2026-08-10T00:00:00Z" {
@@ -193,13 +194,13 @@ func TestSessionStreamsIgnoreHTTPClientTimeout(t *testing.T) {
 		{
 			name: "session",
 			open: func(ctx context.Context) (*session.StreamDecoder, error) {
-				return client.StreamSessionEvents(ctx, "sess-1")
+				return client.StreamSessionEvents(ctx, testSessionID)
 			},
 		},
 		{
 			name: "thread",
 			open: func(ctx context.Context) (*session.StreamDecoder, error) {
-				return client.StreamSessionThreadEvents(ctx, "sess-1", "thread-1")
+				return client.StreamSessionThreadEvents(ctx, testSessionID, "thread-1")
 			},
 		},
 	}
@@ -398,7 +399,7 @@ func TestSendSessionEventRaw(t *testing.T) {
 	client := NewClientWithApiKey("test-api-key", WithBaseUrl(server.URL))
 	err := client.SendSessionEventRaw(
 		context.Background(),
-		"sess-1",
+		testSessionID,
 		map[string]any{"type": "user.tool_result", "tool_use_id": "toolu-1"},
 	)
 	if err != nil {
@@ -464,10 +465,10 @@ func TestSessionMAContractRequests(t *testing.T) {
 
 	client := NewClientWithApiKey("test-api-key", WithBaseUrl(server.URL))
 	ctx := context.Background()
-	if got, err := client.GetSession(ctx, "sess-1"); err != nil || got == nil || got.ID != "sess-1" {
+	if got, err := client.GetSession(ctx, testSessionID); err != nil || got == nil || got.ID != testSessionID {
 		t.Fatalf("GetSession() = %+v, %v", got, err)
 	}
-	resp, err := client.ListSessionEvents(ctx, "sess-1", &session.SessionEventsListEventsParams{
+	resp, err := client.ListSessionEvents(ctx, testSessionID, &session.SessionEventsListEventsParams{
 		CreatedAtGt: session.NewOptString("2026-08-10T00:00:00Z"),
 		Limit:       session.NewOptInt32(2),
 		Order:       session.NewOptListSessionsOrder(session.ListSessionsOrderAsc),
@@ -480,7 +481,7 @@ func TestSessionMAContractRequests(t *testing.T) {
 	if resp == nil || len(resp.Events) != 1 {
 		t.Fatalf("ListSessionEvents() = %+v", resp)
 	}
-	decoder, err := client.StreamSessionEventsWithParams(ctx, "sess-1", &session.SessionEventsStreamEventsParams{
+	decoder, err := client.StreamSessionEventsWithParams(ctx, testSessionID, &session.SessionEventsStreamEventsParams{
 		EventDeltas: []string{"agent.message", "agent.thinking"},
 	})
 	if err != nil {
@@ -489,7 +490,7 @@ func TestSessionMAContractRequests(t *testing.T) {
 	_ = decoder.Close()
 	err = client.SendSessionEventRaw(
 		ctx,
-		"sess-1",
+		testSessionID,
 		map[string]any{"type": "user.tool_result", "tool_use_id": "toolu-1"},
 	)
 	if err != nil {

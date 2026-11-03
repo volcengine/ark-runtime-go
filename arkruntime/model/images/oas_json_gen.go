@@ -30,6 +30,8 @@ func (s *Background) Decode(d *jx.Decoder) error {
 	}
 	// Try to use constant string.
 	switch Background(v) {
+	case BackgroundAuto:
+		*s = BackgroundAuto
 	case BackgroundOpaque:
 		*s = BackgroundOpaque
 	case BackgroundTransparent:
@@ -174,6 +176,12 @@ func (s *CreateImageGenerationRequest) encodeFields(e *jx.Encoder) {
 		e.Str(s.Model)
 	}
 	{
+		if s.SafetyIdentifier.Set {
+			e.FieldStart("safety_identifier")
+			s.SafetyIdentifier.Encode(e)
+		}
+	}
+	{
 		if s.Prompt.Set {
 			e.FieldStart("prompt")
 			s.Prompt.Encode(e)
@@ -273,26 +281,34 @@ func (s *CreateImageGenerationRequest) encodeFields(e *jx.Encoder) {
 			s.LayerDecomposition.Encode(e)
 		}
 	}
+	{
+		if s.LayerDecompositionOptions.Set {
+			e.FieldStart("layer_decomposition_options")
+			s.LayerDecompositionOptions.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfCreateImageGenerationRequest = [17]string{
+var jsonFieldsNameOfCreateImageGenerationRequest = [19]string{
 	0:  "model",
-	1:  "prompt",
-	2:  "image",
-	3:  "stream",
-	4:  "response_format",
-	5:  "seed",
-	6:  "guidance_scale",
-	7:  "image_guidance_scale",
-	8:  "size",
-	9:  "watermark",
-	10: "sequential_image_generation",
-	11: "sequential_image_generation_options",
-	12: "optimize_prompt_options",
-	13: "tools",
-	14: "output_format",
-	15: "background",
-	16: "layer_decomposition",
+	1:  "safety_identifier",
+	2:  "prompt",
+	3:  "image",
+	4:  "stream",
+	5:  "response_format",
+	6:  "seed",
+	7:  "guidance_scale",
+	8:  "image_guidance_scale",
+	9:  "size",
+	10: "watermark",
+	11: "sequential_image_generation",
+	12: "sequential_image_generation_options",
+	13: "optimize_prompt_options",
+	14: "tools",
+	15: "output_format",
+	16: "background",
+	17: "layer_decomposition",
+	18: "layer_decomposition_options",
 }
 
 // Decode decodes CreateImageGenerationRequest from json.
@@ -315,6 +331,16 @@ func (s *CreateImageGenerationRequest) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"model\"")
+			}
+		case "safety_identifier":
+			if err := func() error {
+				s.SafetyIdentifier.Reset()
+				if err := s.SafetyIdentifier.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"safety_identifier\"")
 			}
 		case "prompt":
 			if err := func() error {
@@ -483,6 +509,16 @@ func (s *CreateImageGenerationRequest) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"layer_decomposition\"")
 			}
+		case "layer_decomposition_options":
+			if err := func() error {
+				s.LayerDecompositionOptions.Reset()
+				if err := s.LayerDecompositionOptions.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"layer_decomposition_options\"")
+			}
 		default:
 			return d.Skip()
 		}
@@ -643,6 +679,18 @@ func (s *ImageDataItem) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.Background.Set {
+			e.FieldStart("background")
+			s.Background.Encode(e)
+		}
+	}
+	{
+		if s.TextRecognition.Set {
+			e.FieldStart("text_recognition")
+			s.TextRecognition.Encode(e)
+		}
+	}
+	{
 		if s.ZIndex.Set {
 			e.FieldStart("z_index")
 			s.ZIndex.Encode(e)
@@ -668,16 +716,18 @@ func (s *ImageDataItem) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfImageDataItem = [9]string{
-	0: "url",
-	1: "b64_json",
-	2: "size",
-	3: "error",
-	4: "output_format",
-	5: "z_index",
-	6: "bounding_box",
-	7: "name",
-	8: "description",
+var jsonFieldsNameOfImageDataItem = [11]string{
+	0:  "url",
+	1:  "b64_json",
+	2:  "size",
+	3:  "error",
+	4:  "output_format",
+	5:  "background",
+	6:  "text_recognition",
+	7:  "z_index",
+	8:  "bounding_box",
+	9:  "name",
+	10: "description",
 }
 
 // Decode decodes ImageDataItem from json.
@@ -737,6 +787,26 @@ func (s *ImageDataItem) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"output_format\"")
+			}
+		case "background":
+			if err := func() error {
+				s.Background.Reset()
+				if err := s.Background.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"background\"")
+			}
+		case "text_recognition":
+			if err := func() error {
+				s.TextRecognition.Reset()
+				if err := s.TextRecognition.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"text_recognition\"")
 			}
 		case "z_index":
 			if err := func() error {
@@ -929,6 +999,12 @@ func (s *ImageGenerationResponse) encodeFields(e *jx.Encoder) {
 		e.Str(s.Model)
 	}
 	{
+		if s.SafetyIdentifier.Set {
+			e.FieldStart("safety_identifier")
+			s.SafetyIdentifier.Encode(e)
+		}
+	}
+	{
 		e.FieldStart("created")
 		e.Int64(s.Created)
 	}
@@ -966,13 +1042,14 @@ func (s *ImageGenerationResponse) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfImageGenerationResponse = [6]string{
+var jsonFieldsNameOfImageGenerationResponse = [7]string{
 	0: "model",
-	1: "created",
-	2: "data",
-	3: "tools",
-	4: "usage",
-	5: "error",
+	1: "safety_identifier",
+	2: "created",
+	3: "data",
+	4: "tools",
+	5: "usage",
+	6: "error",
 }
 
 // Decode decodes ImageGenerationResponse from json.
@@ -996,8 +1073,18 @@ func (s *ImageGenerationResponse) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"model\"")
 			}
+		case "safety_identifier":
+			if err := func() error {
+				s.SafetyIdentifier.Reset()
+				if err := s.SafetyIdentifier.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"safety_identifier\"")
+			}
 		case "created":
-			requiredBitSet[0] |= 1 << 1
+			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Int64()
 				s.Created = int64(v)
@@ -1072,7 +1159,7 @@ func (s *ImageGenerationResponse) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000011,
+		0b00000101,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -1136,6 +1223,12 @@ func (s *ImageGenerationStreamEvent) encodeFields(e *jx.Encoder) {
 		e.Str(s.Model)
 	}
 	{
+		if s.SafetyIdentifier.Set {
+			e.FieldStart("safety_identifier")
+			s.SafetyIdentifier.Encode(e)
+		}
+	}
+	{
 		e.FieldStart("created")
 		e.Int64(s.Created)
 	}
@@ -1187,17 +1280,18 @@ func (s *ImageGenerationStreamEvent) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfImageGenerationStreamEvent = [10]string{
-	0: "type",
-	1: "model",
-	2: "created",
-	3: "image_index",
-	4: "url",
-	5: "b64_json",
-	6: "size",
-	7: "tools",
-	8: "usage",
-	9: "error",
+var jsonFieldsNameOfImageGenerationStreamEvent = [11]string{
+	0:  "type",
+	1:  "model",
+	2:  "safety_identifier",
+	3:  "created",
+	4:  "image_index",
+	5:  "url",
+	6:  "b64_json",
+	7:  "size",
+	8:  "tools",
+	9:  "usage",
+	10: "error",
 }
 
 // Decode decodes ImageGenerationStreamEvent from json.
@@ -1231,8 +1325,18 @@ func (s *ImageGenerationStreamEvent) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"model\"")
 			}
+		case "safety_identifier":
+			if err := func() error {
+				s.SafetyIdentifier.Reset()
+				if err := s.SafetyIdentifier.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"safety_identifier\"")
+			}
 		case "created":
-			requiredBitSet[0] |= 1 << 2
+			requiredBitSet[0] |= 1 << 3
 			if err := func() error {
 				v, err := d.Int64()
 				s.Created = int64(v)
@@ -1330,7 +1434,7 @@ func (s *ImageGenerationStreamEvent) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [2]uint8{
-		0b00000111,
+		0b00001011,
 		0b00000000,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
@@ -1415,6 +1519,86 @@ func (s ImageGenerationStreamEventType) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *ImageGenerationStreamEventType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *LayerDecompositionOptions) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *LayerDecompositionOptions) encodeFields(e *jx.Encoder) {
+	{
+		if s.MaxImages.Set {
+			e.FieldStart("max_images")
+			s.MaxImages.Encode(e)
+		}
+	}
+	{
+		if s.TextRecognition.Set {
+			e.FieldStart("text_recognition")
+			s.TextRecognition.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfLayerDecompositionOptions = [2]string{
+	0: "max_images",
+	1: "text_recognition",
+}
+
+// Decode decodes LayerDecompositionOptions from json.
+func (s *LayerDecompositionOptions) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode LayerDecompositionOptions to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "max_images":
+			if err := func() error {
+				s.MaxImages.Reset()
+				if err := s.MaxImages.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"max_images\"")
+			}
+		case "text_recognition":
+			if err := func() error {
+				s.TextRecognition.Reset()
+				if err := s.TextRecognition.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"text_recognition\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode LayerDecompositionOptions")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *LayerDecompositionOptions) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *LayerDecompositionOptions) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -1691,6 +1875,39 @@ func (s *OptInt64) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes LayerDecompositionOptions as json.
+func (o OptLayerDecompositionOptions) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes LayerDecompositionOptions from json.
+func (o *OptLayerDecompositionOptions) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptLayerDecompositionOptions to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptLayerDecompositionOptions) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptLayerDecompositionOptions) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes OptimizePromptMode as json.
 func (o OptOptimizePromptMode) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -1753,6 +1970,39 @@ func (s OptOptimizePromptOptions) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptOptimizePromptOptions) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes OutputBackground as json.
+func (o OptOutputBackground) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	e.Str(string(o.Value))
+}
+
+// Decode decodes OutputBackground from json.
+func (o *OptOutputBackground) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptOutputBackground to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptOutputBackground) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptOutputBackground) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -1924,6 +2174,72 @@ func (s *OptString) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes TextRecognition as json.
+func (o OptTextRecognition) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes TextRecognition from json.
+func (o *OptTextRecognition) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptTextRecognition to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptTextRecognition) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptTextRecognition) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes TextStyle as json.
+func (o OptTextStyle) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes TextStyle from json.
+func (o *OptTextStyle) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptTextStyle to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptTextStyle) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptTextStyle) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes ToolUsage as json.
 func (o OptToolUsage) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -2089,6 +2405,46 @@ func (s *OptimizePromptOptions) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptimizePromptOptions) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes OutputBackground as json.
+func (s OutputBackground) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes OutputBackground from json.
+func (s *OutputBackground) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode OutputBackground to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch OutputBackground(v) {
+	case OutputBackgroundOpaque:
+		*s = OutputBackgroundOpaque
+	case OutputBackgroundTransparent:
+		*s = OutputBackgroundTransparent
+	default:
+		*s = OutputBackground(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OutputBackground) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OutputBackground) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -2272,6 +2628,450 @@ func (s *SequentialImageGenerationOptions) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *SequentialImageGenerationOptions) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *TextLine) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *TextLine) encodeFields(e *jx.Encoder) {
+	{
+		if s.BoundingBox.Set {
+			e.FieldStart("bounding_box")
+			s.BoundingBox.Encode(e)
+		}
+	}
+	{
+		if s.Runs != nil {
+			e.FieldStart("runs")
+			e.ArrStart()
+			for _, elem := range s.Runs {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+}
+
+var jsonFieldsNameOfTextLine = [2]string{
+	0: "bounding_box",
+	1: "runs",
+}
+
+// Decode decodes TextLine from json.
+func (s *TextLine) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode TextLine to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "bounding_box":
+			if err := func() error {
+				s.BoundingBox.Reset()
+				if err := s.BoundingBox.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"bounding_box\"")
+			}
+		case "runs":
+			if err := func() error {
+				s.Runs = make([]TextRun, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem TextRun
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Runs = append(s.Runs, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"runs\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode TextLine")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *TextLine) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *TextLine) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *TextRecognition) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *TextRecognition) encodeFields(e *jx.Encoder) {
+	{
+		if s.Text.Set {
+			e.FieldStart("text")
+			s.Text.Encode(e)
+		}
+	}
+	{
+		if s.Lines != nil {
+			e.FieldStart("lines")
+			e.ArrStart()
+			for _, elem := range s.Lines {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+}
+
+var jsonFieldsNameOfTextRecognition = [2]string{
+	0: "text",
+	1: "lines",
+}
+
+// Decode decodes TextRecognition from json.
+func (s *TextRecognition) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode TextRecognition to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "text":
+			if err := func() error {
+				s.Text.Reset()
+				if err := s.Text.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"text\"")
+			}
+		case "lines":
+			if err := func() error {
+				s.Lines = make([]TextLine, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem TextLine
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Lines = append(s.Lines, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"lines\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode TextRecognition")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *TextRecognition) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *TextRecognition) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *TextRun) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *TextRun) encodeFields(e *jx.Encoder) {
+	{
+		if s.Text.Set {
+			e.FieldStart("text")
+			s.Text.Encode(e)
+		}
+	}
+	{
+		if s.Style.Set {
+			e.FieldStart("style")
+			s.Style.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfTextRun = [2]string{
+	0: "text",
+	1: "style",
+}
+
+// Decode decodes TextRun from json.
+func (s *TextRun) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode TextRun to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "text":
+			if err := func() error {
+				s.Text.Reset()
+				if err := s.Text.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"text\"")
+			}
+		case "style":
+			if err := func() error {
+				s.Style.Reset()
+				if err := s.Style.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"style\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode TextRun")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *TextRun) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *TextRun) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *TextStyle) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *TextStyle) encodeFields(e *jx.Encoder) {
+	{
+		if s.SimilarFontFamily.Set {
+			e.FieldStart("similar_font_family")
+			s.SimilarFontFamily.Encode(e)
+		}
+	}
+	{
+		if s.ForegroundColor.Set {
+			e.FieldStart("foreground_color")
+			s.ForegroundColor.Encode(e)
+		}
+	}
+	{
+		if s.Bold.Set {
+			e.FieldStart("bold")
+			s.Bold.Encode(e)
+		}
+	}
+	{
+		if s.Italic.Set {
+			e.FieldStart("italic")
+			s.Italic.Encode(e)
+		}
+	}
+	{
+		if s.Underline.Set {
+			e.FieldStart("underline")
+			s.Underline.Encode(e)
+		}
+	}
+	{
+		if s.Strikethrough.Set {
+			e.FieldStart("strikethrough")
+			s.Strikethrough.Encode(e)
+		}
+	}
+	{
+		if s.Shadow.Set {
+			e.FieldStart("shadow")
+			s.Shadow.Encode(e)
+		}
+	}
+	{
+		if s.Translucent.Set {
+			e.FieldStart("translucent")
+			s.Translucent.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfTextStyle = [8]string{
+	0: "similar_font_family",
+	1: "foreground_color",
+	2: "bold",
+	3: "italic",
+	4: "underline",
+	5: "strikethrough",
+	6: "shadow",
+	7: "translucent",
+}
+
+// Decode decodes TextStyle from json.
+func (s *TextStyle) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode TextStyle to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "similar_font_family":
+			if err := func() error {
+				s.SimilarFontFamily.Reset()
+				if err := s.SimilarFontFamily.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"similar_font_family\"")
+			}
+		case "foreground_color":
+			if err := func() error {
+				s.ForegroundColor.Reset()
+				if err := s.ForegroundColor.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"foreground_color\"")
+			}
+		case "bold":
+			if err := func() error {
+				s.Bold.Reset()
+				if err := s.Bold.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"bold\"")
+			}
+		case "italic":
+			if err := func() error {
+				s.Italic.Reset()
+				if err := s.Italic.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"italic\"")
+			}
+		case "underline":
+			if err := func() error {
+				s.Underline.Reset()
+				if err := s.Underline.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"underline\"")
+			}
+		case "strikethrough":
+			if err := func() error {
+				s.Strikethrough.Reset()
+				if err := s.Strikethrough.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"strikethrough\"")
+			}
+		case "shadow":
+			if err := func() error {
+				s.Shadow.Reset()
+				if err := s.Shadow.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"shadow\"")
+			}
+		case "translucent":
+			if err := func() error {
+				s.Translucent.Reset()
+				if err := s.Translucent.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"translucent\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode TextStyle")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *TextStyle) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *TextStyle) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

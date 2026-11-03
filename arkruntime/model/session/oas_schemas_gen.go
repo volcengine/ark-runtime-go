@@ -3610,7 +3610,15 @@ type ManagedAgentsUserCustomToolResultEventParams struct {
 	IsError OptBool `json:"is_error"`
 	// 目标 session id。.
 	SessionID OptString `json:"session_id"`
-	// 目标 session_thread_id。.
+	// 目标 session_thread_id；可选，且不要求客户端回填。
+	// 缺省（字段缺失或空串）不是错误：服务端按 `custom_tool_use_id`
+	// 反查该次工具
+	// 调用的权威归属 thread（multi-agent 下可能是子
+	// thread），把结果路由回它。显式
+	// 传入时必须与服务端反查结果一致，不一致是 typed error。
+	// self-hosted 宿主按事件投递顺序串行执行工具，不需要 thread
+	// 身份，正确路由不依赖
+	// 本字段。.
 	SessionThreadID OptString `json:"session_thread_id"`
 }
 
@@ -3817,7 +3825,14 @@ type ManagedAgentsUserToolConfirmationEventParams struct {
 	DenyMessage OptString `json:"deny_message"`
 	// 目标 session id。.
 	SessionID OptString `json:"session_id"`
-	// 目标 session_thread_id。.
+	// 目标 session_thread_id；可选，且不要求客户端回填。
+	// 缺省（字段缺失或空串）不是错误：服务端按 `tool_use_id`
+	// 反查该次工具调用的权威
+	// 归属 thread（multi-agent 下可能是子
+	// thread），把授权结果路由回它。显式传入时
+	// 必须与服务端反查结果一致，不一致是 typed
+	// error；客户端不得用该字段把结果投到
+	// 别的 thread。.
 	SessionThreadID OptString `json:"session_thread_id"`
 	// 关联的 turn id。.
 	TurnID OptString `json:"turn_id"`
@@ -3895,7 +3910,15 @@ type ManagedAgentsUserToolResultEventParams struct {
 	IsError OptBool `json:"is_error"`
 	// 目标 session id。.
 	SessionID OptString `json:"session_id"`
-	// 目标 session_thread_id。.
+	// 目标 session_thread_id；可选，且不要求客户端回填。
+	// 缺省（字段缺失或空串）不是错误：服务端按 `tool_use_id`
+	// 反查该次工具调用的权威
+	// 归属 thread（multi-agent 下可能是子
+	// thread），把结果路由回它。显式传入时必须与
+	// 服务端反查结果一致，不一致是 typed error。
+	// self-hosted 宿主按事件投递顺序串行执行工具，不需要 thread 身份；
+	// `agent.tool_use` 的 wire 上可能不带 `session_thread_id`，也可能由服务端
+	// 为投影补全。宿主不得依赖该字段，正确路由始终不依赖本字段。.
 	SessionThreadID OptString `json:"session_thread_id"`
 }
 
@@ -4038,8 +4061,11 @@ type ModelOverrides struct {
 	// 自定义模型接入点 base URL。配合非 ark 的 `provider` 使用，把 Session
 	// 快照里冻结的上游替换成当前环境可达的接入点。.
 	BaseURL OptString `json:"base_url"`
-	// 自定义模型请求 header（整组覆写），例如 `Authorization` 或
-	// `X-Trial-Id`；key / value 均为字符串。.
+	// 自定义模型请求 header（整组覆写），例如 `X-Trial-Id`；key / value 均为
+	// 字符串。
+	// 新接入只允许非认证类静态 header。认证 header 必须通过 SendEvent 请求上的
+	// `X-User-Model-Header-*` 按请求提供，不得写入本字段。服务端对历史请求的
+	// 兼容行为不构成新客户端可依赖的公开能力。.
 	Headers OptModelOverridesHeaders `json:"headers"`
 	// 模型 token 限制覆写（整体替换，提供时内部三字段必填且为正数）；
 	// 非 ark provider 可用，ark provider 指定返回 400。.
@@ -4161,8 +4187,11 @@ func (s *ModelOverrides) SetInputModalities(val []string) {
 	s.InputModalities = val
 }
 
-// 自定义模型请求 header（整组覆写），例如 `Authorization` 或
-// `X-Trial-Id`；key / value 均为字符串。.
+// 自定义模型请求 header（整组覆写），例如 `X-Trial-Id`；key / value 均为
+// 字符串。
+// 新接入只允许非认证类静态 header。认证 header 必须通过 SendEvent 请求上的
+// `X-User-Model-Header-*` 按请求提供，不得写入本字段。服务端对历史请求的
+// 兼容行为不构成新客户端可依赖的公开能力。.
 type ModelOverridesHeaders map[string]string
 
 func (s *ModelOverridesHeaders) init() ModelOverridesHeaders {
@@ -4198,6 +4227,23 @@ type ModelUpgrades struct {
 	ReasoningEffort OptString `json:"reasoning_effort"`
 	// 服务档位。.
 	ServiceTier OptString `json:"service_tier"`
+	// 目标模型提供方。
+	// 切到非 `ark` provider 时，`base_url` 与 `token_limits` 必填（可继承
+	// 当前 Session 快照中已有的值，否则返回 400）；`ark` provider 不允许
+	// 指定 `token_limits`。.
+	Provider OptString `json:"provider"`
+	// 目标模型接入协议；取值须命中服务端维护的接入协议白名单，非法值返回
+	// 400。.
+	Protocol OptString `json:"protocol"`
+	// 自定义模型接入点 base URL。配合非 `ark` 的 `provider` 使用。.
+	BaseURL OptString `json:"base_url"`
+	// 模型静态请求 header（整组覆写）。
+	// 仅用于非认证类静态 header；认证 header 必须由 SendEvent 请求上的
+	// `X-User-Model-Header-*` 动态提供。.
+	Headers OptModelUpgradesHeaders `json:"headers"`
+	// 模型 token 限制。非 `ark` provider 提供时必须包含三个字段；可继承
+	// 当前 Session 快照中已有的值。.
+	TokenLimits OptOverrideTokenLimits `json:"token_limits"`
 }
 
 // GetID returns the value of ID.
@@ -4225,6 +4271,31 @@ func (s *ModelUpgrades) GetServiceTier() OptString {
 	return s.ServiceTier
 }
 
+// GetProvider returns the value of Provider.
+func (s *ModelUpgrades) GetProvider() OptString {
+	return s.Provider
+}
+
+// GetProtocol returns the value of Protocol.
+func (s *ModelUpgrades) GetProtocol() OptString {
+	return s.Protocol
+}
+
+// GetBaseURL returns the value of BaseURL.
+func (s *ModelUpgrades) GetBaseURL() OptString {
+	return s.BaseURL
+}
+
+// GetHeaders returns the value of Headers.
+func (s *ModelUpgrades) GetHeaders() OptModelUpgradesHeaders {
+	return s.Headers
+}
+
+// GetTokenLimits returns the value of TokenLimits.
+func (s *ModelUpgrades) GetTokenLimits() OptOverrideTokenLimits {
+	return s.TokenLimits
+}
+
 // SetID sets the value of ID.
 func (s *ModelUpgrades) SetID(val OptString) {
 	s.ID = val
@@ -4248,6 +4319,45 @@ func (s *ModelUpgrades) SetReasoningEffort(val OptString) {
 // SetServiceTier sets the value of ServiceTier.
 func (s *ModelUpgrades) SetServiceTier(val OptString) {
 	s.ServiceTier = val
+}
+
+// SetProvider sets the value of Provider.
+func (s *ModelUpgrades) SetProvider(val OptString) {
+	s.Provider = val
+}
+
+// SetProtocol sets the value of Protocol.
+func (s *ModelUpgrades) SetProtocol(val OptString) {
+	s.Protocol = val
+}
+
+// SetBaseURL sets the value of BaseURL.
+func (s *ModelUpgrades) SetBaseURL(val OptString) {
+	s.BaseURL = val
+}
+
+// SetHeaders sets the value of Headers.
+func (s *ModelUpgrades) SetHeaders(val OptModelUpgradesHeaders) {
+	s.Headers = val
+}
+
+// SetTokenLimits sets the value of TokenLimits.
+func (s *ModelUpgrades) SetTokenLimits(val OptOverrideTokenLimits) {
+	s.TokenLimits = val
+}
+
+// 模型静态请求 header（整组覆写）。
+// 仅用于非认证类静态 header；认证 header 必须由 SendEvent 请求上的
+// `X-User-Model-Header-*` 动态提供。.
+type ModelUpgradesHeaders map[string]string
+
+func (s *ModelUpgradesHeaders) init() ModelUpgradesHeaders {
+	m := *s
+	if m == nil {
+		m = map[string]string{}
+		*s = m
+	}
+	return m
 }
 
 // NewOptAgentIdentifier returns new OptAgentIdentifier with value set to v.
@@ -5394,6 +5504,52 @@ func (o OptModelUpgrades) Get() (v ModelUpgrades, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptModelUpgrades) Or(d ModelUpgrades) ModelUpgrades {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptModelUpgradesHeaders returns new OptModelUpgradesHeaders with value set to v.
+func NewOptModelUpgradesHeaders(v ModelUpgradesHeaders) OptModelUpgradesHeaders {
+	return OptModelUpgradesHeaders{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptModelUpgradesHeaders is optional ModelUpgradesHeaders.
+type OptModelUpgradesHeaders struct {
+	Value ModelUpgradesHeaders
+	Set   bool
+}
+
+// IsSet returns true if OptModelUpgradesHeaders was set.
+func (o OptModelUpgradesHeaders) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptModelUpgradesHeaders) Reset() {
+	var v ModelUpgradesHeaders
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptModelUpgradesHeaders) SetTo(v ModelUpgradesHeaders) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptModelUpgradesHeaders) Get() (v ModelUpgradesHeaders, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptModelUpgradesHeaders) Or(d ModelUpgradesHeaders) ModelUpgradesHeaders {
 	if v, ok := o.Get(); ok {
 		return v
 	}

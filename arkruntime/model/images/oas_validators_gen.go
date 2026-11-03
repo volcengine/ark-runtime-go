@@ -14,6 +14,8 @@ import (
 
 func (s Background) Validate() error {
 	switch s {
+	case "auto":
+		return nil
 	case "opaque":
 		return nil
 	case "transparent":
@@ -242,6 +244,24 @@ func (s *ImageDataItem) Validate() error {
 			Error: err,
 		})
 	}
+	if err := func() error {
+		if value, ok := s.Background.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "background",
+			Error: err,
+		})
+	}
 	if len(failures) > 0 {
 		return &validate.Error{Fields: failures}
 	}
@@ -410,6 +430,17 @@ func (s *OptimizePromptOptions) Validate() error {
 		return &validate.Error{Fields: failures}
 	}
 	return nil
+}
+
+func (s OutputBackground) Validate() error {
+	switch s {
+	case "opaque":
+		return nil
+	case "transparent":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
 }
 
 func (s OutputFormat) Validate() error {

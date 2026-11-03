@@ -67,7 +67,55 @@ func TestUpgradeSessionValidation(t *testing.T) {
 	if _, err := client.UpgradeSession(context.Background(), "", &session.CreateSessionUpgradeRequest{}); err == nil || err.Error() != "missing required session_id" {
 		t.Fatalf("UpgradeSession() error = %v, want missing required session_id", err)
 	}
-	if _, err := client.UpgradeSession(context.Background(), "sess-1", nil); err == nil || err.Error() != "missing required request body" {
+	if _, err := client.UpgradeSession(context.Background(), testSessionID, nil); err == nil || err.Error() != "missing required request body" {
 		t.Fatalf("UpgradeSession() error = %v, want missing required request body", err)
+	}
+}
+
+func TestListSessionsAcceptsNullArchivedAt(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet || r.URL.Path != "/sessions" {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{
+			"data":[{
+				"id":"sess-1",
+				"type":"session",
+				"status":"running",
+				"environment_id":"env-1",
+				"agent":{"id":"agent-1","type":"agent","tools":[]},
+				"created_at":"2026-10-23T10:00:00Z",
+				"updated_at":"2026-10-23T10:00:00Z",
+				"archived_at":null,
+				"scene":"default",
+				"stats":{"active_seconds":0,"duration_seconds":0}
+			},{
+				"id":"sess-2",
+				"type":"session",
+				"status":"running",
+				"environment_id":"env-2",
+				"agent":{"id":"agent-2","type":"agent","tools":[]},
+				"created_at":"2026-10-23T10:00:00Z",
+				"updated_at":"2026-10-23T10:00:00Z",
+				"scene":"default",
+				"stats":{"active_seconds":0,"duration_seconds":0}
+			}],
+			"next_page":"next"
+		}`))
+	}))
+	defer server.Close()
+
+	client := NewClientWithApiKey("test-api-key", WithBaseUrl(server.URL))
+	got, err := client.ListSessions(context.Background(), nil)
+	if err != nil {
+		t.Fatalf("ListSessions() error = %v", err)
+	}
+	if len(got.Data) != 2 || got.Data[0].ID != testSessionID || got.Data[1].ID != "sess-2" {
+		t.Fatalf("sessions = %+v", got.Data)
+	}
+	if next, ok := got.NextPage.Get(); !ok || next != "next" {
+		t.Fatalf("next_page = %q, set=%v", next, ok)
 	}
 }

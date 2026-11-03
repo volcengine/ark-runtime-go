@@ -507,7 +507,7 @@ type CreateAgentRequest struct {
 	Tools []ToolItem `json:"tools"`
 	// Skill 引用列表。.
 	Skills []AgentSkillRef `json:"skills"`
-	// 多 Agent 编排拓扑。.
+	// 多 Agent 编排拓扑。multiagent_20261001 时 subagents 必填且不能为 null。.
 	Multiagent OptMultiagentConfig `json:"multiagent"`
 	// 用户自定义键值对元数据。.
 	Metadata OptCreateAgentRequestMetadata `json:"metadata"`
@@ -842,6 +842,21 @@ type ModelConfig struct {
 	Thinking OptString `json:"thinking"`
 	// 推理努力程度。.
 	ReasoningEffort OptString `json:"reasoning_effort"`
+	// 服务档位。.
+	ServiceTier OptString `json:"service_tier"`
+	// 自定义模型接入点 base URL。
+	// 配合非 `ark` 的 `provider` 使用。非 `ark` provider 必须提供本字段与
+	// `token_limits`；`ark` provider 指定本字段返回 400。.
+	BaseURL OptString `json:"base_url"`
+	// 模型接入协议。
+	// 取值须命中服务端维护的接入协议白名单，非法值返回 400。.
+	Protocol OptString `json:"protocol"`
+	// 模型静态请求 header。
+	// 仅用于非认证类静态 header，例如 `X-Trial-Id`。`Authorization` /
+	// `X-Api-Key` 等认证 header 不得写入本字段，必须由 SendEvent 请求上的
+	// `X-User-Model-Header-*` 动态提供。服务端对历史请求的兼容行为不构成新
+	// 客户端可依赖的公开能力。.
+	Headers OptModelConfigHeaders `json:"headers"`
 }
 
 // GetID returns the value of ID.
@@ -879,6 +894,26 @@ func (s *ModelConfig) GetReasoningEffort() OptString {
 	return s.ReasoningEffort
 }
 
+// GetServiceTier returns the value of ServiceTier.
+func (s *ModelConfig) GetServiceTier() OptString {
+	return s.ServiceTier
+}
+
+// GetBaseURL returns the value of BaseURL.
+func (s *ModelConfig) GetBaseURL() OptString {
+	return s.BaseURL
+}
+
+// GetProtocol returns the value of Protocol.
+func (s *ModelConfig) GetProtocol() OptString {
+	return s.Protocol
+}
+
+// GetHeaders returns the value of Headers.
+func (s *ModelConfig) GetHeaders() OptModelConfigHeaders {
+	return s.Headers
+}
+
 // SetID sets the value of ID.
 func (s *ModelConfig) SetID(val string) {
 	s.ID = val
@@ -912,6 +947,42 @@ func (s *ModelConfig) SetThinking(val OptString) {
 // SetReasoningEffort sets the value of ReasoningEffort.
 func (s *ModelConfig) SetReasoningEffort(val OptString) {
 	s.ReasoningEffort = val
+}
+
+// SetServiceTier sets the value of ServiceTier.
+func (s *ModelConfig) SetServiceTier(val OptString) {
+	s.ServiceTier = val
+}
+
+// SetBaseURL sets the value of BaseURL.
+func (s *ModelConfig) SetBaseURL(val OptString) {
+	s.BaseURL = val
+}
+
+// SetProtocol sets the value of Protocol.
+func (s *ModelConfig) SetProtocol(val OptString) {
+	s.Protocol = val
+}
+
+// SetHeaders sets the value of Headers.
+func (s *ModelConfig) SetHeaders(val OptModelConfigHeaders) {
+	s.Headers = val
+}
+
+// 模型静态请求 header。
+// 仅用于非认证类静态 header，例如 `X-Trial-Id`。`Authorization` /
+// `X-Api-Key` 等认证 header 不得写入本字段，必须由 SendEvent 请求上的
+// `X-User-Model-Header-*` 动态提供。服务端对历史请求的兼容行为不构成新
+// 客户端可依赖的公开能力。.
+type ModelConfigHeaders map[string]string
+
+func (s *ModelConfigHeaders) init() ModelConfigHeaders {
+	m := *s
+	if m == nil {
+		m = map[string]string{}
+		*s = m
+	}
+	return m
 }
 
 // 模型速度档位。空字符串走默认。.
@@ -957,14 +1028,24 @@ func (s *ModelSpeed) UnmarshalText(data []byte) error {
 	}
 }
 
-// 多 Agent 协调拓扑。.
+// 多 Agent 协调拓扑。`type` 当前支持 `coordinator` 与
+// `multiagent_20261001`。
+// - `coordinator` 使用 `agents`；`subagents` 会被服务端忽略。
+// - `multiagent_20261001` 使用 `subagents`；非空 `agents` 返回 400。
+// - 拓扑迁移只允许 `coordinator` 或单 Agent 升级到
+// `multiagent_20261001`；反之返回 400。
+// - `subagents` 表示拓扑配置值；Update 的 presence / null patch 语义由
+// `MultiagentPatch` 单独表达。.
 // Ref: #/components/schemas/MultiagentConfig
 type MultiagentConfig struct {
 	// 拓扑类型。.
 	Type MultiagentType `json:"type"`
-	// 下属 Agent 数组，1–20 项；深度限制为 1（被引用的 Agent 自身不能再有
-	// `multiagent`）。.
+	// Coordinator 的下属 Agent 数组，0–20 项；深度限制为 1。
+	// `multiagent_20261001` 不支持该字段。.
 	Agents []AgentRef `json:"agents"`
+	// `multiagent_20261001` 的子代理配置。
+	// Create 时必须提供。该属性不接受显式 `null`。.
+	Subagents OptMultiagentSubagentsConfig `json:"subagents"`
 }
 
 // GetType returns the value of Type.
@@ -977,6 +1058,11 @@ func (s *MultiagentConfig) GetAgents() []AgentRef {
 	return s.Agents
 }
 
+// GetSubagents returns the value of Subagents.
+func (s *MultiagentConfig) GetSubagents() OptMultiagentSubagentsConfig {
+	return s.Subagents
+}
+
 // SetType sets the value of Type.
 func (s *MultiagentConfig) SetType(val MultiagentType) {
 	s.Type = val
@@ -987,18 +1073,190 @@ func (s *MultiagentConfig) SetAgents(val []AgentRef) {
 	s.Agents = val
 }
 
+// SetSubagents sets the value of Subagents.
+func (s *MultiagentConfig) SetSubagents(val OptMultiagentSubagentsConfig) {
+	s.Subagents = val
+}
+
+// 多 Agent 子代理能力开关。.
+// Ref: #/components/schemas/MultiagentFeatureType
+type MultiagentFeatureType string
+
+const (
+	MultiagentFeatureTypeEnabled  MultiagentFeatureType = "enabled"
+	MultiagentFeatureTypeDisabled MultiagentFeatureType = "disabled"
+)
+
+// AllValues returns all MultiagentFeatureType values.
+func (MultiagentFeatureType) AllValues() []MultiagentFeatureType {
+	return []MultiagentFeatureType{
+		MultiagentFeatureTypeEnabled,
+		MultiagentFeatureTypeDisabled,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s MultiagentFeatureType) MarshalText() ([]byte, error) {
+	switch s {
+	case MultiagentFeatureTypeEnabled:
+		return []byte(s), nil
+	case MultiagentFeatureTypeDisabled:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *MultiagentFeatureType) UnmarshalText(data []byte) error {
+	switch MultiagentFeatureType(data) {
+	case MultiagentFeatureTypeEnabled:
+		*s = MultiagentFeatureTypeEnabled
+		return nil
+	case MultiagentFeatureTypeDisabled:
+		*s = MultiagentFeatureTypeDisabled
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// `multiagent_20261001` 的 inline 子代理能力开关。.
+// Ref: #/components/schemas/MultiagentInlineAgentsConfig
+type MultiagentInlineAgentsConfig struct {
+	// Inline 子代理能力开关。.
+	Type MultiagentFeatureType `json:"type"`
+}
+
+// GetType returns the value of Type.
+func (s *MultiagentInlineAgentsConfig) GetType() MultiagentFeatureType {
+	return s.Type
+}
+
+// SetType sets the value of Type.
+func (s *MultiagentInlineAgentsConfig) SetType(val MultiagentFeatureType) {
+	s.Type = val
+}
+
+// UpdateAgent 的多 Agent 编排 patch。
+// 顶层省略 = 不改，显式 `null` = 移除。同为 multiagent_20261001 时，
+// subagents 省略会保留当前配置；subagents 显式 `null` 会重置为默认配置。
+// subagents 内层的 inline_agents / predefined_agents 按字段是否显式出现合并，
+// 省略保留，显式 `null` 按各自重置语义处理，predefined_agents 显式 `[]`
+// 清空名册。coordinator 的 agents 传值时整体替换名册，省略等价于空名册。.
+// Ref: #/components/schemas/MultiagentPatch
+type MultiagentPatch struct {
+	// 拓扑类型。.
+	Type MultiagentType `json:"type"`
+	// Coordinator 的下属 Agent 数组，0–20 项；深度限制为 1。
+	// `multiagent_20261001` 不支持该字段。省略或显式 `[]` 都表示清空名册，
+	// 非空数组整体替换名册。.
+	Agents []AgentRef `json:"agents"`
+	// `multiagent_20261001` 的子代理 patch。省略保留当前配置，显式 `null`
+	// 重置为 `enabled` + inline `enabled` + 空名册。.
+	Subagents OptNilMultiagentSubagentsConfig `json:"subagents"`
+}
+
+// GetType returns the value of Type.
+func (s *MultiagentPatch) GetType() MultiagentType {
+	return s.Type
+}
+
+// GetAgents returns the value of Agents.
+func (s *MultiagentPatch) GetAgents() []AgentRef {
+	return s.Agents
+}
+
+// GetSubagents returns the value of Subagents.
+func (s *MultiagentPatch) GetSubagents() OptNilMultiagentSubagentsConfig {
+	return s.Subagents
+}
+
+// SetType sets the value of Type.
+func (s *MultiagentPatch) SetType(val MultiagentType) {
+	s.Type = val
+}
+
+// SetAgents sets the value of Agents.
+func (s *MultiagentPatch) SetAgents(val []AgentRef) {
+	s.Agents = val
+}
+
+// SetSubagents sets the value of Subagents.
+func (s *MultiagentPatch) SetSubagents(val OptNilMultiagentSubagentsConfig) {
+	s.Subagents = val
+}
+
+// `multiagent_20261001` 的子代理配置。
+// 在 UpdateAgent patch 中，`inline_agents` / `predefined_agents` 的显式
+// `null` 与省略具有不同语义。Java typed model 将 `null` 序列化为省略；
+// 需要显式 `null` 的 Java 调用方必须使用 raw request body。.
+// Ref: #/components/schemas/MultiagentSubagentsConfig
+type MultiagentSubagentsConfig struct {
+	// 子代理能力开关。.
+	Type MultiagentFeatureType `json:"type"`
+	// Inline 子代理能力开关。`subagents.type=enabled` 的 Create 中，省略或
+	// 显式 `null` 按 `enabled` 处理。UpdateAgent patch 中省略表示保留当前值，
+	// 显式 `null` 重置为 `enabled`。
+	// 服务端响应在 `subagents.type` 为 `disabled` 时可能返回 `null`；客户端
+	// 必须接受该 wire，并将它视为未配置 inline 能力。.
+	InlineAgents OptNilMultiagentInlineAgentsConfig `json:"inline_agents"`
+	// 预定义 Agent 引用数组，最多 20 项；显式传入时整体替换。
+	// 服务端查询被引用 Agent 时会按 `id` 去重校验，但不会改写成员名册；
+	// 重复引用、自引用和循环引用按请求中的原顺序保存、冻结和展开，并受
+	// Session 的最大展开深度限制。
+	// `inline_agents` 省略时按 `enabled` 处理；此时 Create 省略本字段等价于
+	// 空名册。UpdateAgent patch 中省略表示保留当前值，显式 `null` 等价于
+	// `[]`，显式数组整体替换。`inline_agents.type` 显式为 `disabled` 时必须
+	// 提供本字段（可为 `[]`）。服务端响应可能返回
+	// `null`；客户端须按空名册处理。.
+	PredefinedAgents OptNilAgentRefArray `json:"predefined_agents"`
+}
+
+// GetType returns the value of Type.
+func (s *MultiagentSubagentsConfig) GetType() MultiagentFeatureType {
+	return s.Type
+}
+
+// GetInlineAgents returns the value of InlineAgents.
+func (s *MultiagentSubagentsConfig) GetInlineAgents() OptNilMultiagentInlineAgentsConfig {
+	return s.InlineAgents
+}
+
+// GetPredefinedAgents returns the value of PredefinedAgents.
+func (s *MultiagentSubagentsConfig) GetPredefinedAgents() OptNilAgentRefArray {
+	return s.PredefinedAgents
+}
+
+// SetType sets the value of Type.
+func (s *MultiagentSubagentsConfig) SetType(val MultiagentFeatureType) {
+	s.Type = val
+}
+
+// SetInlineAgents sets the value of InlineAgents.
+func (s *MultiagentSubagentsConfig) SetInlineAgents(val OptNilMultiagentInlineAgentsConfig) {
+	s.InlineAgents = val
+}
+
+// SetPredefinedAgents sets the value of PredefinedAgents.
+func (s *MultiagentSubagentsConfig) SetPredefinedAgents(val OptNilAgentRefArray) {
+	s.PredefinedAgents = val
+}
+
 // 多 Agent 拓扑类型。.
 // Ref: #/components/schemas/MultiagentType
 type MultiagentType string
 
 const (
-	MultiagentTypeCoordinator MultiagentType = "coordinator"
+	MultiagentTypeCoordinator        MultiagentType = "coordinator"
+	MultiagentTypeMultiagent20261001 MultiagentType = "multiagent_20261001"
 )
 
 // AllValues returns all MultiagentType values.
 func (MultiagentType) AllValues() []MultiagentType {
 	return []MultiagentType{
 		MultiagentTypeCoordinator,
+		MultiagentTypeMultiagent20261001,
 	}
 }
 
@@ -1006,6 +1264,8 @@ func (MultiagentType) AllValues() []MultiagentType {
 func (s MultiagentType) MarshalText() ([]byte, error) {
 	switch s {
 	case MultiagentTypeCoordinator:
+		return []byte(s), nil
+	case MultiagentTypeMultiagent20261001:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -1017,6 +1277,9 @@ func (s *MultiagentType) UnmarshalText(data []byte) error {
 	switch MultiagentType(data) {
 	case MultiagentTypeCoordinator:
 		*s = MultiagentTypeCoordinator
+		return nil
+	case MultiagentTypeMultiagent20261001:
+		*s = MultiagentTypeMultiagent20261001
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -1391,6 +1654,52 @@ func (o OptModelConfig) Or(d ModelConfig) ModelConfig {
 	return d
 }
 
+// NewOptModelConfigHeaders returns new OptModelConfigHeaders with value set to v.
+func NewOptModelConfigHeaders(v ModelConfigHeaders) OptModelConfigHeaders {
+	return OptModelConfigHeaders{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptModelConfigHeaders is optional ModelConfigHeaders.
+type OptModelConfigHeaders struct {
+	Value ModelConfigHeaders
+	Set   bool
+}
+
+// IsSet returns true if OptModelConfigHeaders was set.
+func (o OptModelConfigHeaders) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptModelConfigHeaders) Reset() {
+	var v ModelConfigHeaders
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptModelConfigHeaders) SetTo(v ModelConfigHeaders) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptModelConfigHeaders) Get() (v ModelConfigHeaders, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptModelConfigHeaders) Or(d ModelConfigHeaders) ModelConfigHeaders {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptModelSpeed returns new OptModelSpeed with value set to v.
 func NewOptModelSpeed(v ModelSpeed) OptModelSpeed {
 	return OptModelSpeed{
@@ -1477,6 +1786,301 @@ func (o OptMultiagentConfig) Get() (v MultiagentConfig, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptMultiagentConfig) Or(d MultiagentConfig) MultiagentConfig {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptMultiagentPatch returns new OptMultiagentPatch with value set to v.
+func NewOptMultiagentPatch(v MultiagentPatch) OptMultiagentPatch {
+	return OptMultiagentPatch{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptMultiagentPatch is optional MultiagentPatch.
+type OptMultiagentPatch struct {
+	Value MultiagentPatch
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptMultiagentPatch was set.
+func (o OptMultiagentPatch) IsSet() bool { return o.Set }
+
+// IsNull returns true if MultiagentPatch is set to null.
+func (o OptMultiagentPatch) IsNull() bool { return o.Null }
+
+// Reset unsets value.
+func (o *OptMultiagentPatch) Reset() {
+	var v MultiagentPatch
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptMultiagentPatch) SetTo(v MultiagentPatch) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// SetToNull sets value to null.
+func (o *OptMultiagentPatch) SetToNull() {
+	var v MultiagentPatch
+	o.Set = true
+	o.Null = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptMultiagentPatch) Get() (v MultiagentPatch, ok bool) {
+	if !o.Set || o.Null {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptMultiagentPatch) Or(d MultiagentPatch) MultiagentPatch {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptMultiagentSubagentsConfig returns new OptMultiagentSubagentsConfig with value set to v.
+func NewOptMultiagentSubagentsConfig(v MultiagentSubagentsConfig) OptMultiagentSubagentsConfig {
+	return OptMultiagentSubagentsConfig{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptMultiagentSubagentsConfig is optional MultiagentSubagentsConfig.
+type OptMultiagentSubagentsConfig struct {
+	Value MultiagentSubagentsConfig
+	Set   bool
+}
+
+// IsSet returns true if OptMultiagentSubagentsConfig was set.
+func (o OptMultiagentSubagentsConfig) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptMultiagentSubagentsConfig) Reset() {
+	var v MultiagentSubagentsConfig
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptMultiagentSubagentsConfig) SetTo(v MultiagentSubagentsConfig) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptMultiagentSubagentsConfig) Get() (v MultiagentSubagentsConfig, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptMultiagentSubagentsConfig) Or(d MultiagentSubagentsConfig) MultiagentSubagentsConfig {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilAgentRefArray returns new OptNilAgentRefArray with value set to v.
+func NewOptNilAgentRefArray(v []AgentRef) OptNilAgentRefArray {
+	return OptNilAgentRefArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilAgentRefArray is optional nullable []AgentRef.
+type OptNilAgentRefArray struct {
+	Value []AgentRef
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilAgentRefArray was set.
+func (o OptNilAgentRefArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilAgentRefArray) Reset() {
+	var v []AgentRef
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilAgentRefArray) SetTo(v []AgentRef) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilAgentRefArray) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilAgentRefArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []AgentRef
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilAgentRefArray) Get() (v []AgentRef, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilAgentRefArray) Or(d []AgentRef) []AgentRef {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMultiagentInlineAgentsConfig returns new OptNilMultiagentInlineAgentsConfig with value set to v.
+func NewOptNilMultiagentInlineAgentsConfig(v MultiagentInlineAgentsConfig) OptNilMultiagentInlineAgentsConfig {
+	return OptNilMultiagentInlineAgentsConfig{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMultiagentInlineAgentsConfig is optional nullable MultiagentInlineAgentsConfig.
+type OptNilMultiagentInlineAgentsConfig struct {
+	Value MultiagentInlineAgentsConfig
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMultiagentInlineAgentsConfig was set.
+func (o OptNilMultiagentInlineAgentsConfig) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMultiagentInlineAgentsConfig) Reset() {
+	var v MultiagentInlineAgentsConfig
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMultiagentInlineAgentsConfig) SetTo(v MultiagentInlineAgentsConfig) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMultiagentInlineAgentsConfig) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMultiagentInlineAgentsConfig) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MultiagentInlineAgentsConfig
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMultiagentInlineAgentsConfig) Get() (v MultiagentInlineAgentsConfig, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMultiagentInlineAgentsConfig) Or(d MultiagentInlineAgentsConfig) MultiagentInlineAgentsConfig {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMultiagentSubagentsConfig returns new OptNilMultiagentSubagentsConfig with value set to v.
+func NewOptNilMultiagentSubagentsConfig(v MultiagentSubagentsConfig) OptNilMultiagentSubagentsConfig {
+	return OptNilMultiagentSubagentsConfig{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMultiagentSubagentsConfig is optional nullable MultiagentSubagentsConfig.
+type OptNilMultiagentSubagentsConfig struct {
+	Value MultiagentSubagentsConfig
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMultiagentSubagentsConfig was set.
+func (o OptNilMultiagentSubagentsConfig) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMultiagentSubagentsConfig) Reset() {
+	var v MultiagentSubagentsConfig
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMultiagentSubagentsConfig) SetTo(v MultiagentSubagentsConfig) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMultiagentSubagentsConfig) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMultiagentSubagentsConfig) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MultiagentSubagentsConfig
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMultiagentSubagentsConfig) Get() (v MultiagentSubagentsConfig, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMultiagentSubagentsConfig) Or(d MultiagentSubagentsConfig) MultiagentSubagentsConfig {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -1852,7 +2456,9 @@ func (s *Tag) SetValue(val OptString) {
 	s.Value = val
 }
 
-// 模型上下文与输入输出 token 限制。.
+// 模型上下文与输入输出 token 限制。
+// 三个字段保持 optional，是为了兼容 Ark provider 和旧数据；非 `ark` provider
+// 必须提供 `token_limits`，且三个字段必须全部存在且为正数，由服务端校验。.
 // Ref: #/components/schemas/TokenLimits
 type TokenLimits struct {
 	// 模型上下文窗口。.
@@ -2086,8 +2692,19 @@ type UpdateAgentRequest struct {
 	Tools []ToolItem `json:"tools"`
 	// Skill 引用列表（整体替换）。.
 	Skills []AgentSkillRef `json:"skills"`
-	// 多 Agent 编排拓扑。.
-	Multiagent OptMultiagentConfig `json:"multiagent"`
+	// 多 Agent 编排拓扑（patch）：顶层省略 = 不改，显式 `null` = 移除。
+	// 同为 multiagent_20261001 时，subagents 省略会保留当前配置；subagents
+	// 显式 `null` 会重置为默认配置。subagents 内层的 inline_agents /
+	// predefined_agents 也按字段是否显式出现进行合并，省略保留，显式 `null`
+	// 按各自重置语义处理，predefined_agents 显式 `[]` 清空名册。coordinator
+	// 的 agents 传值时整体替换名册，省略等价于空名册。
+	// 服务端支持显式
+	// `null`，但当前生成器无法让所有语言在强类型模型里统一区分
+	// “省略”和“显式 null”。当前 SDK 能表达时按其 request API
+	// 发送；不能表达时
+	// 必须使用 raw HTTP/request-body escape hatch。需要补齐的 typed patch API
+	// 由各 SDK 独立交付，不在本契约 MR 中新增。.
+	Multiagent OptMultiagentPatch `json:"multiagent"`
 	// 用户自定义键值对元数据（patch）。.
 	Metadata OptUpdateAgentRequestMetadata `json:"metadata"`
 	// 资源标签（整体替换）。.
@@ -2140,7 +2757,7 @@ func (s *UpdateAgentRequest) GetSkills() []AgentSkillRef {
 }
 
 // GetMultiagent returns the value of Multiagent.
-func (s *UpdateAgentRequest) GetMultiagent() OptMultiagentConfig {
+func (s *UpdateAgentRequest) GetMultiagent() OptMultiagentPatch {
 	return s.Multiagent
 }
 
@@ -2200,7 +2817,7 @@ func (s *UpdateAgentRequest) SetSkills(val []AgentSkillRef) {
 }
 
 // SetMultiagent sets the value of Multiagent.
-func (s *UpdateAgentRequest) SetMultiagent(val OptMultiagentConfig) {
+func (s *UpdateAgentRequest) SetMultiagent(val OptMultiagentPatch) {
 	s.Multiagent = val
 }
 
