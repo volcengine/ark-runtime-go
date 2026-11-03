@@ -15,12 +15,25 @@ import (
 	"github.com/volcengine/ark-runtime-go/arkruntime/toolset"
 )
 
-const runnerTestCallID = "call-id"
+const (
+	runnerTestCallID         = "call-id"
+	runnerTestConflictCallID = "call-1"
+)
 
 type runnerTestAPI struct {
 	listCalls int
 	listEvent Event
 	sent      []Event
+}
+
+type runnerConflictOnceAPI struct {
+	runnerTestAPI
+	cancel context.CancelFunc
+}
+
+func (a *runnerConflictOnceAPI) SendEvent(context.Context, SendEventRequest) error {
+	a.cancel()
+	return &APIError{StatusCode: http.StatusConflict, Message: "session busy"}
 }
 
 func (a *runnerTestAPI) PollWork(context.Context, PollWorkRequest) (*WorkItem, error) {
@@ -342,6 +355,47 @@ func TestSessionToolRunnerConflictIsRetryable(t *testing.T) {
 	err := &APIError{StatusCode: http.StatusConflict, Message: "temporary conflict"}
 	if isFatal4xxStatus(err) {
 		t.Fatal("409 conflict must remain retryable")
+	}
+}
+
+func TestSessionToolRunnerConflictUsesLongerRetryBudget(t *testing.T) {
+	conflict := &APIError{StatusCode: http.StatusConflict, Message: "session busy"}
+	if got := sendRetryLimit(conflict); got != sessionRunnerConflictSendRetries {
+		t.Fatalf("conflict retry limit = %d, want %d", got, sessionRunnerConflictSendRetries)
+	}
+	if got := sendRetryLimit(&APIError{StatusCode: http.StatusInternalServerError}); got != sessionRunnerSendRetries {
+		t.Fatalf("5xx retry limit = %d, want %d", got, sessionRunnerSendRetries)
+	}
+	if got := sendRetryBackoff(0, conflict); got != time.Second {
+		t.Fatalf("conflict backoff(0) = %s, want 1s", got)
+	}
+	if got := sendRetryBackoff(10, conflict); got != sessionRunnerConflictBackoffCap {
+		t.Fatalf("conflict backoff(10) = %s, want %s", got, sessionRunnerConflictBackoffCap)
+	}
+	if got := sendRetryBackoff(2, &APIError{StatusCode: http.StatusInternalServerError}); got != 3*time.Second {
+		t.Fatalf("5xx backoff(2) = %s, want 3s", got)
+	}
+	if got := conflictRetryDelay(10, 25*time.Second); got != 5*time.Second {
+		t.Fatalf("conflict retry cap delay = %s, want 5s", got)
+	}
+	if got := conflictRetryDelay(0, sessionRunnerConflictRetryWindow); got != 0 {
+		t.Fatalf("conflict exhausted delay = %s, want 0", got)
+	}
+}
+
+func TestSessionToolRunnerKeepsRetryableResultWithoutStore(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	api := &runnerConflictOnceAPI{cancel: cancel}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		Logger: log.New(io.Discard, "", 0),
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+	out := NewUserCustomToolResultEvent(runnerTestCallID, nil, false, "")
+
+	_ = state.sendResult(ctx, runnerTestCallID, Event{Name: "custom"}, true, "", out)
+	if pending, ok := state.pendingResults[runnerTestCallID]; !ok || pending.ID != out.ID {
+		t.Fatalf("retryable result was not retained: %+v", state.pendingResults)
 	}
 }
 
@@ -687,21 +741,25 @@ func TestSessionToolRunnerListReplayOfAnonymousInterruptDoesNotCancelLaterToolUs
 
 func newRunnerTestState(runner *SessionToolRunner) *toolRunnerState {
 	return &toolRunnerState{
-		runner:              runner,
-		processed:           map[string]bool{},
-		seen:                map[string]bool{},
-		answered:            map[string]bool{},
-		pendingResults:      map[string]Event{},
-		recoveredResults:    map[string]bool{},
-		pendingAsk:          map[string]Event{},
-		confirmations:       map[string]Event{},
-		externalTools:       map[string]Event{},
-		toolUseEvents:       map[string]Event{},
-		scheduled:           map[string]bool{},
-		executionDone:       make(chan toolExecutionResult, sessionRunnerResultsBuffer),
-		sessionToolUses:     map[string]bool{},
-		toolUsesSinceStatus: map[string]bool{},
-		blockingEventIDs:    map[string]bool{},
+		runner:                  runner,
+		processed:               map[string]bool{},
+		seen:                    map[string]bool{},
+		answered:                map[string]bool{},
+		pendingResults:          map[string]Event{},
+		recoveredResults:        map[string]bool{},
+		pendingAsk:              map[string]Event{},
+		confirmations:           map[string]Event{},
+		externalTools:           map[string]Event{},
+		toolUseEvents:           map[string]Event{},
+		toolUseCallIDByEventID:  map[string]string{},
+		scheduled:               map[string]bool{},
+		executionDone:           make(chan toolExecutionResult, sessionRunnerResultsBuffer),
+		sessionToolUses:         map[string]bool{},
+		toolUsesSinceStatus:     map[string]bool{},
+		blockingEventIDs:        map[string]bool{},
+		pendingBlockingEventIDs: map[string]bool{},
+		requiresActionFallback:  map[string]bool{},
+		fallbackCandidates:      map[string]bool{},
 	}
 }
 
@@ -744,6 +802,529 @@ func TestSessionToolRunnerResendsRecoveredCurrentBlockerWithoutExecuting(t *test
 		{ID: "current-call", Type: EventTypeAgentCustomToolUse, Name: tool.Name(), Input: RawJSON(`{}`)},
 		{ID: "idle", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
 			Type: SessionStopReasonRequiresAction, EventIDs: []string{"current-call"},
+		}},
+	}, true); err != nil {
+		t.Fatal(err)
+	}
+	if tool.calls != 0 || len(api.sent) != 1 || len(store.marked) != 1 {
+		t.Fatalf("tool_calls=%d sent=%d marked=%v", tool.calls, len(api.sent), store.marked)
+	}
+	if len(store.discarded) != 0 {
+		t.Fatalf("discarded=%v", store.discarded)
+	}
+}
+
+func TestEarlierRequiresActionSurvivesLaterIdle(t *testing.T) {
+	state := newRunnerTestState(nil)
+	state.observeSessionState(Event{
+		ID:              "use-1",
+		Type:            EventTypeAgentCustomToolUse,
+		Name:            "custom",
+		CustomToolUseID: runnerTestConflictCallID,
+		Input:           RawJSON(`{}`),
+	})
+	state.observeSessionState(Event{
+		Type: EventTypeSessionStatusIdle,
+		StopReason: &SessionStopReason{
+			Type:     SessionStopReasonRequiresAction,
+			EventIDs: []string{"use-1"},
+		},
+	})
+	state.observeSessionState(Event{
+		ID:              "use-2",
+		Type:            EventTypeAgentCustomToolUse,
+		Name:            "custom",
+		CustomToolUseID: "call-2",
+		Input:           RawJSON(`{}`),
+	})
+	state.observeSessionState(Event{
+		Type: EventTypeSessionStatusIdle,
+		StopReason: &SessionStopReason{
+			Type:     SessionStopReasonRequiresAction,
+			EventIDs: []string{"use-2"},
+		},
+	})
+
+	if !state.shouldHandleToolUse(runnerTestConflictCallID) {
+		t.Fatal("earlier requires_action tool use was forgotten after a later idle")
+	}
+	if !state.shouldHandleToolUse("call-2") {
+		t.Fatal("current requires_action tool use was not handled")
+	}
+
+	state.markAnswered(runnerTestConflictCallID)
+	if state.shouldHandleToolUse(runnerTestConflictCallID) {
+		t.Fatal("answered tool use remained pending")
+	}
+}
+
+func TestSessionToolRunnerReplaysUnresolvedToolUseWithEmptyLedger(t *testing.T) {
+	tool := &runnerTestTool{}
+	api := &runnerTestAPI{}
+	workdir := t.TempDir()
+	store, err := NewSessionFileToolResultStore(workdir, "session-id")
+	if err != nil {
+		t.Fatal(err)
+	}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		ResultStore: store,
+		Logger:      log.New(io.Discard, "", 0),
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+
+	if err := state.processListedEvents(context.Background(), []Event{
+		{ID: "running", Type: EventTypeSessionStatusRunning},
+		{
+			ID:              "sevt-use-1",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            tool.Name(),
+			CustomToolUseID: runnerTestConflictCallID,
+			Input:           RawJSON(`{}`),
+		},
+		{ID: "idle", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+			Type: SessionStopReasonRequiresAction, EventIDs: []string{"sevt-use-1"},
+		}},
+	}, true); err != nil {
+		t.Fatal(err)
+	}
+	finishRunnerTestExecution(t, state)
+
+	if tool.calls != 1 || len(api.sent) != 1 || api.sent[0].CustomToolUseID != runnerTestConflictCallID {
+		t.Fatalf("tool_calls=%d sent=%+v", tool.calls, api.sent)
+	}
+	pending, processed, err := store.Recover()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(pending) != 0 || !processed[runnerTestConflictCallID] {
+		t.Fatalf("pending=%v processed=%v", pending, processed)
+	}
+}
+
+func TestSessionToolRunnerReplaysBuiltinToolUseWithEmptyLedger(t *testing.T) {
+	api := &runnerTestAPI{}
+	workdir := t.TempDir()
+	tools, err := toolset.NewDefault(toolset.Options{
+		Workdir:     workdir,
+		ToolTimeout: time.Second,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = tools.Close() })
+	store, err := NewSessionFileToolResultStore(workdir, "session-id")
+	if err != nil {
+		t.Fatal(err)
+	}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		Tools:       tools,
+		ResultStore: store,
+		Logger:      log.New(io.Discard, "", 0),
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+
+	if err := state.processListedEvents(context.Background(), []Event{
+		{ID: "running", Type: EventTypeSessionStatusRunning},
+		{
+			ID:                  "sevt-use-1",
+			Type:                EventTypeAgentToolUse,
+			Name:                "bash",
+			ToolUseID:           runnerTestConflictCallID,
+			Input:               RawJSON(`{"command":"true"}`),
+			EvaluatedPermission: PermissionAllow,
+		},
+		{ID: "idle", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+			Type: SessionStopReasonRequiresAction, EventIDs: []string{"sevt-use-1"},
+		}},
+	}, true); err != nil {
+		t.Fatal(err)
+	}
+	finishRunnerTestExecution(t, state)
+
+	if len(api.sent) != 1 || api.sent[0].ToolUseID != runnerTestConflictCallID {
+		t.Fatalf("sent=%+v", api.sent)
+	}
+	if api.sent[0].IsError == nil || *api.sent[0].IsError {
+		t.Fatalf("sent=%+v", api.sent[0])
+	}
+}
+
+func TestSessionToolRunnerReplaysSoleUnmatchedRequiresAction(t *testing.T) {
+	tool := &runnerTestTool{}
+	api := &runnerTestAPI{}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		Logger:      log.New(io.Discard, "", 0),
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+
+	if err := state.processListedEvents(context.Background(), []Event{
+		{ID: "running", Type: EventTypeSessionStatusRunning},
+		{
+			ID:              "sevt-use-1",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            tool.Name(),
+			CustomToolUseID: runnerTestConflictCallID,
+			Input:           RawJSON(`{}`),
+		},
+		{ID: "idle", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+			Type: SessionStopReasonRequiresAction, EventIDs: []string{"opaque-use-id"},
+		}},
+	}, true); err != nil {
+		t.Fatal(err)
+	}
+	finishRunnerTestExecution(t, state)
+
+	if tool.calls != 1 || len(api.sent) != 1 || api.sent[0].CustomToolUseID != runnerTestConflictCallID {
+		t.Fatalf("tool_calls=%d sent=%+v", tool.calls, api.sent)
+	}
+	if len(state.requiresActionFallback) != 0 {
+		t.Fatalf("fallback=%v", state.requiresActionFallback)
+	}
+}
+
+func TestSessionToolRunnerDoesNotGuessOwnedToolForExternalBlocker(t *testing.T) {
+	tool := &runnerTestTool{}
+	api := &runnerTestAPI{}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		Logger:      log.New(io.Discard, "", 0),
+	})
+	runner.events = make(chan ToolCallResult, 2)
+	state := newRunnerTestState(runner)
+
+	if err := state.processListedEvents(context.Background(), []Event{
+		{ID: "running", Type: EventTypeSessionStatusRunning},
+		{
+			ID:              "use-owned",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            tool.Name(),
+			CustomToolUseID: "call-owned",
+			Input:           RawJSON(`{}`),
+		},
+		{
+			ID:              "use-external",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            "external",
+			CustomToolUseID: "call-external",
+			Input:           RawJSON(`{}`),
+		},
+		{ID: "idle", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+			Type: SessionStopReasonRequiresAction, EventIDs: []string{"use-external"},
+		}},
+	}, true); err != nil {
+		t.Fatal(err)
+	}
+
+	if state.scheduled["call-owned"] || tool.calls != 0 || len(api.sent) != 0 {
+		t.Fatalf("non-blocker owned tool was executed: scheduled=%v calls=%d sent=%d",
+			state.scheduled, tool.calls, len(api.sent))
+	}
+}
+
+func TestSessionToolRunnerDoesNotReplayOpaqueBlockerAfterEndTurn(t *testing.T) {
+	tool := &runnerTestTool{}
+	api := &runnerTestAPI{}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		Logger:      log.New(io.Discard, "", 0),
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+
+	if err := state.processListedEvents(context.Background(), []Event{
+		{ID: "running-1", Type: EventTypeSessionStatusRunning},
+		{
+			ID:              "use-1",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            tool.Name(),
+			CustomToolUseID: runnerTestConflictCallID,
+			Input:           RawJSON(`{}`),
+		},
+		{ID: "idle-1", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+			Type: SessionStopReasonRequiresAction, EventIDs: []string{"opaque-1"},
+		}},
+	}, true); err != nil {
+		t.Fatal(err)
+	}
+	finishRunnerTestExecution(t, state)
+
+	if len(state.pendingBlockingEventIDs) != 0 {
+		t.Fatalf("fallback blocker was not cleared: pending=%v", state.pendingBlockingEventIDs)
+	}
+	if err := state.processListedEvents(context.Background(), []Event{
+		{ID: "running-2", Type: EventTypeSessionStatusRunning},
+		{
+			ID:              "use-2",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            tool.Name(),
+			CustomToolUseID: "call-2",
+			Input:           RawJSON(`{}`),
+		},
+		{ID: "idle-2", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+			Type: SessionStopReasonEndTurn,
+		}},
+	}, true); err != nil {
+		t.Fatal(err)
+	}
+
+	if state.scheduled["call-2"] || tool.calls != 1 || len(api.sent) != 1 {
+		t.Fatalf("stale fallback executed after end_turn: scheduled=%v calls=%d sent=%d",
+			state.scheduled, tool.calls, len(api.sent))
+	}
+}
+
+func TestSessionToolRunnerEndTurnClosesFallbackWindow(t *testing.T) {
+	tool := &runnerTestTool{}
+	runner := NewSessionToolRunner(context.Background(), &runnerTestAPI{}, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		Logger:      log.New(io.Discard, "", 0),
+	})
+	state := newRunnerTestState(runner)
+	state.observeSessionState(Event{Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+		Type: SessionStopReasonRequiresAction, EventIDs: []string{"opaque-1"},
+	}})
+	state.observeSessionState(Event{Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+		Type: SessionStopReasonEndTurn,
+	}})
+	state.observeSessionState(Event{
+		ID:              "use-1",
+		Type:            EventTypeAgentCustomToolUse,
+		Name:            tool.Name(),
+		CustomToolUseID: runnerTestConflictCallID,
+		Input:           RawJSON(`{}`),
+	})
+
+	state.reconcileUnmatchedRequiresAction()
+
+	if state.requiresActionFallback[runnerTestConflictCallID] {
+		t.Fatalf("fallback remained open after end_turn: fallback=%v", state.requiresActionFallback)
+	}
+}
+
+func TestSessionToolRunnerReplaysSoleUnmatchedRequiresActionAfterStatusReset(t *testing.T) {
+	tool := &runnerTestTool{}
+	api := &runnerTestAPI{}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		Logger:      log.New(io.Discard, "", 0),
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+
+	if err := state.processListedEvents(context.Background(), []Event{
+		{ID: "idle", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+			Type: SessionStopReasonRequiresAction, EventIDs: []string{"opaque-use-id"},
+		}},
+		{
+			ID:              "sevt-use-1",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            tool.Name(),
+			CustomToolUseID: runnerTestConflictCallID,
+			Input:           RawJSON(`{}`),
+		},
+		{ID: "running", Type: EventTypeSessionStatusRunning},
+	}, true); err != nil {
+		t.Fatal(err)
+	}
+	finishRunnerTestExecution(t, state)
+
+	if tool.calls != 1 || len(api.sent) != 1 || api.sent[0].CustomToolUseID != runnerTestConflictCallID {
+		t.Fatalf("tool_calls=%d sent=%+v", tool.calls, api.sent)
+	}
+}
+
+func TestSessionToolRunnerDoesNotGuessAmongMultipleUnmatchedRequiresAction(t *testing.T) {
+	tool := &runnerTestTool{}
+	api := &runnerTestAPI{}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		Logger:      log.New(io.Discard, "", 0),
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+
+	if err := state.processListedEvents(context.Background(), []Event{
+		{ID: "running", Type: EventTypeSessionStatusRunning},
+		{
+			ID:              "sevt-use-1",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            tool.Name(),
+			CustomToolUseID: runnerTestConflictCallID,
+			Input:           RawJSON(`{}`),
+		},
+		{
+			ID:              "sevt-use-2",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            tool.Name(),
+			CustomToolUseID: "call-2",
+			Input:           RawJSON(`{}`),
+		},
+		{ID: "idle", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+			Type: SessionStopReasonRequiresAction, EventIDs: []string{"opaque-use-id"},
+		}},
+	}, true); err != nil {
+		t.Fatal(err)
+	}
+
+	if tool.calls != 0 || len(api.sent) != 0 || len(state.requiresActionFallback) != 0 {
+		t.Fatalf("tool_calls=%d sent=%+v fallback=%v", tool.calls, api.sent, state.requiresActionFallback)
+	}
+
+	state.markAnswered(runnerTestConflictCallID)
+	state.reconcileUnmatchedRequiresAction()
+	if len(state.requiresActionFallback) != 0 {
+		t.Fatalf("fallback opened after one ambiguous candidate was answered: %v", state.requiresActionFallback)
+	}
+}
+
+func TestSessionToolRunnerDoesNotFallbackWhileMatchedBlockerIsScheduled(t *testing.T) {
+	blocker := &runnerNamedBlockingTool{
+		name:     "blocking-a",
+		started:  make(chan struct{}),
+		canceled: make(chan struct{}),
+	}
+	other := &runnerTestTool{}
+	api := &runnerTestAPI{}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{
+			blocker.Name(): blocker,
+			other.Name():   other,
+		},
+		Logger: log.New(io.Discard, "", 0),
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+	events := []Event{
+		{ID: "running", Type: EventTypeSessionStatusRunning},
+		{
+			ID:              "use-a",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            blocker.Name(),
+			CustomToolUseID: "call-a",
+			Input:           RawJSON(`{}`),
+		},
+		{
+			ID:              "use-b",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            other.Name(),
+			CustomToolUseID: "call-b",
+			Input:           RawJSON(`{}`),
+		},
+		{ID: "idle", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+			Type: SessionStopReasonRequiresAction, EventIDs: []string{"use-a"},
+		}},
+	}
+
+	if err := state.processListedEvents(context.Background(), events, true); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-blocker.started:
+	case <-time.After(time.Second):
+		t.Fatal("matched blocker did not start")
+	}
+	if err := state.processListedEvents(context.Background(), events, true); err != nil {
+		t.Fatal(err)
+	}
+	if state.scheduled["call-b"] || other.calls != 0 || state.requiresActionFallback["call-b"] {
+		t.Fatalf("replay scheduled non-blocker: scheduled=%v calls=%d fallback=%v",
+			state.scheduled, other.calls, state.requiresActionFallback)
+	}
+
+	state.activeExecution.cancel()
+	finishRunnerTestExecution(t, state)
+}
+
+func TestSessionToolRunnerClearsOpaqueBlockersOnEndTurn(t *testing.T) {
+	state := newRunnerTestState(nil)
+	for i := 0; i < 200; i++ {
+		state.observeSessionState(Event{
+			Type: EventTypeSessionStatusIdle,
+			StopReason: &SessionStopReason{
+				Type:     SessionStopReasonRequiresAction,
+				EventIDs: []string{"opaque"},
+			},
+		})
+		state.observeSessionState(Event{
+			Type: EventTypeSessionStatusIdle,
+			StopReason: &SessionStopReason{
+				Type: SessionStopReasonEndTurn,
+			},
+		})
+	}
+	if len(state.pendingBlockingEventIDs) != 0 || len(state.fallbackCandidates) != 0 {
+		t.Fatalf("opaque state leaked across end_turn: pending=%v candidates=%v",
+			state.pendingBlockingEventIDs, state.fallbackCandidates)
+	}
+}
+
+func TestSessionToolRunnerDoesNotGuessUnmatchedExternalTool(t *testing.T) {
+	api := &runnerTestAPI{}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		Logger: log.New(io.Discard, "", 0),
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	state := newRunnerTestState(runner)
+
+	if err := state.processListedEvents(context.Background(), []Event{
+		{ID: "running", Type: EventTypeSessionStatusRunning},
+		{
+			ID:              "sevt-use-1",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            "external",
+			CustomToolUseID: runnerTestConflictCallID,
+			Input:           RawJSON(`{}`),
+		},
+		{ID: "idle", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+			Type: SessionStopReasonRequiresAction, EventIDs: []string{"opaque-use-id"},
+		}},
+	}, true); err != nil {
+		t.Fatal(err)
+	}
+
+	if len(api.sent) != 0 || len(state.requiresActionFallback) != 0 {
+		t.Fatalf("sent=%+v fallback=%v", api.sent, state.requiresActionFallback)
+	}
+}
+
+func TestSessionToolRunnerResendsRecoveredResultWhenBlockerUsesEventID(t *testing.T) {
+	tool := &runnerTestTool{}
+	api := &runnerTestAPI{}
+	store := &runnerRecordingStore{}
+	runner := NewSessionToolRunner(context.Background(), api, "session-id", SessionToolRunnerOptions{
+		CustomTools: map[string]toolset.Tool{tool.Name(): tool},
+		ResultStore: store,
+		Logger:      log.New(io.Discard, "", 0),
+	})
+	runner.events = make(chan ToolCallResult, 1)
+	result := NewUserCustomToolResultEvent(runnerTestConflictCallID, nil, false, "")
+	state := &toolRunnerState{
+		runner:           runner,
+		processed:        map[string]bool{},
+		seen:             map[string]bool{},
+		answered:         map[string]bool{},
+		pendingResults:   map[string]Event{runnerTestConflictCallID: result},
+		recoveredResults: map[string]bool{runnerTestConflictCallID: true},
+		pendingAsk:       map[string]Event{},
+		confirmations:    map[string]Event{},
+		externalTools:    map[string]Event{},
+	}
+
+	if err := state.processListedEvents(context.Background(), []Event{
+		{
+			ID:              "sevt-use-1",
+			Type:            EventTypeAgentCustomToolUse,
+			Name:            tool.Name(),
+			CustomToolUseID: runnerTestConflictCallID,
+			Input:           RawJSON(`{}`),
+		},
+		{ID: "sevt-idle", Type: EventTypeSessionStatusIdle, StopReason: &SessionStopReason{
+			Type: SessionStopReasonRequiresAction, EventIDs: []string{"sevt-use-1"},
 		}},
 	}, true); err != nil {
 		t.Fatal(err)

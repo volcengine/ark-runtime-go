@@ -14,6 +14,7 @@ import (
 type Background string
 
 const (
+	BackgroundAuto        Background = "auto"
 	BackgroundOpaque      Background = "opaque"
 	BackgroundTransparent Background = "transparent"
 )
@@ -21,6 +22,7 @@ const (
 // AllValues returns all Background values.
 func (Background) AllValues() []Background {
 	return []Background{
+		BackgroundAuto,
 		BackgroundOpaque,
 		BackgroundTransparent,
 	}
@@ -29,6 +31,8 @@ func (Background) AllValues() []Background {
 // MarshalText implements encoding.TextMarshaler.
 func (s Background) MarshalText() ([]byte, error) {
 	switch s {
+	case BackgroundAuto:
+		return []byte(s), nil
 	case BackgroundOpaque:
 		return []byte(s), nil
 	case BackgroundTransparent:
@@ -41,6 +45,9 @@ func (s Background) MarshalText() ([]byte, error) {
 // UnmarshalText implements encoding.TextUnmarshaler.
 func (s *Background) UnmarshalText(data []byte) error {
 	switch Background(data) {
+	case BackgroundAuto:
+		*s = BackgroundAuto
+		return nil
 	case BackgroundOpaque:
 		*s = BackgroundOpaque
 		return nil
@@ -86,6 +93,9 @@ func (s *BoundingBox) SetNormalized(val []int32) {
 type CreateImageGenerationRequest struct {
 	// The model identifier to use.
 	Model string `json:"model"`
+	// Stable, unique end-user identifier for safety and abuse tracing.
+	// Hash usernames, email addresses, or internal user IDs before sending to protect privacy.
+	SafetyIdentifier OptString `json:"safety_identifier"`
 	// Text prompt describing the desired image. Required for standard generation; may be omitted for
 	// automatic layer decomposition when `layer_decomposition=true`.
 	Prompt OptString `json:"prompt"`
@@ -101,8 +111,7 @@ type CreateImageGenerationRequest struct {
 	GuidanceScale OptFloat64 `json:"guidance_scale"`
 	// Classifier-free guidance scale for reference images (edit / R2I).
 	ImageGuidanceScale OptFloat64 `json:"image_guidance_scale"`
-	// Output size hint (e.g. `1024x1024`, `1K`, `2K`, or `auto`). `auto` is supported for layer
-	// decomposition.
+	// Output size, such as `1024x1024`, `0.5K`, `1K`, `1.5K`, `2K`, `3K`, or `auto`.
 	Size OptString `json:"size"`
 	// Embed a watermark in the generated image.
 	Watermark OptBool `json:"watermark"`
@@ -114,19 +123,25 @@ type CreateImageGenerationRequest struct {
 	OptimizePromptOptions OptOptimizePromptOptions `json:"optimize_prompt_options"`
 	// Tools the model may invoke during generation.
 	Tools []Tool `json:"tools"`
-	// Container/codec for the generated image bytes.
+	// Output image format.
 	OutputFormat OptOutputFormat `json:"output_format"`
-	// Output background. Defaults to `opaque`. `transparent` requires exactly one PNG reference image
-	// with an alpha channel and PNG output.
+	// Requested background type.
 	Background OptBackground `json:"background"`
 	// Decompose one reference image into a base image and independently
 	// composable layers. Supported models return layer metadata in `data`.
 	LayerDecomposition OptBool `json:"layer_decomposition"`
+	// Layer count and OCR options.
+	LayerDecompositionOptions OptLayerDecompositionOptions `json:"layer_decomposition_options"`
 }
 
 // GetModel returns the value of Model.
 func (s *CreateImageGenerationRequest) GetModel() string {
 	return s.Model
+}
+
+// GetSafetyIdentifier returns the value of SafetyIdentifier.
+func (s *CreateImageGenerationRequest) GetSafetyIdentifier() OptString {
+	return s.SafetyIdentifier
 }
 
 // GetPrompt returns the value of Prompt.
@@ -209,9 +224,19 @@ func (s *CreateImageGenerationRequest) GetLayerDecomposition() OptBool {
 	return s.LayerDecomposition
 }
 
+// GetLayerDecompositionOptions returns the value of LayerDecompositionOptions.
+func (s *CreateImageGenerationRequest) GetLayerDecompositionOptions() OptLayerDecompositionOptions {
+	return s.LayerDecompositionOptions
+}
+
 // SetModel sets the value of Model.
 func (s *CreateImageGenerationRequest) SetModel(val string) {
 	s.Model = val
+}
+
+// SetSafetyIdentifier sets the value of SafetyIdentifier.
+func (s *CreateImageGenerationRequest) SetSafetyIdentifier(val OptString) {
+	s.SafetyIdentifier = val
 }
 
 // SetPrompt sets the value of Prompt.
@@ -292,6 +317,11 @@ func (s *CreateImageGenerationRequest) SetBackground(val OptBackground) {
 // SetLayerDecomposition sets the value of LayerDecomposition.
 func (s *CreateImageGenerationRequest) SetLayerDecomposition(val OptBool) {
 	s.LayerDecomposition = val
+}
+
+// SetLayerDecompositionOptions sets the value of LayerDecompositionOptions.
+func (s *CreateImageGenerationRequest) SetLayerDecompositionOptions(val OptLayerDecompositionOptions) {
+	s.LayerDecompositionOptions = val
 }
 
 // Reference / edit images, as a single URL or `data:` URI, or an array of them.
@@ -377,6 +407,10 @@ type ImageDataItem struct {
 	Error OptImageError `json:"error"`
 	// Actual container/codec used for this image.
 	OutputFormat OptOutputFormat `json:"output_format"`
+	// Actual output background.
+	Background OptOutputBackground `json:"background"`
+	// Recognized text and styles for this layer.
+	TextRecognition OptTextRecognition `json:"text_recognition"`
 	// Layer stacking order. The base image is `0`; layers follow bottom-up.
 	ZIndex OptInt32 `json:"z_index"`
 	// Layer region in the base image. Omitted for the base image.
@@ -410,6 +444,16 @@ func (s *ImageDataItem) GetError() OptImageError {
 // GetOutputFormat returns the value of OutputFormat.
 func (s *ImageDataItem) GetOutputFormat() OptOutputFormat {
 	return s.OutputFormat
+}
+
+// GetBackground returns the value of Background.
+func (s *ImageDataItem) GetBackground() OptOutputBackground {
+	return s.Background
+}
+
+// GetTextRecognition returns the value of TextRecognition.
+func (s *ImageDataItem) GetTextRecognition() OptTextRecognition {
+	return s.TextRecognition
 }
 
 // GetZIndex returns the value of ZIndex.
@@ -455,6 +499,16 @@ func (s *ImageDataItem) SetError(val OptImageError) {
 // SetOutputFormat sets the value of OutputFormat.
 func (s *ImageDataItem) SetOutputFormat(val OptOutputFormat) {
 	s.OutputFormat = val
+}
+
+// SetBackground sets the value of Background.
+func (s *ImageDataItem) SetBackground(val OptOutputBackground) {
+	s.Background = val
+}
+
+// SetTextRecognition sets the value of TextRecognition.
+func (s *ImageDataItem) SetTextRecognition(val OptTextRecognition) {
+	s.TextRecognition = val
 }
 
 // SetZIndex sets the value of ZIndex.
@@ -509,6 +563,8 @@ func (s *ImageError) SetMessage(val string) {
 type ImageGenerationResponse struct {
 	// Model that produced the result.
 	Model string `json:"model"`
+	// Echoed safety identifier.
+	SafetyIdentifier OptString `json:"safety_identifier"`
 	// Unix timestamp (seconds) when the response was produced.
 	Created int64 `json:"created"`
 	// Generated images. Empty when the request failed entirely.
@@ -524,6 +580,11 @@ type ImageGenerationResponse struct {
 // GetModel returns the value of Model.
 func (s *ImageGenerationResponse) GetModel() string {
 	return s.Model
+}
+
+// GetSafetyIdentifier returns the value of SafetyIdentifier.
+func (s *ImageGenerationResponse) GetSafetyIdentifier() OptString {
+	return s.SafetyIdentifier
 }
 
 // GetCreated returns the value of Created.
@@ -554,6 +615,11 @@ func (s *ImageGenerationResponse) GetError() OptImageError {
 // SetModel sets the value of Model.
 func (s *ImageGenerationResponse) SetModel(val string) {
 	s.Model = val
+}
+
+// SetSafetyIdentifier sets the value of SafetyIdentifier.
+func (s *ImageGenerationResponse) SetSafetyIdentifier(val OptString) {
+	s.SafetyIdentifier = val
 }
 
 // SetCreated sets the value of Created.
@@ -599,6 +665,8 @@ type ImageGenerationStreamEvent struct {
 	Type ImageGenerationStreamEventType `json:"type"`
 	// Model that produced the result.
 	Model string `json:"model"`
+	// Echoed safety identifier.
+	SafetyIdentifier OptString `json:"safety_identifier"`
 	// Unix timestamp (seconds) when the event was produced.
 	Created int64 `json:"created"`
 	// 0-based index of the image this event refers to (partial_* only).
@@ -625,6 +693,11 @@ func (s *ImageGenerationStreamEvent) GetType() ImageGenerationStreamEventType {
 // GetModel returns the value of Model.
 func (s *ImageGenerationStreamEvent) GetModel() string {
 	return s.Model
+}
+
+// GetSafetyIdentifier returns the value of SafetyIdentifier.
+func (s *ImageGenerationStreamEvent) GetSafetyIdentifier() OptString {
+	return s.SafetyIdentifier
 }
 
 // GetCreated returns the value of Created.
@@ -675,6 +748,11 @@ func (s *ImageGenerationStreamEvent) SetType(val ImageGenerationStreamEventType)
 // SetModel sets the value of Model.
 func (s *ImageGenerationStreamEvent) SetModel(val string) {
 	s.Model = val
+}
+
+// SetSafetyIdentifier sets the value of SafetyIdentifier.
+func (s *ImageGenerationStreamEvent) SetSafetyIdentifier(val OptString) {
+	s.SafetyIdentifier = val
 }
 
 // SetCreated sets the value of Created.
@@ -767,6 +845,35 @@ func (s *ImageGenerationStreamEventType) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
+}
+
+// Layer decomposition options.
+// Ref: #/components/schemas/LayerDecompositionOptions
+type LayerDecompositionOptions struct {
+	// Maximum output images, including the base image.
+	MaxImages OptInt32 `json:"max_images"`
+	// Return structured OCR metadata.
+	TextRecognition OptBool `json:"text_recognition"`
+}
+
+// GetMaxImages returns the value of MaxImages.
+func (s *LayerDecompositionOptions) GetMaxImages() OptInt32 {
+	return s.MaxImages
+}
+
+// GetTextRecognition returns the value of TextRecognition.
+func (s *LayerDecompositionOptions) GetTextRecognition() OptBool {
+	return s.TextRecognition
+}
+
+// SetMaxImages sets the value of MaxImages.
+func (s *LayerDecompositionOptions) SetMaxImages(val OptInt32) {
+	s.MaxImages = val
+}
+
+// SetTextRecognition sets the value of TextRecognition.
+func (s *LayerDecompositionOptions) SetTextRecognition(val OptBool) {
+	s.TextRecognition = val
 }
 
 // NewOptBackground returns new OptBackground with value set to v.
@@ -1137,6 +1244,52 @@ func (o OptInt64) Or(d int64) int64 {
 	return d
 }
 
+// NewOptLayerDecompositionOptions returns new OptLayerDecompositionOptions with value set to v.
+func NewOptLayerDecompositionOptions(v LayerDecompositionOptions) OptLayerDecompositionOptions {
+	return OptLayerDecompositionOptions{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptLayerDecompositionOptions is optional LayerDecompositionOptions.
+type OptLayerDecompositionOptions struct {
+	Value LayerDecompositionOptions
+	Set   bool
+}
+
+// IsSet returns true if OptLayerDecompositionOptions was set.
+func (o OptLayerDecompositionOptions) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptLayerDecompositionOptions) Reset() {
+	var v LayerDecompositionOptions
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptLayerDecompositionOptions) SetTo(v LayerDecompositionOptions) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptLayerDecompositionOptions) Get() (v LayerDecompositionOptions, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptLayerDecompositionOptions) Or(d LayerDecompositionOptions) LayerDecompositionOptions {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptOptimizePromptMode returns new OptOptimizePromptMode with value set to v.
 func NewOptOptimizePromptMode(v OptimizePromptMode) OptOptimizePromptMode {
 	return OptOptimizePromptMode{
@@ -1223,6 +1376,52 @@ func (o OptOptimizePromptOptions) Get() (v OptimizePromptOptions, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptOptimizePromptOptions) Or(d OptimizePromptOptions) OptimizePromptOptions {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptOutputBackground returns new OptOutputBackground with value set to v.
+func NewOptOutputBackground(v OutputBackground) OptOutputBackground {
+	return OptOutputBackground{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptOutputBackground is optional OutputBackground.
+type OptOutputBackground struct {
+	Value OutputBackground
+	Set   bool
+}
+
+// IsSet returns true if OptOutputBackground was set.
+func (o OptOutputBackground) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptOutputBackground) Reset() {
+	var v OutputBackground
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptOutputBackground) SetTo(v OutputBackground) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptOutputBackground) Get() (v OutputBackground, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptOutputBackground) Or(d OutputBackground) OutputBackground {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -1459,6 +1658,98 @@ func (o OptString) Or(d string) string {
 	return d
 }
 
+// NewOptTextRecognition returns new OptTextRecognition with value set to v.
+func NewOptTextRecognition(v TextRecognition) OptTextRecognition {
+	return OptTextRecognition{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptTextRecognition is optional TextRecognition.
+type OptTextRecognition struct {
+	Value TextRecognition
+	Set   bool
+}
+
+// IsSet returns true if OptTextRecognition was set.
+func (o OptTextRecognition) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptTextRecognition) Reset() {
+	var v TextRecognition
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptTextRecognition) SetTo(v TextRecognition) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptTextRecognition) Get() (v TextRecognition, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptTextRecognition) Or(d TextRecognition) TextRecognition {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptTextStyle returns new OptTextStyle with value set to v.
+func NewOptTextStyle(v TextStyle) OptTextStyle {
+	return OptTextStyle{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptTextStyle is optional TextStyle.
+type OptTextStyle struct {
+	Value TextStyle
+	Set   bool
+}
+
+// IsSet returns true if OptTextStyle was set.
+func (o OptTextStyle) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptTextStyle) Reset() {
+	var v TextStyle
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptTextStyle) SetTo(v TextStyle) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptTextStyle) Get() (v TextStyle, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptTextStyle) Or(d TextStyle) TextStyle {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptToolUsage returns new OptToolUsage with value set to v.
 func NewOptToolUsage(v ToolUsage) OptToolUsage {
 	return OptToolUsage{
@@ -1610,6 +1901,49 @@ func (s *OptimizePromptOptions) SetMode(val OptOptimizePromptMode) {
 	s.Mode = val
 }
 
+// Actual background of a generated image; never the request-only auto value.
+// Ref: #/components/schemas/OutputBackground
+type OutputBackground string
+
+const (
+	OutputBackgroundOpaque      OutputBackground = "opaque"
+	OutputBackgroundTransparent OutputBackground = "transparent"
+)
+
+// AllValues returns all OutputBackground values.
+func (OutputBackground) AllValues() []OutputBackground {
+	return []OutputBackground{
+		OutputBackgroundOpaque,
+		OutputBackgroundTransparent,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s OutputBackground) MarshalText() ([]byte, error) {
+	switch s {
+	case OutputBackgroundOpaque:
+		return []byte(s), nil
+	case OutputBackgroundTransparent:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *OutputBackground) UnmarshalText(data []byte) error {
+	switch OutputBackground(data) {
+	case OutputBackgroundOpaque:
+		*s = OutputBackgroundOpaque
+		return nil
+	case OutputBackgroundTransparent:
+		*s = OutputBackgroundTransparent
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Container/codec for the generated image bytes.
 // Ref: #/components/schemas/OutputFormat
 type OutputFormat string
@@ -1753,6 +2087,185 @@ func (s *SequentialImageGenerationOptions) GetMaxImages() OptInt32 {
 // SetMaxImages sets the value of MaxImages.
 func (s *SequentialImageGenerationOptions) SetMaxImages(val OptInt32) {
 	s.MaxImages = val
+}
+
+// Ref: #/components/schemas/TextLine
+type TextLine struct {
+	// Text-line bounds in base-image coordinates.
+	BoundingBox OptBoundingBox `json:"bounding_box"`
+	// Text segments with individual styles.
+	Runs []TextRun `json:"runs"`
+}
+
+// GetBoundingBox returns the value of BoundingBox.
+func (s *TextLine) GetBoundingBox() OptBoundingBox {
+	return s.BoundingBox
+}
+
+// GetRuns returns the value of Runs.
+func (s *TextLine) GetRuns() []TextRun {
+	return s.Runs
+}
+
+// SetBoundingBox sets the value of BoundingBox.
+func (s *TextLine) SetBoundingBox(val OptBoundingBox) {
+	s.BoundingBox = val
+}
+
+// SetRuns sets the value of Runs.
+func (s *TextLine) SetRuns(val []TextRun) {
+	s.Runs = val
+}
+
+// Recognized text for one layer.
+// Ref: #/components/schemas/TextRecognition
+type TextRecognition struct {
+	// Full text, with runs joined in order and lines separated by newlines.
+	Text OptString `json:"text"`
+	// Text lines in visual reading order.
+	Lines []TextLine `json:"lines"`
+}
+
+// GetText returns the value of Text.
+func (s *TextRecognition) GetText() OptString {
+	return s.Text
+}
+
+// GetLines returns the value of Lines.
+func (s *TextRecognition) GetLines() []TextLine {
+	return s.Lines
+}
+
+// SetText sets the value of Text.
+func (s *TextRecognition) SetText(val OptString) {
+	s.Text = val
+}
+
+// SetLines sets the value of Lines.
+func (s *TextRecognition) SetLines(val []TextLine) {
+	s.Lines = val
+}
+
+// Ref: #/components/schemas/TextRun
+type TextRun struct {
+	// Text for this segment, without a newline.
+	Text  OptString    `json:"text"`
+	Style OptTextStyle `json:"style"`
+}
+
+// GetText returns the value of Text.
+func (s *TextRun) GetText() OptString {
+	return s.Text
+}
+
+// GetStyle returns the value of Style.
+func (s *TextRun) GetStyle() OptTextStyle {
+	return s.Style
+}
+
+// SetText sets the value of Text.
+func (s *TextRun) SetText(val OptString) {
+	s.Text = val
+}
+
+// SetStyle sets the value of Style.
+func (s *TextRun) SetStyle(val OptTextStyle) {
+	s.Style = val
+}
+
+// Recognized text style.
+// Ref: #/components/schemas/TextStyle
+type TextStyle struct {
+	// Closest supported font name, or `unknown`.
+	SimilarFontFamily OptString `json:"similar_font_family"`
+	// Text color in #RRGGBB format.
+	ForegroundColor OptString `json:"foreground_color"`
+	Bold            OptBool   `json:"bold"`
+	Italic          OptBool   `json:"italic"`
+	Underline       OptBool   `json:"underline"`
+	Strikethrough   OptBool   `json:"strikethrough"`
+	Shadow          OptBool   `json:"shadow"`
+	Translucent     OptBool   `json:"translucent"`
+}
+
+// GetSimilarFontFamily returns the value of SimilarFontFamily.
+func (s *TextStyle) GetSimilarFontFamily() OptString {
+	return s.SimilarFontFamily
+}
+
+// GetForegroundColor returns the value of ForegroundColor.
+func (s *TextStyle) GetForegroundColor() OptString {
+	return s.ForegroundColor
+}
+
+// GetBold returns the value of Bold.
+func (s *TextStyle) GetBold() OptBool {
+	return s.Bold
+}
+
+// GetItalic returns the value of Italic.
+func (s *TextStyle) GetItalic() OptBool {
+	return s.Italic
+}
+
+// GetUnderline returns the value of Underline.
+func (s *TextStyle) GetUnderline() OptBool {
+	return s.Underline
+}
+
+// GetStrikethrough returns the value of Strikethrough.
+func (s *TextStyle) GetStrikethrough() OptBool {
+	return s.Strikethrough
+}
+
+// GetShadow returns the value of Shadow.
+func (s *TextStyle) GetShadow() OptBool {
+	return s.Shadow
+}
+
+// GetTranslucent returns the value of Translucent.
+func (s *TextStyle) GetTranslucent() OptBool {
+	return s.Translucent
+}
+
+// SetSimilarFontFamily sets the value of SimilarFontFamily.
+func (s *TextStyle) SetSimilarFontFamily(val OptString) {
+	s.SimilarFontFamily = val
+}
+
+// SetForegroundColor sets the value of ForegroundColor.
+func (s *TextStyle) SetForegroundColor(val OptString) {
+	s.ForegroundColor = val
+}
+
+// SetBold sets the value of Bold.
+func (s *TextStyle) SetBold(val OptBool) {
+	s.Bold = val
+}
+
+// SetItalic sets the value of Italic.
+func (s *TextStyle) SetItalic(val OptBool) {
+	s.Italic = val
+}
+
+// SetUnderline sets the value of Underline.
+func (s *TextStyle) SetUnderline(val OptBool) {
+	s.Underline = val
+}
+
+// SetStrikethrough sets the value of Strikethrough.
+func (s *TextStyle) SetStrikethrough(val OptBool) {
+	s.Strikethrough = val
+}
+
+// SetShadow sets the value of Shadow.
+func (s *TextStyle) SetShadow(val OptBool) {
+	s.Shadow = val
+}
+
+// SetTranslucent sets the value of Translucent.
+func (s *TextStyle) SetTranslucent(val OptBool) {
+	s.Translucent = val
 }
 
 // Ref: #/components/schemas/Tool

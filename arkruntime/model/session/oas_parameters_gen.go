@@ -57,6 +57,10 @@ type SessionEventsListEventsParams struct {
 // SessionEventsSendEventsParams is parameters of SessionEvents_sendEvents operation.
 type SessionEventsSendEventsParams struct {
 	SessionId string
+	// 用户模型 `Authorization` header。.
+	XUserModelHeaderAuthorization OptString `json:",omitempty,omitzero"`
+	// 用户模型 `X-Api-Key` header。.
+	XUserModelHeaderXAPIKey OptString `json:",omitempty,omitzero"`
 }
 
 // SessionEventsStreamEventsParams is parameters of SessionEvents_streamEvents operation.

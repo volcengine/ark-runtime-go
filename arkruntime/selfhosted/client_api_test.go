@@ -18,7 +18,10 @@ import (
 
 type roundTripFunc func(*http.Request) (*http.Response, error)
 
-const skillArchiveContentType = "application/zip"
+const (
+	skillArchiveContentType = "application/zip"
+	skillID                 = "skill-1"
+)
 
 func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req)
@@ -48,6 +51,13 @@ func TestClientAPIConvertsSessionAndEvents(t *testing.T) {
 					"name":"bash",
 					"input":{"command":"echo hi"},
 					"evaluated_permission":"ask"
+				},{
+					"id":"evt-idle",
+					"type":"session.status_idle",
+					"stop_reason":{
+						"type":"requires_action",
+						"event_ids":["call-1"]
+					}
 				}],
 				"next_page":"page-2"
 			}`))
@@ -63,7 +73,7 @@ func TestClientAPIConvertsSessionAndEvents(t *testing.T) {
 		t.Fatalf("GetSession() error = %v", err)
 	}
 	skills := session.SkillRefs()
-	if len(skills) != 1 || skills[0].IDValue() != "skill-1" || skills[0].Type != "skill_hub" || skills[0].NameValue() != "demo" || skills[0].Version != "v1" {
+	if len(skills) != 1 || skills[0].IDValue() != skillID || skills[0].Type != "skill_hub" || skills[0].NameValue() != "demo" || skills[0].Version != "v1" {
 		t.Fatalf("skills = %+v", skills)
 	}
 
@@ -75,18 +85,91 @@ func TestClientAPIConvertsSessionAndEvents(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ListEvents() error = %v", err)
 	}
-	if events.NextPage != "page-2" || len(events.Events) != 1 {
+	if events.NextPage != "page-2" || len(events.Events) != 2 {
 		t.Fatalf("events = %+v", events)
 	}
 	event := events.Events[0]
 	if event.ToolUseID != "toolu-1" || event.EvaluatedPermission != selfhosted.PermissionAsk {
 		t.Fatalf("event = %+v", event)
 	}
+	idle := events.Events[1]
+	if idle.StopReasonType() != selfhosted.SessionStopReasonRequiresAction ||
+		len(idle.StopReason.EventIDs) != 1 || idle.StopReason.EventIDs[0] != "call-1" {
+		t.Fatalf("idle = %+v", idle)
+	}
+}
+
+func TestClientAPIGetSessionAcceptsNullArchivedAt(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet || r.URL.Path != "/sessions/sess-1" {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{
+			"id":"sess-1",
+			"type":"session",
+			"status":"running",
+			"environment_id":"env-1",
+			"agent":{
+				"id":"agent-1",
+				"type":"agent",
+				"name":"agent-name",
+				"description":"",
+				"version":1,
+				"model":{"id":"model-1"},
+				"system":"",
+				"tools":[],
+				"base_agent":"ark_agent_preview",
+				"context_management":[],
+				"scene":"default",
+				"created_at":"2026-10-23T10:00:00Z",
+				"updated_at":"2026-10-23T10:00:00Z",
+				"archived_at":null,
+				"skills":[{"type":"skill_hub","skill_id":"skill-1"}]
+			},
+			"created_at":"2026-10-23T10:00:00Z",
+			"updated_at":"2026-10-23T10:00:00Z",
+			"archived_at":null,
+			"title":"session-title",
+			"resources":[],
+			"vault_ids":null,
+			"usage":null,
+			"environment":{
+				"id":"env-1",
+				"type":"environment",
+				"name":"environment-name",
+				"config":{"type":"self_hosted","networking":{"type":"unrestricted"}},
+				"created_at":"2026-10-23T10:00:00Z",
+				"updated_at":"2026-10-23T10:00:00Z",
+				"scene":"default",
+				"archived_at":null
+			},
+			"scene":"default",
+			"stats":{"active_seconds":0,"duration_seconds":0}
+		}`))
+	}))
+	defer server.Close()
+
+	api := selfhosted.NewClientAPI(arkruntime.NewClientWithApiKey(
+		"test-api-key", arkruntime.WithBaseUrl(server.URL)))
+	session, err := api.GetSession(
+		context.Background(), selfhosted.GetSessionRequest{SessionID: "sess-1"})
+	if err != nil {
+		t.Fatalf("GetSession() error = %v", err)
+	}
+	if session.ID != "sess-1" {
+		t.Fatalf("session = %+v", session)
+	}
+	skills := session.SkillRefs()
+	if len(skills) != 1 || skills[0].IDValue() != skillID {
+		t.Fatalf("skills = %+v", skills)
+	}
 }
 
 func TestClientAPIResolveSkillUsesControlPlaneMetadata(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet || r.URL.Path != "/skills/skill-1" {
+		if r.Method != http.MethodGet || r.URL.Path != "/skills/"+skillID {
 			http.NotFound(w, r)
 			return
 		}
@@ -105,7 +188,7 @@ func TestClientAPIResolveSkillUsesControlPlaneMetadata(t *testing.T) {
 	defer server.Close()
 
 	api := selfhosted.NewClientAPI(arkruntime.NewClientWithApiKey("test-api-key", arkruntime.WithBaseUrl(server.URL)))
-	resolved, err := api.ResolveSkill(context.Background(), selfhosted.SkillRef{SkillID: "skill-1"})
+	resolved, err := api.ResolveSkill(context.Background(), selfhosted.SkillRef{SkillID: skillID})
 	if err != nil {
 		t.Fatalf("ResolveSkill() error = %v", err)
 	}
@@ -126,7 +209,7 @@ func TestClientAPIOpenSkillHubUsesMetadataAndVersionedDownload(t *testing.T) {
 			body := ""
 			contentType := "application/json"
 			switch {
-			case req.URL.Path == "/v1/skills" && req.URL.Query().Get("skillIds") == "skill-1":
+			case req.URL.Path == "/v1/skills" && req.URL.Query().Get("skillIds") == skillID:
 				body = `{"Skills":[{"Id":"other-skill","Slug":"wrong/slug"},{"Id":"skill-1","Slug":"volcengine/ark/demo"}],"Total":2}`
 			case req.URL.Path == "/v1/skills/download/volcengine/ark/demo" && req.URL.Query().Get("version") == "1.0.0":
 				body = archive
@@ -146,7 +229,7 @@ func TestClientAPIOpenSkillHubUsesMetadataAndVersionedDownload(t *testing.T) {
 	api := selfhosted.NewClientAPI(arkruntime.NewClientWithApiKey("test-api-key", arkruntime.WithHTTPClient(httpClient)))
 
 	content, err := api.OpenSkill(context.Background(), selfhosted.OpenSkillRequest{
-		Skill: selfhosted.SkillRef{Type: "skill_hub", SkillID: "skill-1", Version: "1.0.0"},
+		Skill: selfhosted.SkillRef{Type: "skill_hub", SkillID: skillID, Version: "1.0.0"},
 	})
 	if err != nil {
 		t.Fatalf("OpenSkill() error = %v", err)

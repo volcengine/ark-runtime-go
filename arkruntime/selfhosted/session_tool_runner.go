@@ -19,11 +19,14 @@ import (
 )
 
 const (
-	sessionRunnerStreamBackoffStart = 500 * time.Millisecond
-	sessionRunnerStreamBackoffCap   = 10 * time.Second
-	sessionRunnerStreamHealthyAfter = 30 * time.Second
-	sessionRunnerSendRetries        = 3
-	sessionRunnerResultsBuffer      = 32
+	sessionRunnerStreamBackoffStart  = 500 * time.Millisecond
+	sessionRunnerStreamBackoffCap    = 10 * time.Second
+	sessionRunnerStreamHealthyAfter  = 30 * time.Second
+	sessionRunnerSendRetries         = 3
+	sessionRunnerConflictSendRetries = 8
+	sessionRunnerConflictBackoffCap  = 16 * time.Second
+	sessionRunnerConflictRetryWindow = 30 * time.Second
+	sessionRunnerResultsBuffer       = 32
 
 	defaultSessionRunnerSendTimeout  = 15 * time.Second
 	defaultSessionRunnerDrainTimeout = 30 * time.Second
@@ -186,22 +189,26 @@ func (r *SessionToolRunner) runLoop() error {
 		return errors.New("session tool runner tools must not be nil")
 	}
 	state := &toolRunnerState{
-		runner:              r,
-		page:                r.opts.EventPage,
-		processed:           map[string]bool{},
-		seen:                map[string]bool{},
-		answered:            map[string]bool{},
-		pendingResults:      map[string]Event{},
-		recoveredResults:    map[string]bool{},
-		pendingAsk:          map[string]Event{},
-		confirmations:       map[string]Event{},
-		externalTools:       map[string]Event{},
-		toolUseEvents:       map[string]Event{},
-		scheduled:           map[string]bool{},
-		executionDone:       make(chan toolExecutionResult, sessionRunnerResultsBuffer),
-		sessionToolUses:     map[string]bool{},
-		toolUsesSinceStatus: map[string]bool{},
-		blockingEventIDs:    map[string]bool{},
+		runner:                  r,
+		page:                    r.opts.EventPage,
+		processed:               map[string]bool{},
+		seen:                    map[string]bool{},
+		answered:                map[string]bool{},
+		pendingResults:          map[string]Event{},
+		recoveredResults:        map[string]bool{},
+		pendingAsk:              map[string]Event{},
+		confirmations:           map[string]Event{},
+		externalTools:           map[string]Event{},
+		toolUseEvents:           map[string]Event{},
+		toolUseCallIDByEventID:  map[string]string{},
+		scheduled:               map[string]bool{},
+		executionDone:           make(chan toolExecutionResult, sessionRunnerResultsBuffer),
+		sessionToolUses:         map[string]bool{},
+		toolUsesSinceStatus:     map[string]bool{},
+		blockingEventIDs:        map[string]bool{},
+		pendingBlockingEventIDs: map[string]bool{},
+		requiresActionFallback:  map[string]bool{},
+		fallbackCandidates:      map[string]bool{},
 	}
 	if r.opts.ResultStore != nil {
 		pending, processed, err := r.opts.ResultStore.Recover()
@@ -235,17 +242,18 @@ func (r *SessionToolRunner) runLoop() error {
 }
 
 type toolRunnerState struct {
-	runner           *SessionToolRunner
-	page             string
-	processed        map[string]bool
-	seen             map[string]bool
-	answered         map[string]bool
-	pendingResults   map[string]Event
-	recoveredResults map[string]bool
-	pendingAsk       map[string]Event
-	confirmations    map[string]Event
-	externalTools    map[string]Event
-	toolUseEvents    map[string]Event
+	runner                 *SessionToolRunner
+	page                   string
+	processed              map[string]bool
+	seen                   map[string]bool
+	answered               map[string]bool
+	pendingResults         map[string]Event
+	recoveredResults       map[string]bool
+	pendingAsk             map[string]Event
+	confirmations          map[string]Event
+	externalTools          map[string]Event
+	toolUseEvents          map[string]Event
+	toolUseCallIDByEventID map[string]string
 	// Tool 按 CMA runner 的语义串行执行，事件消费通过完成通道保持非阻塞。
 	scheduled           map[string]bool
 	executionQueue      []pendingToolEvent
@@ -253,7 +261,14 @@ type toolRunnerState struct {
 	executionDone       chan toolExecutionResult
 	sessionToolUses     map[string]bool
 	toolUsesSinceStatus map[string]bool
-	blockingEventIDs    map[string]bool
+	// 本轮 status 的 blocker 引用，每次 status 事件都会重建。
+	blockingEventIDs map[string]bool
+	// 历史 requires_action 的未决 blocker 引用，对应调用完成后清理。
+	pendingBlockingEventIDs map[string]bool
+	requiresActionFallback  map[string]bool
+	fallbackCandidates      map[string]bool
+	// requires_action 打开 fallback；终态 idle 关闭，running 不关闭。
+	fallbackAllowed     bool
 	blockingEventsKnown bool
 	idleArmedAt         time.Time
 	idleArmPending      bool
@@ -628,13 +643,26 @@ func (s *toolRunnerState) processListedEvents(ctx context.Context, events []Even
 			return ErrSessionTerminated
 		}
 	}
+	s.reconcileUnmatchedRequiresAction()
 	s.reconcileRecoveredResults()
 	if touchedIdle {
 		s.disarmIdle()
 	}
 	for _, toolEvent := range pending {
 		callID := toolUseCallID(toolEvent.event)
-		if s.isAnswered(callID) || !s.shouldHandleToolUse(callID) {
+		if s.isAnswered(callID) {
+			continue
+		}
+		if !s.shouldHandleToolUse(callID) {
+			if reconcile {
+				s.runner.logger.Debug("skip unresolved tool use outside pending requires_action",
+					"tool_use_id", callID,
+					"event_id", toolEvent.event.ID,
+					"blocking_event_count", len(s.blockingEventIDs),
+					"pending_blocking_event_count", len(s.pendingBlockingEventIDs),
+					"fallback_count", len(s.requiresActionFallback),
+				)
+			}
 			continue
 		}
 		if err := s.handleToolUse(ctx, toolEvent.event, toolEvent.custom); err != nil {
@@ -654,7 +682,20 @@ func (s *toolRunnerState) shouldHandleToolUse(callID string) bool {
 	if !s.blockingEventsKnown {
 		return true
 	}
-	return s.blockingEventIDs[callID] || s.toolUsesSinceStatus[callID]
+	return s.isBlockingToolUse(callID) || s.toolUsesSinceStatus[callID]
+}
+
+// StopReason.EventIDs 里的 id 是 agent.tool_use 的事件 id，而 runner 内部
+// 以 tool_use_id 作为 call id。两者格式不同，不能直接互相查表。
+func (s *toolRunnerState) isBlockingToolUse(callID string) bool {
+	if s.requiresActionFallback[callID] {
+		return true
+	}
+	if s.blockingEventIDs[callID] || s.pendingBlockingEventIDs[callID] {
+		return true
+	}
+	event, ok := s.toolUseEvents[callID]
+	return ok && (s.blockingEventIDs[event.ID] || s.pendingBlockingEventIDs[event.ID])
 }
 
 func (s *toolRunnerState) noteIdleEvent(event Event) {
@@ -753,13 +794,29 @@ func (s *toolRunnerState) markAnswered(callID string) {
 	if callID == "" {
 		return
 	}
+	fallbackAnswered := s.requiresActionFallback[callID]
 	s.answered[callID] = true
 	s.processed[callID] = true
 	delete(s.pendingResults, callID)
 	delete(s.recoveredResults, callID)
 	delete(s.pendingAsk, callID)
 	delete(s.externalTools, callID)
+	delete(s.requiresActionFallback, callID)
+	event, ok := s.toolUseEvents[callID]
+	if ok && event.ID != "" {
+		delete(s.pendingBlockingEventIDs, event.ID)
+		delete(s.toolUseCallIDByEventID, event.ID)
+	}
+	delete(s.pendingBlockingEventIDs, callID)
 	delete(s.toolUseEvents, callID)
+	if fallbackAnswered {
+		s.fallbackCandidates = map[string]bool{}
+		for eventID := range s.pendingBlockingEventIDs {
+			if _, mapped := s.toolUseCallIDByEventID[eventID]; !mapped {
+				delete(s.pendingBlockingEventIDs, eventID)
+			}
+		}
+	}
 	s.maybeArmPendingIdle()
 }
 
@@ -1047,7 +1104,7 @@ func (s *toolRunnerState) sendResult(ctx context.Context, callID string, event E
 				s.runner.logger.Warn("mark tool result sent failed", "tool_use_id", callID, "event_id", out.ID, "err", err)
 			}
 		}
-	} else if s.runner.opts.ResultStore != nil {
+	} else if !isFatal4xxStatus(err) {
 		s.pendingResults[callID] = out
 	}
 	select {
@@ -1138,6 +1195,12 @@ func (s *toolRunnerState) observeSessionState(event Event) {
 			s.sessionToolUses[callID] = true
 			if !s.isAnswered(callID) {
 				s.toolUseEvents[callID] = event
+				if s.fallbackAllowed {
+					s.fallbackCandidates[callID] = true
+				}
+				if event.ID != "" {
+					s.toolUseCallIDByEventID[event.ID] = callID
+				}
 			}
 			s.toolUsesSinceStatus[callID] = true
 		}
@@ -1145,9 +1208,28 @@ func (s *toolRunnerState) observeSessionState(event Event) {
 		s.blockingEventsKnown = true
 		s.blockingEventIDs = map[string]bool{}
 		if event.StopReasonType() == SessionStopReasonRequiresAction && event.StopReason != nil {
+			s.fallbackAllowed = true
+			s.fallbackCandidates = map[string]bool{}
+			for callID := range s.toolUseEvents {
+				if s.isAnswered(callID) {
+					continue
+				}
+				s.fallbackCandidates[callID] = true
+			}
 			for _, eventID := range event.StopReason.EventIDs {
 				s.blockingEventIDs[eventID] = true
+				s.pendingBlockingEventIDs[eventID] = true
+				if callID := s.toolUseCallIDByEventID[eventID]; callID != "" {
+					s.blockingEventIDs[callID] = true
+					s.pendingBlockingEventIDs[callID] = true
+				}
 			}
+		} else {
+			s.fallbackAllowed = false
+			s.pendingBlockingEventIDs = map[string]bool{}
+			s.requiresActionFallback = map[string]bool{}
+			s.fallbackCandidates = map[string]bool{}
+			s.toolUseCallIDByEventID = map[string]string{}
 		}
 		s.toolUsesSinceStatus = map[string]bool{}
 	case EventTypeSessionStatusRunning, EventTypeSessionStatusRescheduled:
@@ -1155,6 +1237,47 @@ func (s *toolRunnerState) observeSessionState(event Event) {
 		s.blockingEventIDs = map[string]bool{}
 		s.toolUsesSinceStatus = map[string]bool{}
 	}
+}
+
+func (s *toolRunnerState) reconcileUnmatchedRequiresAction() {
+	if !s.blockingEventsKnown || !s.fallbackAllowed || len(s.pendingBlockingEventIDs) == 0 {
+		return
+	}
+	for callID, event := range s.toolUseEvents {
+		if s.isAnswered(callID) {
+			continue
+		}
+		if s.pendingBlockingEventIDs[callID] ||
+			(event.ID != "" && s.pendingBlockingEventIDs[event.ID]) {
+			return
+		}
+		if s.scheduled[callID] {
+			continue
+		}
+		if !s.ownsTool(event, event.Type == EventTypeAgentCustomToolUse) {
+			continue
+		}
+	}
+	if len(s.fallbackCandidates) != 1 {
+		return
+	}
+	var callID string
+	for candidate := range s.fallbackCandidates {
+		callID = candidate
+	}
+	toolEvent, ok := s.toolUseEvents[callID]
+	if !ok || s.isAnswered(callID) || s.scheduled[callID] {
+		return
+	}
+	if !s.ownsTool(toolEvent, toolEvent.Type == EventTypeAgentCustomToolUse) {
+		return
+	}
+	if !s.requiresActionFallback[callID] {
+		s.runner.logger.Warn("using sole unresolved tool use for unmatched requires_action",
+			"tool_use_id", callID,
+		)
+	}
+	s.requiresActionFallback[callID] = true
 }
 
 func (s *toolRunnerState) ensureRecoveryMaps() {
@@ -1170,8 +1293,20 @@ func (s *toolRunnerState) ensureRecoveryMaps() {
 	if s.blockingEventIDs == nil {
 		s.blockingEventIDs = map[string]bool{}
 	}
+	if s.pendingBlockingEventIDs == nil {
+		s.pendingBlockingEventIDs = map[string]bool{}
+	}
 	if s.toolUseEvents == nil {
 		s.toolUseEvents = map[string]Event{}
+	}
+	if s.toolUseCallIDByEventID == nil {
+		s.toolUseCallIDByEventID = map[string]string{}
+	}
+	if s.requiresActionFallback == nil {
+		s.requiresActionFallback = map[string]bool{}
+	}
+	if s.fallbackCandidates == nil {
+		s.fallbackCandidates = map[string]bool{}
 	}
 	if s.scheduled == nil {
 		s.scheduled = map[string]bool{}
@@ -1186,7 +1321,7 @@ func (s *toolRunnerState) reconcileRecoveredResults() {
 		return
 	}
 	for callID := range s.recoveredResults {
-		if s.blockingEventIDs[callID] && s.sessionToolUses[callID] {
+		if s.isBlockingToolUse(callID) && s.sessionToolUses[callID] {
 			delete(s.recoveredResults, callID)
 			continue
 		}
@@ -1207,7 +1342,8 @@ func (s *toolRunnerState) reconcileRecoveredResults() {
 
 func (s *toolRunnerState) retrySendEvent(ctx context.Context, req SendEventRequest, callID string) (bool, error) {
 	var err error
-	for attempt := 0; attempt < sessionRunnerSendRetries; attempt++ {
+	retryStartedAt := time.Now()
+	for attempt := 0; ; attempt++ {
 		// 工具已经执行后，即使 runner 开始退出，也为结果保留一次有界的最终投递机会。
 		sendCtx, cancel := context.WithTimeout(context.Background(), s.sendTimeout())
 		err = s.runner.api.SendEvent(sendCtx, req)
@@ -1224,11 +1360,51 @@ func (s *toolRunnerState) retrySendEvent(ctx context.Context, req SendEventReque
 			return false, err
 		}
 		s.runner.logger.Warn("tool result send failed, retrying", "tool_use_id", callID, "attempt", attempt+1, "err", err)
-		if attempt < sessionRunnerSendRetries-1 {
-			sleepCtx(ctx, time.Duration(attempt+1)*time.Second)
+		// SessionBusy(409) 是服务端正在处理另一条独占命令的瞬态信号；工具结果
+		// 已经执行完，不能按普通 4xx 的三次预算直接丢弃。给 409 更长的有界预算，
+		// 其余错误保持原有三次重试语义。
+		if attempt+1 >= sendRetryLimit(err) {
+			break
 		}
+		backoff := sendRetryBackoff(attempt, err)
+		if IsStatus(err, http.StatusConflict) {
+			backoff = conflictRetryDelay(attempt, time.Since(retryStartedAt))
+			if backoff <= 0 {
+				break
+			}
+		}
+		sleepCtx(ctx, backoff)
 	}
 	return false, err
+}
+
+func sendRetryLimit(err error) int {
+	if IsStatus(err, http.StatusConflict) {
+		return sessionRunnerConflictSendRetries
+	}
+	return sessionRunnerSendRetries
+}
+
+func sendRetryBackoff(attempt int, err error) time.Duration {
+	if !IsStatus(err, http.StatusConflict) {
+		return time.Duration(attempt+1) * time.Second
+	}
+	backoff := time.Second
+	for i := 0; i < attempt && backoff < sessionRunnerConflictBackoffCap; i++ {
+		backoff *= 2
+	}
+	if backoff > sessionRunnerConflictBackoffCap {
+		backoff = sessionRunnerConflictBackoffCap
+	}
+	return backoff
+}
+
+func conflictRetryDelay(attempt int, elapsed time.Duration) time.Duration {
+	remaining := sessionRunnerConflictRetryWindow - elapsed
+	if remaining <= 0 {
+		return 0
+	}
+	return minDuration(sendRetryBackoff(attempt, &APIError{StatusCode: http.StatusConflict}), remaining)
 }
 
 func (s *toolRunnerState) maxIdle() time.Duration {
