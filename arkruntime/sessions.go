@@ -52,6 +52,19 @@ func (c *Client) GetSession(
 	return &wrap.Session, nil
 }
 
+func (c *Client) ArchiveSession(ctx context.Context, sessionID string, setters ...requestOption) (*session.Session, error) {
+	if sessionID == "" {
+		return nil, errors.New("missing required session_id")
+	}
+	u := c.fullURL(fmt.Sprintf("%s/%s/archive", sessionsPrefix, session.PathEscape(sessionID)))
+	opts := append(setters, withBody(nil))
+	wrap := &session.SessionResponse{}
+	if err := c.Do(ctx, http.MethodPost, u, "", "", wrap, opts...); err != nil {
+		return nil, err
+	}
+	return &wrap.Session, nil
+}
+
 // ListSessions lists Sessions with optional filters.
 func (c *Client) ListSessions(
 	ctx context.Context,

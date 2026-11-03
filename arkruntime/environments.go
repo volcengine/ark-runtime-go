@@ -49,6 +49,19 @@ func (c *Client) GetEnvironment(
 	return &wrap.Environment, nil
 }
 
+func (c *Client) ArchiveEnvironment(ctx context.Context, environmentID string, setters ...requestOption) (*environment.Environment, error) {
+	if environmentID == "" {
+		return nil, errors.New("missing required environment_id")
+	}
+	u := c.fullURL(fmt.Sprintf("%s/%s/archive", environmentsPrefix, environment.PathEscape(environmentID)))
+	opts := append(setters, withBody(nil))
+	wrap := &environment.EnvironmentResponse{}
+	if err := c.Do(ctx, http.MethodPost, u, "", "", wrap, opts...); err != nil {
+		return nil, err
+	}
+	return &wrap.Environment, nil
+}
+
 // ListEnvironments lists Environments with optional query filters.
 func (c *Client) ListEnvironments(
 	ctx context.Context,

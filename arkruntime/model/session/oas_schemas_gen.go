@@ -10,6 +10,88 @@ import (
 	"github.com/go-faster/jx"
 )
 
+type AgentCompactThreshold int64
+
+type AgentContextManagementInstructions string
+
+type AgentContextManagementPolicies []AgentContextManagementPolicy
+
+// Session 创建期可覆写的 Agent 上下文管理策略。.
+// Ref: #/components/schemas/AgentContextManagementPolicy
+type AgentContextManagementPolicy struct {
+	// 策略类型，当前固定为 `compaction`。.
+	Type AgentContextManagementPolicyType `json:"type"`
+	// 触发压缩的上下文 token 阈值；省略时由运行时使用默认值。.
+	CompactThreshold OptNilAgentCompactThreshold `json:"compact_threshold"`
+	// 自定义摘要指令；省略时由运行时使用内置提示词。.
+	Instructions OptNilAgentContextManagementInstructions `json:"instructions"`
+}
+
+// GetType returns the value of Type.
+func (s *AgentContextManagementPolicy) GetType() AgentContextManagementPolicyType {
+	return s.Type
+}
+
+// GetCompactThreshold returns the value of CompactThreshold.
+func (s *AgentContextManagementPolicy) GetCompactThreshold() OptNilAgentCompactThreshold {
+	return s.CompactThreshold
+}
+
+// GetInstructions returns the value of Instructions.
+func (s *AgentContextManagementPolicy) GetInstructions() OptNilAgentContextManagementInstructions {
+	return s.Instructions
+}
+
+// SetType sets the value of Type.
+func (s *AgentContextManagementPolicy) SetType(val AgentContextManagementPolicyType) {
+	s.Type = val
+}
+
+// SetCompactThreshold sets the value of CompactThreshold.
+func (s *AgentContextManagementPolicy) SetCompactThreshold(val OptNilAgentCompactThreshold) {
+	s.CompactThreshold = val
+}
+
+// SetInstructions sets the value of Instructions.
+func (s *AgentContextManagementPolicy) SetInstructions(val OptNilAgentContextManagementInstructions) {
+	s.Instructions = val
+}
+
+// 策略类型，当前固定为 `compaction`。.
+type AgentContextManagementPolicyType string
+
+const (
+	AgentContextManagementPolicyTypeCompaction AgentContextManagementPolicyType = "compaction"
+)
+
+// AllValues returns all AgentContextManagementPolicyType values.
+func (AgentContextManagementPolicyType) AllValues() []AgentContextManagementPolicyType {
+	return []AgentContextManagementPolicyType{
+		AgentContextManagementPolicyTypeCompaction,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s AgentContextManagementPolicyType) MarshalText() ([]byte, error) {
+	switch s {
+	case AgentContextManagementPolicyTypeCompaction:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *AgentContextManagementPolicyType) UnmarshalText(data []byte) error {
+	switch AgentContextManagementPolicyType(data) {
+	case AgentContextManagementPolicyTypeCompaction:
+		*s = AgentContextManagementPolicyTypeCompaction
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Agent 标识：字符串 (agent_id) 或 AgentRef 对象。
 // 由 TypeSpec union → OpenAPI `oneOf` → ogen sum type。.
 // Ref: #/components/schemas/AgentIdentifier
@@ -97,6 +179,10 @@ type AgentRef struct {
 	Skills []AgentRefSkillsItem `json:"skills"`
 	// 多 Agent 配置覆写。.
 	Multiagent OptAgentRefMultiagent `json:"multiagent"`
+	// 上下文管理策略覆写（整体替换）。省略或 null 表示继承；显式 []
+	// 表示清除
+	// 自定义策略，随后由运行时使用默认行为。.
+	ContextManagement OptNilAgentContextManagementPolicies `json:"context_management"`
 	// Session 响应中冻结的 Agent 展示名。.
 	DisplayName OptString `json:"display_name"`
 	// 模型运行参数覆写。.
@@ -141,6 +227,11 @@ func (s *AgentRef) GetSkills() []AgentRefSkillsItem {
 // GetMultiagent returns the value of Multiagent.
 func (s *AgentRef) GetMultiagent() OptAgentRefMultiagent {
 	return s.Multiagent
+}
+
+// GetContextManagement returns the value of ContextManagement.
+func (s *AgentRef) GetContextManagement() OptNilAgentContextManagementPolicies {
+	return s.ContextManagement
 }
 
 // GetDisplayName returns the value of DisplayName.
@@ -191,6 +282,11 @@ func (s *AgentRef) SetSkills(val []AgentRefSkillsItem) {
 // SetMultiagent sets the value of Multiagent.
 func (s *AgentRef) SetMultiagent(val OptAgentRefMultiagent) {
 	s.Multiagent = val
+}
+
+// SetContextManagement sets the value of ContextManagement.
+func (s *AgentRef) SetContextManagement(val OptNilAgentContextManagementPolicies) {
+	s.ContextManagement = val
 }
 
 // SetDisplayName sets the value of DisplayName.
@@ -4034,6 +4130,8 @@ func (s *ManagedAgentsVideoBlockType) UnmarshalText(data []byte) error {
 	}
 }
 
+type MemoryStoreInstructions string
+
 // Session 创建时允许临时覆写的模型运行参数与接入配置。
 // 内部字段省略表示继承 base Agent 的对应值。.
 // Ref: #/components/schemas/ModelOverrides
@@ -4230,12 +4328,13 @@ type ModelUpgrades struct {
 	// 目标模型提供方。
 	// 切到非 `ark` provider 时，`base_url` 与 `token_limits` 必填（可继承
 	// 当前 Session 快照中已有的值，否则返回 400）；`ark` provider 不允许
-	// 指定 `token_limits`。.
+	// 指定 `token_limits` 或非空 `base_url`。.
 	Provider OptString `json:"provider"`
 	// 目标模型接入协议；取值须命中服务端维护的接入协议白名单，非法值返回
 	// 400。.
 	Protocol OptString `json:"protocol"`
-	// 自定义模型接入点 base URL。配合非 `ark` 的 `provider` 使用。.
+	// 自定义模型接入点 base URL。配合非 `ark` 的 `provider` 使用；
+	// `ark` provider 指定非空值时返回 400。.
 	BaseURL OptString `json:"base_url"`
 	// 模型静态请求 header（整组覆写）。
 	// 仅用于非认证类静态 header；认证 header 必须由 SendEvent 请求上的
@@ -5556,6 +5655,258 @@ func (o OptModelUpgradesHeaders) Or(d ModelUpgradesHeaders) ModelUpgradesHeaders
 	return d
 }
 
+// NewOptNilAgentCompactThreshold returns new OptNilAgentCompactThreshold with value set to v.
+func NewOptNilAgentCompactThreshold(v AgentCompactThreshold) OptNilAgentCompactThreshold {
+	return OptNilAgentCompactThreshold{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilAgentCompactThreshold is optional nullable AgentCompactThreshold.
+type OptNilAgentCompactThreshold struct {
+	Value AgentCompactThreshold
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilAgentCompactThreshold was set.
+func (o OptNilAgentCompactThreshold) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilAgentCompactThreshold) Reset() {
+	var v AgentCompactThreshold
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilAgentCompactThreshold) SetTo(v AgentCompactThreshold) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilAgentCompactThreshold) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilAgentCompactThreshold) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v AgentCompactThreshold
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilAgentCompactThreshold) Get() (v AgentCompactThreshold, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilAgentCompactThreshold) Or(d AgentCompactThreshold) AgentCompactThreshold {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilAgentContextManagementInstructions returns new OptNilAgentContextManagementInstructions with value set to v.
+func NewOptNilAgentContextManagementInstructions(v AgentContextManagementInstructions) OptNilAgentContextManagementInstructions {
+	return OptNilAgentContextManagementInstructions{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilAgentContextManagementInstructions is optional nullable AgentContextManagementInstructions.
+type OptNilAgentContextManagementInstructions struct {
+	Value AgentContextManagementInstructions
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilAgentContextManagementInstructions was set.
+func (o OptNilAgentContextManagementInstructions) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilAgentContextManagementInstructions) Reset() {
+	var v AgentContextManagementInstructions
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilAgentContextManagementInstructions) SetTo(v AgentContextManagementInstructions) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilAgentContextManagementInstructions) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilAgentContextManagementInstructions) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v AgentContextManagementInstructions
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilAgentContextManagementInstructions) Get() (v AgentContextManagementInstructions, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilAgentContextManagementInstructions) Or(d AgentContextManagementInstructions) AgentContextManagementInstructions {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilAgentContextManagementPolicies returns new OptNilAgentContextManagementPolicies with value set to v.
+func NewOptNilAgentContextManagementPolicies(v AgentContextManagementPolicies) OptNilAgentContextManagementPolicies {
+	return OptNilAgentContextManagementPolicies{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilAgentContextManagementPolicies is optional nullable AgentContextManagementPolicies.
+type OptNilAgentContextManagementPolicies struct {
+	Value AgentContextManagementPolicies
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilAgentContextManagementPolicies was set.
+func (o OptNilAgentContextManagementPolicies) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilAgentContextManagementPolicies) Reset() {
+	var v AgentContextManagementPolicies
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilAgentContextManagementPolicies) SetTo(v AgentContextManagementPolicies) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilAgentContextManagementPolicies) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilAgentContextManagementPolicies) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v AgentContextManagementPolicies
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilAgentContextManagementPolicies) Get() (v AgentContextManagementPolicies, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilAgentContextManagementPolicies) Or(d AgentContextManagementPolicies) AgentContextManagementPolicies {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMemoryStoreInstructions returns new OptNilMemoryStoreInstructions with value set to v.
+func NewOptNilMemoryStoreInstructions(v MemoryStoreInstructions) OptNilMemoryStoreInstructions {
+	return OptNilMemoryStoreInstructions{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMemoryStoreInstructions is optional nullable MemoryStoreInstructions.
+type OptNilMemoryStoreInstructions struct {
+	Value MemoryStoreInstructions
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMemoryStoreInstructions was set.
+func (o OptNilMemoryStoreInstructions) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMemoryStoreInstructions) Reset() {
+	var v MemoryStoreInstructions
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMemoryStoreInstructions) SetTo(v MemoryStoreInstructions) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMemoryStoreInstructions) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMemoryStoreInstructions) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MemoryStoreInstructions
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMemoryStoreInstructions) Get() (v MemoryStoreInstructions, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMemoryStoreInstructions) Or(d MemoryStoreInstructions) MemoryStoreInstructions {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNilSessionEnvironment returns new OptNilSessionEnvironment with value set to v.
 func NewOptNilSessionEnvironment(v SessionEnvironment) OptNilSessionEnvironment {
 	return OptNilSessionEnvironment{
@@ -6685,6 +7036,12 @@ type SessionResource struct {
 	MemoryStoreID OptString `json:"memory_store_id"`
 	// `memory_store` 类型：访问权限。.
 	Access OptSessionResourceAccess `json:"access"`
+	// `memory_store` 类型：会话使用该记忆库时遵循的指导，最长 4096 个 Unicode
+	// 字符。
+	// 创建会话时可指定；省略、null
+	// 或空字符串均表示无使用指导，响应中省略空值。
+	// 不适用于其他资源类型；与 Agent 上下文压缩策略的摘要指令不同。.
+	Instructions OptNilMemoryStoreInstructions `json:"instructions"`
 	// 在 sandbox 中的挂载路径。.
 	MountPath OptString `json:"mount_path"`
 	// RFC 3339 时间。.
@@ -6722,6 +7079,11 @@ func (s *SessionResource) GetMemoryStoreID() OptString {
 // GetAccess returns the value of Access.
 func (s *SessionResource) GetAccess() OptSessionResourceAccess {
 	return s.Access
+}
+
+// GetInstructions returns the value of Instructions.
+func (s *SessionResource) GetInstructions() OptNilMemoryStoreInstructions {
+	return s.Instructions
 }
 
 // GetMountPath returns the value of MountPath.
@@ -6777,6 +7139,11 @@ func (s *SessionResource) SetMemoryStoreID(val OptString) {
 // SetAccess sets the value of Access.
 func (s *SessionResource) SetAccess(val OptSessionResourceAccess) {
 	s.Access = val
+}
+
+// SetInstructions sets the value of Instructions.
+func (s *SessionResource) SetInstructions(val OptNilMemoryStoreInstructions) {
+	s.Instructions = val
 }
 
 // SetMountPath sets the value of MountPath.

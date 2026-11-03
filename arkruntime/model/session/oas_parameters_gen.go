@@ -132,8 +132,18 @@ type SessionUpgradesCreateParams struct {
 	SessionId string
 }
 
+// SessionsArchiveParams is parameters of Sessions_archive operation.
+type SessionsArchiveParams struct {
+	SessionId string
+}
+
 // SessionsListParams is parameters of Sessions_list operation.
 type SessionsListParams struct {
+	// 是否包含已归档会话。省略或 false 时排除 archived_at 非空或 status=terminated
+	// 的会话；
+	// true 时包含这些会话，其他筛选条件仍生效。查询 terminated 会话需同时传
+	// true。.
+	IncludeArchived OptBool `json:",omitempty,omitzero" query:"include_archived"`
 	// 按 agent_id 精确过滤。.
 	AgentID OptString `json:",omitempty,omitzero" query:"agent_id"`
 	// 按 agent_version 精确过滤（配合 agent_id）。.

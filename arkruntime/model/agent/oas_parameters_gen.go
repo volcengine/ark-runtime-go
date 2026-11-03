@@ -5,8 +5,16 @@
 
 package agent
 
+// AgentsArchiveParams is parameters of Agents_archive operation.
+type AgentsArchiveParams struct {
+	AgentId string
+}
+
 // AgentsListParams is parameters of Agents_list operation.
 type AgentsListParams struct {
+	// 是否包含已归档资源。省略或 false 时排除已归档，true
+	// 时同时返回未归档与已归档资源。.
+	IncludeArchived OptBool `json:",omitempty,omitzero" query:"include_archived"`
 	// 单页最大条数。.
 	Limit OptInt32 `json:",omitempty,omitzero" query:"limit"`
 	// 数字页码，从 1 开始；首页可留空。.

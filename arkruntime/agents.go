@@ -45,6 +45,19 @@ func (c *Client) GetAgent(ctx context.Context, agentID string, setters ...reques
 	return &wrap.Agent, nil
 }
 
+func (c *Client) ArchiveAgent(ctx context.Context, agentID string, setters ...requestOption) (*agent.Agent, error) {
+	if agentID == "" {
+		return nil, errors.New("missing required agent_id")
+	}
+	u := c.fullURL(fmt.Sprintf("%s/%s/archive", agentsPrefix, agent.PathEscape(agentID)))
+	opts := append(setters, withBody(nil))
+	wrap := &agent.AgentResponse{}
+	if err := c.Do(ctx, http.MethodPost, u, "", "", wrap, opts...); err != nil {
+		return nil, err
+	}
+	return &wrap.Agent, nil
+}
+
 // ListAgents lists Agents with optional query filters.
 func (c *Client) ListAgents(
 	ctx context.Context,
