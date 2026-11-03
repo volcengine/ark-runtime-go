@@ -364,6 +364,8 @@ type FileObject struct {
 	Status Status `json:"status"`
 	// Pre-signed download URL pointing at the underlying TOS object.
 	DownloadURL OptString `json:"download_url"`
+	// Stored object location. Only returned for files in user-owned TOS buckets.
+	Tos OptTosLocation `json:"tos"`
 	// Failure details. Only set when `status` is `failed`.
 	Error OptFileError `json:"error"`
 	// Preprocessing configuration applied at upload time.
@@ -428,6 +430,11 @@ func (s *FileObject) GetStatus() Status {
 // GetDownloadURL returns the value of DownloadURL.
 func (s *FileObject) GetDownloadURL() OptString {
 	return s.DownloadURL
+}
+
+// GetTos returns the value of Tos.
+func (s *FileObject) GetTos() OptTosLocation {
+	return s.Tos
 }
 
 // GetError returns the value of Error.
@@ -498,6 +505,11 @@ func (s *FileObject) SetStatus(val Status) {
 // SetDownloadURL sets the value of DownloadURL.
 func (s *FileObject) SetDownloadURL(val OptString) {
 	s.DownloadURL = val
+}
+
+// SetTos sets the value of Tos.
+func (s *FileObject) SetTos(val OptTosLocation) {
+	s.Tos = val
 }
 
 // SetError sets the value of Error.
@@ -913,6 +925,52 @@ func (o OptString) Or(d string) string {
 	return d
 }
 
+// NewOptTosLocation returns new OptTosLocation with value set to v.
+func NewOptTosLocation(v TosLocation) OptTosLocation {
+	return OptTosLocation{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptTosLocation is optional TosLocation.
+type OptTosLocation struct {
+	Value TosLocation
+	Set   bool
+}
+
+// IsSet returns true if OptTosLocation was set.
+func (o OptTosLocation) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptTosLocation) Reset() {
+	var v TosLocation
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptTosLocation) SetTo(v TosLocation) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptTosLocation) Get() (v TosLocation, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptTosLocation) Or(d TosLocation) TosLocation {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptTosStorage returns new OptTosStorage with value set to v.
 func NewOptTosStorage(v TosStorage) OptTosStorage {
 	return OptTosStorage{
@@ -1163,6 +1221,35 @@ func (s *Status) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
+}
+
+// Location of a file stored in a user-owned TOS bucket.
+// Ref: #/components/schemas/TosLocation
+type TosLocation struct {
+	// TOS bucket name.
+	Bucket string `json:"bucket"`
+	// Full stored object key, including the upload prefix.
+	ObjectKey string `json:"object_key"`
+}
+
+// GetBucket returns the value of Bucket.
+func (s *TosLocation) GetBucket() string {
+	return s.Bucket
+}
+
+// GetObjectKey returns the value of ObjectKey.
+func (s *TosLocation) GetObjectKey() string {
+	return s.ObjectKey
+}
+
+// SetBucket sets the value of Bucket.
+func (s *TosLocation) SetBucket(val string) {
+	s.Bucket = val
+}
+
+// SetObjectKey sets the value of ObjectKey.
+func (s *TosLocation) SetObjectKey(val string) {
+	s.ObjectKey = val
 }
 
 // User-owned TOS bucket destination. When provided, files are stored in
