@@ -405,10 +405,10 @@ func (s *AudioRole) UnmarshalText(data []byte) error {
 
 // Ref: #/components/schemas/AudioURL
 type AudioURL struct {
-	// Public HTTP(S) URL, speaker://<id>, file://<file_id> for registered reference audio, or
-	// data:audio/{wav,mp3};base64,<payload>. Decoded base64 audio is limited to 15 MiB for reference
-	// generation; separation uses a 90 MiB source-audio limit. A speaker reference cannot be used for
-	// separation.
+	// Public HTTP(S) URL, speaker://<id> for a preset speaker, file://<file_id> for a custom voice
+	// registered through the Files API, or data:audio/{wav,mp3};base64,<payload>. Voice-cloning speaker
+	// IDs are not supported. Decoded base64 audio is limited to 15 MiB for reference generation;
+	// separation uses a 90 MiB source-audio limit. A speaker reference cannot be used for separation.
 	URL NonEmptyString `json:"url"`
 }
 
@@ -2499,8 +2499,9 @@ func (s *VideoRole) UnmarshalText(data []byte) error {
 
 // Ref: #/components/schemas/VideoURL
 type VideoURL struct {
-	// Public HTTP(S) URL or tos://<bucket>/<key>. Base64 and speaker references are not supported. Media
-	// properties and size are validated by the server.
+	// Public HTTP(S) URL or tos://<bucket>/<key>. Supported video resolutions: 360p, 480p, 720p and
+	// 1080p; minimum total pixel count (width * height): 172800. Base64 and speaker references are not
+	// supported. Media properties and size are validated by the server.
 	URL NonEmptyString `json:"url"`
 }
 

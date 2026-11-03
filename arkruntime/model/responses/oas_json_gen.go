@@ -5850,13 +5850,20 @@ func (s *FunctionTool) encodeFields(e *jx.Encoder) {
 			s.Description.Encode(e)
 		}
 	}
+	{
+		if s.DeferLoading.Set {
+			e.FieldStart("defer_loading")
+			s.DeferLoading.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfFunctionTool = [4]string{
+var jsonFieldsNameOfFunctionTool = [5]string{
 	0: "name",
 	1: "parameters",
 	2: "type",
 	3: "description",
+	4: "defer_loading",
 }
 
 // Decode decodes FunctionTool from json.
@@ -5909,6 +5916,16 @@ func (s *FunctionTool) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"description\"")
+			}
+		case "defer_loading":
+			if err := func() error {
+				s.DeferLoading.Reset()
+				if err := s.DeferLoading.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"defer_loading\"")
 			}
 		default:
 			return d.Skip()
@@ -6686,10 +6703,88 @@ func (s InputItemSum) encodeFields(e *jx.Encoder) {
 				}
 			}
 			{
+				if s.Namespace.Set {
+					e.FieldStart("namespace")
+					s.Namespace.Encode(e)
+				}
+			}
+			{
 				if s.Status.Set {
 					e.FieldStart("status")
 					s.Status.Encode(e)
 				}
+			}
+		}
+	case ItemToolSearchCallInputItemSum:
+		e.FieldStart("type")
+		e.Str("tool_search_call")
+		{
+			s := s.ItemToolSearchCall
+			{
+				if s.ID.Set {
+					e.FieldStart("id")
+					s.ID.Encode(e)
+				}
+			}
+			{
+				if s.Status.Set {
+					e.FieldStart("status")
+					s.Status.Encode(e)
+				}
+			}
+			{
+				e.FieldStart("arguments")
+				s.Arguments.Encode(e)
+			}
+			{
+				if s.CallID.Set {
+					e.FieldStart("call_id")
+					s.CallID.Encode(e)
+				}
+			}
+			{
+				if s.Execution.Set {
+					e.FieldStart("execution")
+					s.Execution.Encode(e)
+				}
+			}
+		}
+	case ItemToolSearchOutputInputItemSum:
+		e.FieldStart("type")
+		e.Str("tool_search_output")
+		{
+			s := s.ItemToolSearchOutput
+			{
+				if s.ID.Set {
+					e.FieldStart("id")
+					s.ID.Encode(e)
+				}
+			}
+			{
+				if s.Status.Set {
+					e.FieldStart("status")
+					s.Status.Encode(e)
+				}
+			}
+			{
+				if s.CallID.Set {
+					e.FieldStart("call_id")
+					s.CallID.Encode(e)
+				}
+			}
+			{
+				if s.Execution.Set {
+					e.FieldStart("execution")
+					s.Execution.Encode(e)
+				}
+			}
+			{
+				e.FieldStart("tools")
+				e.ArrStart()
+				for _, elem := range s.Tools {
+					elem.Encode(e)
+				}
+				e.ArrEnd()
 			}
 		}
 	case ItemFunctionToolCallOutputInputItemSum:
@@ -6697,6 +6792,12 @@ func (s InputItemSum) encodeFields(e *jx.Encoder) {
 		e.Str("function_call_output")
 		{
 			s := s.ItemFunctionToolCallOutput
+			{
+				if s.Namespace.Set {
+					e.FieldStart("namespace")
+					s.Namespace.Encode(e)
+				}
+			}
 			{
 				if s.CallID.Set {
 					e.FieldStart("call_id")
@@ -6926,6 +7027,12 @@ func (s *InputItemSum) Decode(d *jx.Decoder) error {
 				case "function_call":
 					s.Type = ItemFunctionToolCallInputItemSum
 					found = true
+				case "tool_search_call":
+					s.Type = ItemToolSearchCallInputItemSum
+					found = true
+				case "tool_search_output":
+					s.Type = ItemToolSearchOutputInputItemSum
+					found = true
 				case "function_call_output":
 					s.Type = ItemFunctionToolCallOutputInputItemSum
 					found = true
@@ -6974,6 +7081,14 @@ func (s *InputItemSum) Decode(d *jx.Decoder) error {
 		}
 	case ItemFunctionToolCallInputItemSum:
 		if err := s.ItemFunctionToolCall.Decode(d); err != nil {
+			return err
+		}
+	case ItemToolSearchCallInputItemSum:
+		if err := s.ItemToolSearchCall.Decode(d); err != nil {
+			return err
+		}
+	case ItemToolSearchOutputInputItemSum:
+		if err := s.ItemToolSearchOutput.Decode(d); err != nil {
 			return err
 		}
 	case ItemFunctionToolCallOutputInputItemSum:
@@ -9108,6 +9223,12 @@ func (s *ItemFunctionToolCall) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.Namespace.Set {
+			e.FieldStart("namespace")
+			s.Namespace.Encode(e)
+		}
+	}
+	{
 		if s.Status.Set {
 			e.FieldStart("status")
 			s.Status.Encode(e)
@@ -9115,13 +9236,14 @@ func (s *ItemFunctionToolCall) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfItemFunctionToolCall = [6]string{
+var jsonFieldsNameOfItemFunctionToolCall = [7]string{
 	0: "id",
 	1: "type",
 	2: "arguments",
 	3: "call_id",
 	4: "name",
-	5: "status",
+	5: "namespace",
+	6: "status",
 }
 
 // Decode decodes ItemFunctionToolCall from json.
@@ -9182,6 +9304,16 @@ func (s *ItemFunctionToolCall) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "namespace":
+			if err := func() error {
+				s.Namespace.Reset()
+				if err := s.Namespace.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"namespace\"")
 			}
 		case "status":
 			if err := func() error {
@@ -9259,6 +9391,12 @@ func (s *ItemFunctionToolCallOutput) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *ItemFunctionToolCallOutput) encodeFields(e *jx.Encoder) {
 	{
+		if s.Namespace.Set {
+			e.FieldStart("namespace")
+			s.Namespace.Encode(e)
+		}
+	}
+	{
 		e.FieldStart("type")
 		s.Type.Encode(e)
 	}
@@ -9288,12 +9426,13 @@ func (s *ItemFunctionToolCallOutput) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfItemFunctionToolCallOutput = [5]string{
-	0: "type",
-	1: "call_id",
-	2: "output",
-	3: "id",
-	4: "status",
+var jsonFieldsNameOfItemFunctionToolCallOutput = [6]string{
+	0: "namespace",
+	1: "type",
+	2: "call_id",
+	3: "output",
+	4: "id",
+	5: "status",
 }
 
 // Decode decodes ItemFunctionToolCallOutput from json.
@@ -9305,8 +9444,18 @@ func (s *ItemFunctionToolCallOutput) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
+		case "namespace":
+			if err := func() error {
+				s.Namespace.Reset()
+				if err := s.Namespace.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"namespace\"")
+			}
 		case "type":
-			requiredBitSet[0] |= 1 << 0
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				if err := s.Type.Decode(d); err != nil {
 					return err
@@ -9365,7 +9514,7 @@ func (s *ItemFunctionToolCallOutput) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000001,
+		0b00000010,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -10209,6 +10358,506 @@ func (s ItemStatus) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *ItemStatus) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *ItemToolSearchCall) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *ItemToolSearchCall) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
+		if s.ID.Set {
+			e.FieldStart("id")
+			s.ID.Encode(e)
+		}
+	}
+	{
+		if s.Status.Set {
+			e.FieldStart("status")
+			s.Status.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("arguments")
+		s.Arguments.Encode(e)
+	}
+	{
+		if s.CallID.Set {
+			e.FieldStart("call_id")
+			s.CallID.Encode(e)
+		}
+	}
+	{
+		if s.Execution.Set {
+			e.FieldStart("execution")
+			s.Execution.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfItemToolSearchCall = [6]string{
+	0: "type",
+	1: "id",
+	2: "status",
+	3: "arguments",
+	4: "call_id",
+	5: "execution",
+}
+
+// Decode decodes ItemToolSearchCall from json.
+func (s *ItemToolSearchCall) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ItemToolSearchCall to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "type":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "id":
+			if err := func() error {
+				s.ID.Reset()
+				if err := s.ID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"id\"")
+			}
+		case "status":
+			if err := func() error {
+				s.Status.Reset()
+				if err := s.Status.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"status\"")
+			}
+		case "arguments":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				if err := s.Arguments.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"arguments\"")
+			}
+		case "call_id":
+			if err := func() error {
+				s.CallID.Reset()
+				if err := s.CallID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"call_id\"")
+			}
+		case "execution":
+			if err := func() error {
+				s.Execution.Reset()
+				if err := s.Execution.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"execution\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ItemToolSearchCall")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00001001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfItemToolSearchCall) {
+					name = jsonFieldsNameOfItemToolSearchCall[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *ItemToolSearchCall) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ItemToolSearchCall) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s ItemToolSearchCallArguments) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields implements json.Marshaler.
+func (s ItemToolSearchCallArguments) encodeFields(e *jx.Encoder) {
+	for k, elem := range s {
+		e.FieldStart(k)
+
+		if len(elem) != 0 {
+			e.Raw(elem)
+		}
+	}
+}
+
+// Decode decodes ItemToolSearchCallArguments from json.
+func (s *ItemToolSearchCallArguments) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ItemToolSearchCallArguments to nil")
+	}
+	m := s.init()
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		var elem jx.Raw
+		if err := func() error {
+			v, err := d.RawAppend(nil)
+			elem = jx.Raw(v)
+			if err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return errors.Wrapf(err, "decode field %q", k)
+		}
+		m[string(k)] = elem
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ItemToolSearchCallArguments")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ItemToolSearchCallArguments) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ItemToolSearchCallArguments) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ItemToolSearchCallType as json.
+func (s ItemToolSearchCallType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes ItemToolSearchCallType from json.
+func (s *ItemToolSearchCallType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ItemToolSearchCallType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch ItemToolSearchCallType(v) {
+	case ItemToolSearchCallTypeToolSearchCall:
+		*s = ItemToolSearchCallTypeToolSearchCall
+	default:
+		*s = ItemToolSearchCallType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ItemToolSearchCallType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ItemToolSearchCallType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *ItemToolSearchOutput) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *ItemToolSearchOutput) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
+		if s.ID.Set {
+			e.FieldStart("id")
+			s.ID.Encode(e)
+		}
+	}
+	{
+		if s.Status.Set {
+			e.FieldStart("status")
+			s.Status.Encode(e)
+		}
+	}
+	{
+		if s.CallID.Set {
+			e.FieldStart("call_id")
+			s.CallID.Encode(e)
+		}
+	}
+	{
+		if s.Execution.Set {
+			e.FieldStart("execution")
+			s.Execution.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("tools")
+		e.ArrStart()
+		for _, elem := range s.Tools {
+			elem.Encode(e)
+		}
+		e.ArrEnd()
+	}
+}
+
+var jsonFieldsNameOfItemToolSearchOutput = [6]string{
+	0: "type",
+	1: "id",
+	2: "status",
+	3: "call_id",
+	4: "execution",
+	5: "tools",
+}
+
+// Decode decodes ItemToolSearchOutput from json.
+func (s *ItemToolSearchOutput) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ItemToolSearchOutput to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "type":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "id":
+			if err := func() error {
+				s.ID.Reset()
+				if err := s.ID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"id\"")
+			}
+		case "status":
+			if err := func() error {
+				s.Status.Reset()
+				if err := s.Status.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"status\"")
+			}
+		case "call_id":
+			if err := func() error {
+				s.CallID.Reset()
+				if err := s.CallID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"call_id\"")
+			}
+		case "execution":
+			if err := func() error {
+				s.Execution.Reset()
+				if err := s.Execution.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"execution\"")
+			}
+		case "tools":
+			requiredBitSet[0] |= 1 << 5
+			if err := func() error {
+				s.Tools = make([]ToolSearchResultTool, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem ToolSearchResultTool
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Tools = append(s.Tools, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"tools\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ItemToolSearchOutput")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00100001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfItemToolSearchOutput) {
+					name = jsonFieldsNameOfItemToolSearchOutput[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *ItemToolSearchOutput) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ItemToolSearchOutput) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ItemToolSearchOutputType as json.
+func (s ItemToolSearchOutputType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes ItemToolSearchOutputType from json.
+func (s *ItemToolSearchOutputType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ItemToolSearchOutputType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch ItemToolSearchOutputType(v) {
+	case ItemToolSearchOutputTypeToolSearchOutput:
+		*s = ItemToolSearchOutputTypeToolSearchOutput
+	default:
+		*s = ItemToolSearchOutputType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ItemToolSearchOutputType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ItemToolSearchOutputType) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -12189,6 +12838,199 @@ func (s *MessageRole) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode implements json.Marshaler.
+func (s *NamespaceTool) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *NamespaceTool) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
+		e.FieldStart("name")
+		e.Str(s.Name)
+	}
+	{
+		if s.Description.Set {
+			e.FieldStart("description")
+			s.Description.Encode(e)
+		}
+	}
+	{
+		e.FieldStart("tools")
+		e.ArrStart()
+		for _, elem := range s.Tools {
+			elem.Encode(e)
+		}
+		e.ArrEnd()
+	}
+}
+
+var jsonFieldsNameOfNamespaceTool = [4]string{
+	0: "type",
+	1: "name",
+	2: "description",
+	3: "tools",
+}
+
+// Decode decodes NamespaceTool from json.
+func (s *NamespaceTool) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode NamespaceTool to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "type":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "name":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Str()
+				s.Name = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"name\"")
+			}
+		case "description":
+			if err := func() error {
+				s.Description.Reset()
+				if err := s.Description.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"description\"")
+			}
+		case "tools":
+			requiredBitSet[0] |= 1 << 3
+			if err := func() error {
+				s.Tools = make([]FunctionTool, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem FunctionTool
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Tools = append(s.Tools, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"tools\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode NamespaceTool")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00001011,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfNamespaceTool) {
+					name = jsonFieldsNameOfNamespaceTool[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *NamespaceTool) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *NamespaceTool) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes NamespaceToolType as json.
+func (s NamespaceToolType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes NamespaceToolType from json.
+func (s *NamespaceToolType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode NamespaceToolType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch NamespaceToolType(v) {
+	case NamespaceToolTypeNamespace:
+		*s = NamespaceToolTypeNamespace
+	default:
+		*s = NamespaceToolType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s NamespaceToolType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *NamespaceToolType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes AudioChunkingStrategy as json.
 func (o OptAudioChunkingStrategy) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -13260,6 +14102,106 @@ func (s *OptMessageRole) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes string as json.
+func (o OptNilString) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	e.Str(string(o.Value))
+}
+
+// Decode decodes string from json.
+func (o *OptNilString) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilString to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v string
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	v, err := d.Str()
+	if err != nil {
+		return err
+	}
+	o.Value = string(v)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilString) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilString) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ToolSearchExecution as json.
+func (o OptNilToolSearchExecution) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	e.Str(string(o.Value))
+}
+
+// Decode decodes ToolSearchExecution from json.
+func (o *OptNilToolSearchExecution) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilToolSearchExecution to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v ToolSearchExecution
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilToolSearchExecution) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilToolSearchExecution) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes Reasoning as json.
 func (o OptReasoning) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -13853,6 +14795,73 @@ func (s OptToolNameList) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptToolNameList) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ToolSearchExecution as json.
+func (o OptToolSearchExecution) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	e.Str(string(o.Value))
+}
+
+// Decode decodes ToolSearchExecution from json.
+func (o *OptToolSearchExecution) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptToolSearchExecution to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptToolSearchExecution) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptToolSearchExecution) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ToolSearchToolParameters as json.
+func (o OptToolSearchToolParameters) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes ToolSearchToolParameters from json.
+func (o *OptToolSearchToolParameters) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptToolSearchToolParameters to nil")
+	}
+	o.Set = true
+	o.Value = make(ToolSearchToolParameters)
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptToolSearchToolParameters) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptToolSearchToolParameters) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -14878,10 +15887,88 @@ func (s OutputItemSum) encodeFields(e *jx.Encoder) {
 				}
 			}
 			{
+				if s.Namespace.Set {
+					e.FieldStart("namespace")
+					s.Namespace.Encode(e)
+				}
+			}
+			{
 				if s.Status.Set {
 					e.FieldStart("status")
 					s.Status.Encode(e)
 				}
+			}
+		}
+	case ItemToolSearchCallOutputItemSum:
+		e.FieldStart("type")
+		e.Str("tool_search_call")
+		{
+			s := s.ItemToolSearchCall
+			{
+				if s.ID.Set {
+					e.FieldStart("id")
+					s.ID.Encode(e)
+				}
+			}
+			{
+				if s.Status.Set {
+					e.FieldStart("status")
+					s.Status.Encode(e)
+				}
+			}
+			{
+				e.FieldStart("arguments")
+				s.Arguments.Encode(e)
+			}
+			{
+				if s.CallID.Set {
+					e.FieldStart("call_id")
+					s.CallID.Encode(e)
+				}
+			}
+			{
+				if s.Execution.Set {
+					e.FieldStart("execution")
+					s.Execution.Encode(e)
+				}
+			}
+		}
+	case ItemToolSearchOutputOutputItemSum:
+		e.FieldStart("type")
+		e.Str("tool_search_output")
+		{
+			s := s.ItemToolSearchOutput
+			{
+				if s.ID.Set {
+					e.FieldStart("id")
+					s.ID.Encode(e)
+				}
+			}
+			{
+				if s.Status.Set {
+					e.FieldStart("status")
+					s.Status.Encode(e)
+				}
+			}
+			{
+				if s.CallID.Set {
+					e.FieldStart("call_id")
+					s.CallID.Encode(e)
+				}
+			}
+			{
+				if s.Execution.Set {
+					e.FieldStart("execution")
+					s.Execution.Encode(e)
+				}
+			}
+			{
+				e.FieldStart("tools")
+				e.ArrStart()
+				for _, elem := range s.Tools {
+					elem.Encode(e)
+				}
+				e.ArrEnd()
 			}
 		}
 	case ItemReasoningOutputItemSum:
@@ -15222,6 +16309,12 @@ func (s *OutputItemSum) Decode(d *jx.Decoder) error {
 				case "function_call":
 					s.Type = ItemFunctionToolCallOutputItemSum
 					found = true
+				case "tool_search_call":
+					s.Type = ItemToolSearchCallOutputItemSum
+					found = true
+				case "tool_search_output":
+					s.Type = ItemToolSearchOutputOutputItemSum
+					found = true
 				case "reasoning":
 					s.Type = ItemReasoningOutputItemSum
 					found = true
@@ -15282,6 +16375,14 @@ func (s *OutputItemSum) Decode(d *jx.Decoder) error {
 		}
 	case ItemFunctionToolCallOutputItemSum:
 		if err := s.ItemFunctionToolCall.Decode(d); err != nil {
+			return err
+		}
+	case ItemToolSearchCallOutputItemSum:
+		if err := s.ItemToolSearchCall.Decode(d); err != nil {
+			return err
+		}
+	case ItemToolSearchOutputOutputItemSum:
+		if err := s.ItemToolSearchOutput.Decode(d); err != nil {
 			return err
 		}
 	case ItemReasoningOutputItemSum:
@@ -34190,6 +35291,500 @@ func (s *ToolNameList) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes ToolSearchExecution as json.
+func (s ToolSearchExecution) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes ToolSearchExecution from json.
+func (s *ToolSearchExecution) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ToolSearchExecution to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch ToolSearchExecution(v) {
+	case ToolSearchExecutionServer:
+		*s = ToolSearchExecutionServer
+	case ToolSearchExecutionClient:
+		*s = ToolSearchExecutionClient
+	case ToolSearchExecutionEmpty:
+		*s = ToolSearchExecutionEmpty
+	default:
+		*s = ToolSearchExecution(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ToolSearchExecution) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ToolSearchExecution) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *ToolSearchResultTool) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *ToolSearchResultTool) encodeFields(e *jx.Encoder) {
+	s.OneOf.encodeFields(e)
+}
+
+var jsonFieldsNameOfToolSearchResultTool = [0]string{}
+
+// Decode decodes ToolSearchResultTool from json.
+func (s *ToolSearchResultTool) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ToolSearchResultTool to nil")
+	}
+	if err := d.Capture(func(d *jx.Decoder) error {
+		return s.OneOf.Decode(d)
+	}); err != nil {
+		return errors.Wrap(err, "decode field OneOf")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		default:
+			return d.Skip()
+		}
+	}); err != nil {
+		return errors.Wrap(err, "decode ToolSearchResultTool")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *ToolSearchResultTool) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ToolSearchResultTool) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ToolSearchResultToolSum as json.
+func (s ToolSearchResultToolSum) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+func (s ToolSearchResultToolSum) encodeFields(e *jx.Encoder) {
+	if s.Type == "" && s.unknownType != "" {
+		// Decode validated this private object. Replay its fields, including
+		// when called by an enclosing object with an inline union.
+		raw := strings.TrimSpace(s.unknownJSON)
+		e.RawStr(raw[1 : len(raw)-1])
+		return
+	}
+	switch s.Type {
+	case FunctionToolToolSearchResultToolSum:
+		e.FieldStart("type")
+		e.Str("function")
+		{
+			s := s.FunctionTool
+			{
+				e.FieldStart("name")
+				e.Str(s.Name)
+			}
+			{
+				if s.Parameters.Set {
+					e.FieldStart("parameters")
+					s.Parameters.Encode(e)
+				}
+			}
+			{
+				if s.Description.Set {
+					e.FieldStart("description")
+					s.Description.Encode(e)
+				}
+			}
+			{
+				if s.DeferLoading.Set {
+					e.FieldStart("defer_loading")
+					s.DeferLoading.Encode(e)
+				}
+			}
+		}
+	case NamespaceToolToolSearchResultToolSum:
+		e.FieldStart("type")
+		e.Str("namespace")
+		{
+			s := s.NamespaceTool
+			{
+				e.FieldStart("name")
+				e.Str(s.Name)
+			}
+			{
+				if s.Description.Set {
+					e.FieldStart("description")
+					s.Description.Encode(e)
+				}
+			}
+			{
+				e.FieldStart("tools")
+				e.ArrStart()
+				for _, elem := range s.Tools {
+					elem.Encode(e)
+				}
+				e.ArrEnd()
+			}
+		}
+	}
+}
+
+// Decode decodes ToolSearchResultToolSum from json.
+func (s *ToolSearchResultToolSum) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ToolSearchResultToolSum to nil")
+	}
+	// Sum type discriminator.
+	if typ := d.Next(); typ != jx.Object {
+		return errors.Errorf("unexpected json type %q", typ)
+	}
+	// Buffer one complete value before peeking. Capture must not rewind a
+	// reader-backed decoder after its input buffer has been refilled.
+	raw, err := d.Raw()
+	if err != nil {
+		return err
+	}
+	d = jx.DecodeBytes(raw)
+	s.unknownType = ""
+	s.unknownJSON = ""
+	var unknownType string
+
+	var found bool
+	if err := d.Capture(func(d *jx.Decoder) error {
+		return d.ObjBytes(func(d *jx.Decoder, key []byte) error {
+			if found {
+				return d.Skip()
+			}
+			switch string(key) {
+			case "type":
+				typ, err := d.Str()
+				if err != nil {
+					return err
+				}
+				switch typ {
+				case "function":
+					s.Type = FunctionToolToolSearchResultToolSum
+					found = true
+				case "namespace":
+					s.Type = NamespaceToolToolSearchResultToolSum
+					found = true
+				default:
+					if typ == "" {
+						return errors.New("empty sum type discriminator")
+					}
+					unknownType = typ
+					found = true
+				}
+				return nil
+			}
+			return d.Skip()
+		})
+	}); err != nil {
+		return errors.Wrap(err, "capture")
+	}
+	if unknownType != "" {
+		// Copy bytes: decoder buffers can be reused after this call.
+		// Reset known members so a reused object cannot expose stale data.
+		*s = ToolSearchResultToolSum{unknownType: unknownType, unknownJSON: string(raw)}
+		return nil
+	}
+	if !found {
+		return errors.New("unable to detect sum type variant")
+	}
+	switch s.Type {
+	case FunctionToolToolSearchResultToolSum:
+		if err := s.FunctionTool.Decode(d); err != nil {
+			return err
+		}
+	case NamespaceToolToolSearchResultToolSum:
+		if err := s.NamespaceTool.Decode(d); err != nil {
+			return err
+		}
+	default:
+		return errors.Errorf("inferred invalid type: %s", s.Type)
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ToolSearchResultToolSum) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ToolSearchResultToolSum) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *ToolSearchTool) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *ToolSearchTool) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
+		if s.Execution.Set {
+			e.FieldStart("execution")
+			s.Execution.Encode(e)
+		}
+	}
+	{
+		if s.Description.Set {
+			e.FieldStart("description")
+			s.Description.Encode(e)
+		}
+	}
+	{
+		if s.Parameters.Set {
+			e.FieldStart("parameters")
+			s.Parameters.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfToolSearchTool = [4]string{
+	0: "type",
+	1: "execution",
+	2: "description",
+	3: "parameters",
+}
+
+// Decode decodes ToolSearchTool from json.
+func (s *ToolSearchTool) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ToolSearchTool to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "type":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "execution":
+			if err := func() error {
+				s.Execution.Reset()
+				if err := s.Execution.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"execution\"")
+			}
+		case "description":
+			if err := func() error {
+				s.Description.Reset()
+				if err := s.Description.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"description\"")
+			}
+		case "parameters":
+			if err := func() error {
+				s.Parameters.Reset()
+				if err := s.Parameters.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"parameters\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ToolSearchTool")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfToolSearchTool) {
+					name = jsonFieldsNameOfToolSearchTool[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *ToolSearchTool) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ToolSearchTool) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s ToolSearchToolParameters) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields implements json.Marshaler.
+func (s ToolSearchToolParameters) encodeFields(e *jx.Encoder) {
+	for k, elem := range s {
+		e.FieldStart(k)
+
+		if len(elem) != 0 {
+			e.Raw(elem)
+		}
+	}
+}
+
+// Decode decodes ToolSearchToolParameters from json.
+func (s *ToolSearchToolParameters) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ToolSearchToolParameters to nil")
+	}
+	m := s.init()
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		var elem jx.Raw
+		if err := func() error {
+			v, err := d.RawAppend(nil)
+			elem = jx.Raw(v)
+			if err != nil {
+				return err
+			}
+			return nil
+		}(); err != nil {
+			return errors.Wrapf(err, "decode field %q", k)
+		}
+		m[string(k)] = elem
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode ToolSearchToolParameters")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ToolSearchToolParameters) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ToolSearchToolParameters) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ToolSearchToolType as json.
+func (s ToolSearchToolType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes ToolSearchToolType from json.
+func (s *ToolSearchToolType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode ToolSearchToolType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch ToolSearchToolType(v) {
+	case ToolSearchToolTypeToolSearch:
+		*s = ToolSearchToolTypeToolSearch
+	default:
+		*s = ToolSearchToolType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s ToolSearchToolType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *ToolSearchToolType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes ToolSum as json.
 func (s ToolSum) Encode(e *jx.Encoder) {
 	e.ObjStart()
@@ -34225,6 +35820,60 @@ func (s ToolSum) encodeFields(e *jx.Encoder) {
 				if s.Description.Set {
 					e.FieldStart("description")
 					s.Description.Encode(e)
+				}
+			}
+			{
+				if s.DeferLoading.Set {
+					e.FieldStart("defer_loading")
+					s.DeferLoading.Encode(e)
+				}
+			}
+		}
+	case NamespaceToolToolSum:
+		e.FieldStart("type")
+		e.Str("namespace")
+		{
+			s := s.NamespaceTool
+			{
+				e.FieldStart("name")
+				e.Str(s.Name)
+			}
+			{
+				if s.Description.Set {
+					e.FieldStart("description")
+					s.Description.Encode(e)
+				}
+			}
+			{
+				e.FieldStart("tools")
+				e.ArrStart()
+				for _, elem := range s.Tools {
+					elem.Encode(e)
+				}
+				e.ArrEnd()
+			}
+		}
+	case ToolSearchToolToolSum:
+		e.FieldStart("type")
+		e.Str("tool_search")
+		{
+			s := s.ToolSearchTool
+			{
+				if s.Execution.Set {
+					e.FieldStart("execution")
+					s.Execution.Encode(e)
+				}
+			}
+			{
+				if s.Description.Set {
+					e.FieldStart("description")
+					s.Description.Encode(e)
+				}
+			}
+			{
+				if s.Parameters.Set {
+					e.FieldStart("parameters")
+					s.Parameters.Encode(e)
 				}
 			}
 		}
@@ -34431,6 +36080,12 @@ func (s *ToolSum) Decode(d *jx.Decoder) error {
 				case "function":
 					s.Type = FunctionToolToolSum
 					found = true
+				case "namespace":
+					s.Type = NamespaceToolToolSum
+					found = true
+				case "tool_search":
+					s.Type = ToolSearchToolToolSum
+					found = true
 				case "web_search":
 					s.Type = WebSearchToolToolSum
 					found = true
@@ -34472,6 +36127,14 @@ func (s *ToolSum) Decode(d *jx.Decoder) error {
 	switch s.Type {
 	case FunctionToolToolSum:
 		if err := s.FunctionTool.Decode(d); err != nil {
+			return err
+		}
+	case NamespaceToolToolSum:
+		if err := s.NamespaceTool.Decode(d); err != nil {
+			return err
+		}
+	case ToolSearchToolToolSum:
+		if err := s.ToolSearchTool.Decode(d); err != nil {
 			return err
 		}
 	case WebSearchToolToolSum:

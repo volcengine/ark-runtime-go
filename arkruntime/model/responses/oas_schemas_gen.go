@@ -2560,6 +2560,8 @@ type FunctionTool struct {
 	// A description of the function.
 	// Used by the model to determine whether or not to call the function.
 	Description OptString `json:"description"`
+	// Defer the full schema until tool_search loads this function. Defaults to false.
+	DeferLoading OptBool `json:"defer_loading"`
 }
 
 // GetName returns the value of Name.
@@ -2582,6 +2584,11 @@ func (s *FunctionTool) GetDescription() OptString {
 	return s.Description
 }
 
+// GetDeferLoading returns the value of DeferLoading.
+func (s *FunctionTool) GetDeferLoading() OptBool {
+	return s.DeferLoading
+}
+
 // SetName sets the value of Name.
 func (s *FunctionTool) SetName(val string) {
 	s.Name = val
@@ -2600,6 +2607,11 @@ func (s *FunctionTool) SetType(val FunctionToolType) {
 // SetDescription sets the value of Description.
 func (s *FunctionTool) SetDescription(val OptString) {
 	s.Description = val
+}
+
+// SetDeferLoading sets the value of DeferLoading.
+func (s *FunctionTool) SetDeferLoading(val OptBool) {
+	s.DeferLoading = val
 }
 
 // A JSON schema object describing the parameters of the function.
@@ -2890,6 +2902,8 @@ type InputItemSum struct {
 	Type                            InputItemSumType // switch on this field
 	ItemEasyMessage                 ItemEasyMessage
 	ItemFunctionToolCall            ItemFunctionToolCall
+	ItemToolSearchCall              ItemToolSearchCall
+	ItemToolSearchOutput            ItemToolSearchOutput
 	ItemFunctionToolCallOutput      ItemFunctionToolCallOutput
 	ItemReasoning                   ItemReasoning
 	ItemFunctionMcpApprovalRequest  ItemFunctionMcpApprovalRequest
@@ -2915,6 +2929,8 @@ type InputItemSumType string
 const (
 	ItemEasyMessageInputItemSum                 InputItemSumType = "message"
 	ItemFunctionToolCallInputItemSum            InputItemSumType = "function_call"
+	ItemToolSearchCallInputItemSum              InputItemSumType = "tool_search_call"
+	ItemToolSearchOutputInputItemSum            InputItemSumType = "tool_search_output"
 	ItemFunctionToolCallOutputInputItemSum      InputItemSumType = "function_call_output"
 	ItemReasoningInputItemSum                   InputItemSumType = "reasoning"
 	ItemFunctionMcpApprovalRequestInputItemSum  InputItemSumType = "mcp_approval_request"
@@ -2929,6 +2945,14 @@ func (s InputItemSum) IsItemEasyMessage() bool { return s.Type == ItemEasyMessag
 // IsItemFunctionToolCall reports whether InputItemSum is ItemFunctionToolCall.
 func (s InputItemSum) IsItemFunctionToolCall() bool {
 	return s.Type == ItemFunctionToolCallInputItemSum
+}
+
+// IsItemToolSearchCall reports whether InputItemSum is ItemToolSearchCall.
+func (s InputItemSum) IsItemToolSearchCall() bool { return s.Type == ItemToolSearchCallInputItemSum }
+
+// IsItemToolSearchOutput reports whether InputItemSum is ItemToolSearchOutput.
+func (s InputItemSum) IsItemToolSearchOutput() bool {
+	return s.Type == ItemToolSearchOutputInputItemSum
 }
 
 // IsItemFunctionToolCallOutput reports whether InputItemSum is ItemFunctionToolCallOutput.
@@ -3000,6 +3024,52 @@ func (s InputItemSum) GetItemFunctionToolCall() (v ItemFunctionToolCall, ok bool
 func NewItemFunctionToolCallInputItemSum(v ItemFunctionToolCall) InputItemSum {
 	var s InputItemSum
 	s.SetItemFunctionToolCall(v)
+	return s
+}
+
+// SetItemToolSearchCall sets InputItemSum to ItemToolSearchCall.
+func (s *InputItemSum) SetItemToolSearchCall(v ItemToolSearchCall) {
+	s.Type = ItemToolSearchCallInputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
+	s.ItemToolSearchCall = v
+}
+
+// GetItemToolSearchCall returns ItemToolSearchCall and true boolean if InputItemSum is ItemToolSearchCall.
+func (s InputItemSum) GetItemToolSearchCall() (v ItemToolSearchCall, ok bool) {
+	if !s.IsItemToolSearchCall() {
+		return v, false
+	}
+	return s.ItemToolSearchCall, true
+}
+
+// NewItemToolSearchCallInputItemSum returns new InputItemSum from ItemToolSearchCall.
+func NewItemToolSearchCallInputItemSum(v ItemToolSearchCall) InputItemSum {
+	var s InputItemSum
+	s.SetItemToolSearchCall(v)
+	return s
+}
+
+// SetItemToolSearchOutput sets InputItemSum to ItemToolSearchOutput.
+func (s *InputItemSum) SetItemToolSearchOutput(v ItemToolSearchOutput) {
+	s.Type = ItemToolSearchOutputInputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
+	s.ItemToolSearchOutput = v
+}
+
+// GetItemToolSearchOutput returns ItemToolSearchOutput and true boolean if InputItemSum is ItemToolSearchOutput.
+func (s InputItemSum) GetItemToolSearchOutput() (v ItemToolSearchOutput, ok bool) {
+	if !s.IsItemToolSearchOutput() {
+		return v, false
+	}
+	return s.ItemToolSearchOutput, true
+}
+
+// NewItemToolSearchOutputInputItemSum returns new InputItemSum from ItemToolSearchOutput.
+func NewItemToolSearchOutputInputItemSum(v ItemToolSearchOutput) InputItemSum {
+	var s InputItemSum
+	s.SetItemToolSearchOutput(v)
 	return s
 }
 
@@ -4087,6 +4157,8 @@ type ItemFunctionToolCall struct {
 	CallID OptString `json:"call_id"`
 	// The name of the function to call.
 	Name OptString `json:"name"`
+	// Namespace of the called function, omitted for top-level functions.
+	Namespace OptString `json:"namespace"`
 	// The status of the item.
 	Status OptItemStatus `json:"status"`
 }
@@ -4114,6 +4186,11 @@ func (s *ItemFunctionToolCall) GetCallID() OptString {
 // GetName returns the value of Name.
 func (s *ItemFunctionToolCall) GetName() OptString {
 	return s.Name
+}
+
+// GetNamespace returns the value of Namespace.
+func (s *ItemFunctionToolCall) GetNamespace() OptString {
+	return s.Namespace
 }
 
 // GetStatus returns the value of Status.
@@ -4146,6 +4223,11 @@ func (s *ItemFunctionToolCall) SetName(val OptString) {
 	s.Name = val
 }
 
+// SetNamespace sets the value of Namespace.
+func (s *ItemFunctionToolCall) SetNamespace(val OptString) {
+	s.Namespace = val
+}
+
 // SetStatus sets the value of Status.
 func (s *ItemFunctionToolCall) SetStatus(val OptItemStatus) {
 	s.Status = val
@@ -4153,11 +4235,18 @@ func (s *ItemFunctionToolCall) SetStatus(val OptItemStatus) {
 
 // Ref: #/components/schemas/ItemFunctionToolCallOutput
 type ItemFunctionToolCallOutput struct {
-	Type   ItemFunctionToolCallOutputType `json:"type"`
-	CallID OptString                      `json:"call_id"`
-	Output OptMessageContent              `json:"output"`
-	ID     OptString                      `json:"id"`
-	Status OptItemStatus                  `json:"status"`
+	// Namespace of the function whose result is being supplied.
+	Namespace OptString                      `json:"namespace"`
+	Type      ItemFunctionToolCallOutputType `json:"type"`
+	CallID    OptString                      `json:"call_id"`
+	Output    OptMessageContent              `json:"output"`
+	ID        OptString                      `json:"id"`
+	Status    OptItemStatus                  `json:"status"`
+}
+
+// GetNamespace returns the value of Namespace.
+func (s *ItemFunctionToolCallOutput) GetNamespace() OptString {
+	return s.Namespace
 }
 
 // GetType returns the value of Type.
@@ -4183,6 +4272,11 @@ func (s *ItemFunctionToolCallOutput) GetID() OptString {
 // GetStatus returns the value of Status.
 func (s *ItemFunctionToolCallOutput) GetStatus() OptItemStatus {
 	return s.Status
+}
+
+// SetNamespace sets the value of Namespace.
+func (s *ItemFunctionToolCallOutput) SetNamespace(val OptString) {
+	s.Namespace = val
 }
 
 // SetType sets the value of Type.
@@ -4659,6 +4753,236 @@ func (s *ItemStatus) UnmarshalText(data []byte) error {
 		return nil
 	case ItemStatusFailed:
 		*s = ItemStatusFailed
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/ItemToolSearchCall
+type ItemToolSearchCall struct {
+	Type   ItemToolSearchCallType `json:"type"`
+	ID     OptString              `json:"id"`
+	Status OptItemStatus          `json:"status"`
+	// JSON object (not an encoded string). Completed calls contain a nonempty paths array; added
+	// streaming items initially contain {}.
+	Arguments ItemToolSearchCallArguments `json:"arguments"`
+	// Hosted search emits null. Replayed hosted history must omit this field or set it to null.
+	CallID OptNilString `json:"call_id"`
+	// Hosted search emits server. Omitted or empty execution defaults to server when replaying history.
+	// Client history is not supported.
+	Execution OptToolSearchExecution `json:"execution"`
+}
+
+// GetType returns the value of Type.
+func (s *ItemToolSearchCall) GetType() ItemToolSearchCallType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ItemToolSearchCall) GetID() OptString {
+	return s.ID
+}
+
+// GetStatus returns the value of Status.
+func (s *ItemToolSearchCall) GetStatus() OptItemStatus {
+	return s.Status
+}
+
+// GetArguments returns the value of Arguments.
+func (s *ItemToolSearchCall) GetArguments() ItemToolSearchCallArguments {
+	return s.Arguments
+}
+
+// GetCallID returns the value of CallID.
+func (s *ItemToolSearchCall) GetCallID() OptNilString {
+	return s.CallID
+}
+
+// GetExecution returns the value of Execution.
+func (s *ItemToolSearchCall) GetExecution() OptToolSearchExecution {
+	return s.Execution
+}
+
+// SetType sets the value of Type.
+func (s *ItemToolSearchCall) SetType(val ItemToolSearchCallType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ItemToolSearchCall) SetID(val OptString) {
+	s.ID = val
+}
+
+// SetStatus sets the value of Status.
+func (s *ItemToolSearchCall) SetStatus(val OptItemStatus) {
+	s.Status = val
+}
+
+// SetArguments sets the value of Arguments.
+func (s *ItemToolSearchCall) SetArguments(val ItemToolSearchCallArguments) {
+	s.Arguments = val
+}
+
+// SetCallID sets the value of CallID.
+func (s *ItemToolSearchCall) SetCallID(val OptNilString) {
+	s.CallID = val
+}
+
+// SetExecution sets the value of Execution.
+func (s *ItemToolSearchCall) SetExecution(val OptToolSearchExecution) {
+	s.Execution = val
+}
+
+// JSON object (not an encoded string). Completed calls contain a nonempty paths array; added
+// streaming items initially contain {}.
+type ItemToolSearchCallArguments map[string]jx.Raw
+
+func (s *ItemToolSearchCallArguments) init() ItemToolSearchCallArguments {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type ItemToolSearchCallType string
+
+const (
+	ItemToolSearchCallTypeToolSearchCall ItemToolSearchCallType = "tool_search_call"
+)
+
+// AllValues returns all ItemToolSearchCallType values.
+func (ItemToolSearchCallType) AllValues() []ItemToolSearchCallType {
+	return []ItemToolSearchCallType{
+		ItemToolSearchCallTypeToolSearchCall,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ItemToolSearchCallType) MarshalText() ([]byte, error) {
+	switch s {
+	case ItemToolSearchCallTypeToolSearchCall:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ItemToolSearchCallType) UnmarshalText(data []byte) error {
+	switch ItemToolSearchCallType(data) {
+	case ItemToolSearchCallTypeToolSearchCall:
+		*s = ItemToolSearchCallTypeToolSearchCall
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/ItemToolSearchOutput
+type ItemToolSearchOutput struct {
+	Type   ItemToolSearchOutputType `json:"type"`
+	ID     OptString                `json:"id"`
+	Status OptItemStatus            `json:"status"`
+	// Hosted search emits null. Replayed hosted history must omit this field or set it to null.
+	CallID OptNilString `json:"call_id"`
+	// Hosted search emits server; omitted or empty execution defaults to server on replay.
+	Execution OptToolSearchExecution `json:"execution"`
+	// Loaded definitions, including their complete parameter schemas. Replayed history requires a
+	// nonempty list following the corresponding search call.
+	Tools []ToolSearchResultTool `json:"tools"`
+}
+
+// GetType returns the value of Type.
+func (s *ItemToolSearchOutput) GetType() ItemToolSearchOutputType {
+	return s.Type
+}
+
+// GetID returns the value of ID.
+func (s *ItemToolSearchOutput) GetID() OptString {
+	return s.ID
+}
+
+// GetStatus returns the value of Status.
+func (s *ItemToolSearchOutput) GetStatus() OptItemStatus {
+	return s.Status
+}
+
+// GetCallID returns the value of CallID.
+func (s *ItemToolSearchOutput) GetCallID() OptNilString {
+	return s.CallID
+}
+
+// GetExecution returns the value of Execution.
+func (s *ItemToolSearchOutput) GetExecution() OptToolSearchExecution {
+	return s.Execution
+}
+
+// GetTools returns the value of Tools.
+func (s *ItemToolSearchOutput) GetTools() []ToolSearchResultTool {
+	return s.Tools
+}
+
+// SetType sets the value of Type.
+func (s *ItemToolSearchOutput) SetType(val ItemToolSearchOutputType) {
+	s.Type = val
+}
+
+// SetID sets the value of ID.
+func (s *ItemToolSearchOutput) SetID(val OptString) {
+	s.ID = val
+}
+
+// SetStatus sets the value of Status.
+func (s *ItemToolSearchOutput) SetStatus(val OptItemStatus) {
+	s.Status = val
+}
+
+// SetCallID sets the value of CallID.
+func (s *ItemToolSearchOutput) SetCallID(val OptNilString) {
+	s.CallID = val
+}
+
+// SetExecution sets the value of Execution.
+func (s *ItemToolSearchOutput) SetExecution(val OptToolSearchExecution) {
+	s.Execution = val
+}
+
+// SetTools sets the value of Tools.
+func (s *ItemToolSearchOutput) SetTools(val []ToolSearchResultTool) {
+	s.Tools = val
+}
+
+type ItemToolSearchOutputType string
+
+const (
+	ItemToolSearchOutputTypeToolSearchOutput ItemToolSearchOutputType = "tool_search_output"
+)
+
+// AllValues returns all ItemToolSearchOutputType values.
+func (ItemToolSearchOutputType) AllValues() []ItemToolSearchOutputType {
+	return []ItemToolSearchOutputType{
+		ItemToolSearchOutputTypeToolSearchOutput,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ItemToolSearchOutputType) MarshalText() ([]byte, error) {
+	switch s {
+	case ItemToolSearchOutputTypeToolSearchOutput:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ItemToolSearchOutputType) UnmarshalText(data []byte) error {
+	switch ItemToolSearchOutputType(data) {
+	case ItemToolSearchOutputTypeToolSearchOutput:
+		*s = ItemToolSearchOutputTypeToolSearchOutput
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -5565,6 +5889,90 @@ func (s *MessageRole) UnmarshalText(data []byte) error {
 		return nil
 	case MessageRoleAssistant:
 		*s = MessageRoleAssistant
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Ref: #/components/schemas/NamespaceTool
+type NamespaceTool struct {
+	Type NamespaceToolType `json:"type"`
+	// Namespace used to qualify function calls.
+	Name        string    `json:"name"`
+	Description OptString `json:"description"`
+	// Functions in this namespace. Nested namespaces are not supported.
+	Tools []FunctionTool `json:"tools"`
+}
+
+// GetType returns the value of Type.
+func (s *NamespaceTool) GetType() NamespaceToolType {
+	return s.Type
+}
+
+// GetName returns the value of Name.
+func (s *NamespaceTool) GetName() string {
+	return s.Name
+}
+
+// GetDescription returns the value of Description.
+func (s *NamespaceTool) GetDescription() OptString {
+	return s.Description
+}
+
+// GetTools returns the value of Tools.
+func (s *NamespaceTool) GetTools() []FunctionTool {
+	return s.Tools
+}
+
+// SetType sets the value of Type.
+func (s *NamespaceTool) SetType(val NamespaceToolType) {
+	s.Type = val
+}
+
+// SetName sets the value of Name.
+func (s *NamespaceTool) SetName(val string) {
+	s.Name = val
+}
+
+// SetDescription sets the value of Description.
+func (s *NamespaceTool) SetDescription(val OptString) {
+	s.Description = val
+}
+
+// SetTools sets the value of Tools.
+func (s *NamespaceTool) SetTools(val []FunctionTool) {
+	s.Tools = val
+}
+
+type NamespaceToolType string
+
+const (
+	NamespaceToolTypeNamespace NamespaceToolType = "namespace"
+)
+
+// AllValues returns all NamespaceToolType values.
+func (NamespaceToolType) AllValues() []NamespaceToolType {
+	return []NamespaceToolType{
+		NamespaceToolTypeNamespace,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s NamespaceToolType) MarshalText() ([]byte, error) {
+	switch s {
+	case NamespaceToolTypeNamespace:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *NamespaceToolType) UnmarshalText(data []byte) error {
+	switch NamespaceToolType(data) {
+	case NamespaceToolTypeNamespace:
+		*s = NamespaceToolTypeNamespace
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -7043,6 +7451,132 @@ func (o OptMessageRole) Or(d MessageRole) MessageRole {
 	return d
 }
 
+// NewOptNilString returns new OptNilString with value set to v.
+func NewOptNilString(v string) OptNilString {
+	return OptNilString{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilString is optional nullable string.
+type OptNilString struct {
+	Value string
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilString was set.
+func (o OptNilString) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilString) Reset() {
+	var v string
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilString) SetTo(v string) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilString) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilString) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v string
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilString) Get() (v string, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilString) Or(d string) string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilToolSearchExecution returns new OptNilToolSearchExecution with value set to v.
+func NewOptNilToolSearchExecution(v ToolSearchExecution) OptNilToolSearchExecution {
+	return OptNilToolSearchExecution{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilToolSearchExecution is optional nullable ToolSearchExecution.
+type OptNilToolSearchExecution struct {
+	Value ToolSearchExecution
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilToolSearchExecution was set.
+func (o OptNilToolSearchExecution) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilToolSearchExecution) Reset() {
+	var v ToolSearchExecution
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilToolSearchExecution) SetTo(v ToolSearchExecution) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilToolSearchExecution) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilToolSearchExecution) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v ToolSearchExecution
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilToolSearchExecution) Get() (v ToolSearchExecution, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilToolSearchExecution) Or(d ToolSearchExecution) ToolSearchExecution {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptOrder returns new OptOrder with value set to v.
 func NewOptOrder(v Order) OptOrder {
 	return OptOrder{
@@ -7917,6 +8451,98 @@ func (o OptToolNameList) Or(d ToolNameList) ToolNameList {
 	return d
 }
 
+// NewOptToolSearchExecution returns new OptToolSearchExecution with value set to v.
+func NewOptToolSearchExecution(v ToolSearchExecution) OptToolSearchExecution {
+	return OptToolSearchExecution{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptToolSearchExecution is optional ToolSearchExecution.
+type OptToolSearchExecution struct {
+	Value ToolSearchExecution
+	Set   bool
+}
+
+// IsSet returns true if OptToolSearchExecution was set.
+func (o OptToolSearchExecution) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptToolSearchExecution) Reset() {
+	var v ToolSearchExecution
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptToolSearchExecution) SetTo(v ToolSearchExecution) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptToolSearchExecution) Get() (v ToolSearchExecution, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptToolSearchExecution) Or(d ToolSearchExecution) ToolSearchExecution {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptToolSearchToolParameters returns new OptToolSearchToolParameters with value set to v.
+func NewOptToolSearchToolParameters(v ToolSearchToolParameters) OptToolSearchToolParameters {
+	return OptToolSearchToolParameters{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptToolSearchToolParameters is optional ToolSearchToolParameters.
+type OptToolSearchToolParameters struct {
+	Value ToolSearchToolParameters
+	Set   bool
+}
+
+// IsSet returns true if OptToolSearchToolParameters was set.
+func (o OptToolSearchToolParameters) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptToolSearchToolParameters) Reset() {
+	var v ToolSearchToolParameters
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptToolSearchToolParameters) SetTo(v ToolSearchToolParameters) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptToolSearchToolParameters) Get() (v ToolSearchToolParameters, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptToolSearchToolParameters) Or(d ToolSearchToolParameters) ToolSearchToolParameters {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptToolUsage returns new OptToolUsage with value set to v.
 func NewOptToolUsage(v ToolUsage) OptToolUsage {
 	return OptToolUsage{
@@ -8685,6 +9311,8 @@ type OutputItemSum struct {
 	Type                           OutputItemSumType // switch on this field
 	ItemOutputMessage              ItemOutputMessage
 	ItemFunctionToolCall           ItemFunctionToolCall
+	ItemToolSearchCall             ItemToolSearchCall
+	ItemToolSearchOutput           ItemToolSearchOutput
 	ItemReasoning                  ItemReasoning
 	ItemTranscription              ItemTranscription
 	ItemFunctionWebSearch          ItemFunctionWebSearch
@@ -8714,6 +9342,8 @@ type OutputItemSumType string
 const (
 	ItemOutputMessageOutputItemSum              OutputItemSumType = "message"
 	ItemFunctionToolCallOutputItemSum           OutputItemSumType = "function_call"
+	ItemToolSearchCallOutputItemSum             OutputItemSumType = "tool_search_call"
+	ItemToolSearchOutputOutputItemSum           OutputItemSumType = "tool_search_output"
 	ItemReasoningOutputItemSum                  OutputItemSumType = "reasoning"
 	ItemTranscriptionOutputItemSum              OutputItemSumType = "transcription"
 	ItemFunctionWebSearchOutputItemSum          OutputItemSumType = "web_search_call"
@@ -8732,6 +9362,14 @@ func (s OutputItemSum) IsItemOutputMessage() bool { return s.Type == ItemOutputM
 // IsItemFunctionToolCall reports whether OutputItemSum is ItemFunctionToolCall.
 func (s OutputItemSum) IsItemFunctionToolCall() bool {
 	return s.Type == ItemFunctionToolCallOutputItemSum
+}
+
+// IsItemToolSearchCall reports whether OutputItemSum is ItemToolSearchCall.
+func (s OutputItemSum) IsItemToolSearchCall() bool { return s.Type == ItemToolSearchCallOutputItemSum }
+
+// IsItemToolSearchOutput reports whether OutputItemSum is ItemToolSearchOutput.
+func (s OutputItemSum) IsItemToolSearchOutput() bool {
+	return s.Type == ItemToolSearchOutputOutputItemSum
 }
 
 // IsItemReasoning reports whether OutputItemSum is ItemReasoning.
@@ -8819,6 +9457,52 @@ func (s OutputItemSum) GetItemFunctionToolCall() (v ItemFunctionToolCall, ok boo
 func NewItemFunctionToolCallOutputItemSum(v ItemFunctionToolCall) OutputItemSum {
 	var s OutputItemSum
 	s.SetItemFunctionToolCall(v)
+	return s
+}
+
+// SetItemToolSearchCall sets OutputItemSum to ItemToolSearchCall.
+func (s *OutputItemSum) SetItemToolSearchCall(v ItemToolSearchCall) {
+	s.Type = ItemToolSearchCallOutputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
+	s.ItemToolSearchCall = v
+}
+
+// GetItemToolSearchCall returns ItemToolSearchCall and true boolean if OutputItemSum is ItemToolSearchCall.
+func (s OutputItemSum) GetItemToolSearchCall() (v ItemToolSearchCall, ok bool) {
+	if !s.IsItemToolSearchCall() {
+		return v, false
+	}
+	return s.ItemToolSearchCall, true
+}
+
+// NewItemToolSearchCallOutputItemSum returns new OutputItemSum from ItemToolSearchCall.
+func NewItemToolSearchCallOutputItemSum(v ItemToolSearchCall) OutputItemSum {
+	var s OutputItemSum
+	s.SetItemToolSearchCall(v)
+	return s
+}
+
+// SetItemToolSearchOutput sets OutputItemSum to ItemToolSearchOutput.
+func (s *OutputItemSum) SetItemToolSearchOutput(v ItemToolSearchOutput) {
+	s.Type = ItemToolSearchOutputOutputItemSum
+	s.unknownType = ""
+	s.unknownJSON = ""
+	s.ItemToolSearchOutput = v
+}
+
+// GetItemToolSearchOutput returns ItemToolSearchOutput and true boolean if OutputItemSum is ItemToolSearchOutput.
+func (s OutputItemSum) GetItemToolSearchOutput() (v ItemToolSearchOutput, ok bool) {
+	if !s.IsItemToolSearchOutput() {
+		return v, false
+	}
+	return s.ItemToolSearchOutput, true
+}
+
+// NewItemToolSearchOutputOutputItemSum returns new OutputItemSum from ItemToolSearchOutput.
+func NewItemToolSearchOutputOutputItemSum(v ItemToolSearchOutput) OutputItemSum {
+	var s OutputItemSum
+	s.SetItemToolSearchOutput(v)
 	return s
 }
 
@@ -19012,6 +19696,253 @@ func (s *ToolNameList) SetClearToolNames(val []string) {
 	s.ClearToolNames = val
 }
 
+// Ref: #/components/schemas/ToolSearchExecution
+type ToolSearchExecution string
+
+const (
+	ToolSearchExecutionServer ToolSearchExecution = "server"
+	ToolSearchExecutionClient ToolSearchExecution = "client"
+	ToolSearchExecutionEmpty  ToolSearchExecution = ""
+)
+
+// AllValues returns all ToolSearchExecution values.
+func (ToolSearchExecution) AllValues() []ToolSearchExecution {
+	return []ToolSearchExecution{
+		ToolSearchExecutionServer,
+		ToolSearchExecutionClient,
+		ToolSearchExecutionEmpty,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ToolSearchExecution) MarshalText() ([]byte, error) {
+	switch s {
+	case ToolSearchExecutionServer:
+		return []byte(s), nil
+	case ToolSearchExecutionClient:
+		return []byte(s), nil
+	case ToolSearchExecutionEmpty:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ToolSearchExecution) UnmarshalText(data []byte) error {
+	switch ToolSearchExecution(data) {
+	case ToolSearchExecutionServer:
+		*s = ToolSearchExecutionServer
+		return nil
+	case ToolSearchExecutionClient:
+		*s = ToolSearchExecutionClient
+		return nil
+	case ToolSearchExecutionEmpty:
+		*s = ToolSearchExecutionEmpty
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// Full function or namespace definitions returned by hosted tool search.
+// Ref: #/components/schemas/ToolSearchResultTool
+type ToolSearchResultTool struct {
+	OneOf ToolSearchResultToolSum
+}
+
+// GetOneOf returns the value of OneOf.
+func (s *ToolSearchResultTool) GetOneOf() ToolSearchResultToolSum {
+	return s.OneOf
+}
+
+// SetOneOf sets the value of OneOf.
+func (s *ToolSearchResultTool) SetOneOf(val ToolSearchResultToolSum) {
+	s.OneOf = val
+}
+
+// ToolSearchResultToolSum represents sum type.
+type ToolSearchResultToolSum struct {
+	// Only populated for unknown wire variants; no known member is selected.
+	unknownType   string
+	unknownJSON   string
+	Type          ToolSearchResultToolSumType // switch on this field
+	FunctionTool  FunctionTool
+	NamespaceTool NamespaceTool
+}
+
+// GetUnknown returns the discriminator and original JSON for an unknown variant.
+// The bool is false for known variants and zero values. Explicit validation
+// remains strict; selecting a known member makes the fallback inactive.
+func (s ToolSearchResultToolSum) GetUnknown() (string, string, bool) {
+	if s.Type != "" || s.unknownType == "" {
+		return "", "", false
+	}
+	return s.unknownType, s.unknownJSON, true
+}
+
+// ToolSearchResultToolSumType is oneOf type of ToolSearchResultToolSum.
+type ToolSearchResultToolSumType string
+
+// Possible values for ToolSearchResultToolSumType.
+const (
+	FunctionToolToolSearchResultToolSum  ToolSearchResultToolSumType = "function"
+	NamespaceToolToolSearchResultToolSum ToolSearchResultToolSumType = "namespace"
+)
+
+// IsFunctionTool reports whether ToolSearchResultToolSum is FunctionTool.
+func (s ToolSearchResultToolSum) IsFunctionTool() bool {
+	return s.Type == FunctionToolToolSearchResultToolSum
+}
+
+// IsNamespaceTool reports whether ToolSearchResultToolSum is NamespaceTool.
+func (s ToolSearchResultToolSum) IsNamespaceTool() bool {
+	return s.Type == NamespaceToolToolSearchResultToolSum
+}
+
+// SetFunctionTool sets ToolSearchResultToolSum to FunctionTool.
+func (s *ToolSearchResultToolSum) SetFunctionTool(v FunctionTool) {
+	s.Type = FunctionToolToolSearchResultToolSum
+	s.unknownType = ""
+	s.unknownJSON = ""
+	s.FunctionTool = v
+}
+
+// GetFunctionTool returns FunctionTool and true boolean if ToolSearchResultToolSum is FunctionTool.
+func (s ToolSearchResultToolSum) GetFunctionTool() (v FunctionTool, ok bool) {
+	if !s.IsFunctionTool() {
+		return v, false
+	}
+	return s.FunctionTool, true
+}
+
+// NewFunctionToolToolSearchResultToolSum returns new ToolSearchResultToolSum from FunctionTool.
+func NewFunctionToolToolSearchResultToolSum(v FunctionTool) ToolSearchResultToolSum {
+	var s ToolSearchResultToolSum
+	s.SetFunctionTool(v)
+	return s
+}
+
+// SetNamespaceTool sets ToolSearchResultToolSum to NamespaceTool.
+func (s *ToolSearchResultToolSum) SetNamespaceTool(v NamespaceTool) {
+	s.Type = NamespaceToolToolSearchResultToolSum
+	s.unknownType = ""
+	s.unknownJSON = ""
+	s.NamespaceTool = v
+}
+
+// GetNamespaceTool returns NamespaceTool and true boolean if ToolSearchResultToolSum is NamespaceTool.
+func (s ToolSearchResultToolSum) GetNamespaceTool() (v NamespaceTool, ok bool) {
+	if !s.IsNamespaceTool() {
+		return v, false
+	}
+	return s.NamespaceTool, true
+}
+
+// NewNamespaceToolToolSearchResultToolSum returns new ToolSearchResultToolSum from NamespaceTool.
+func NewNamespaceToolToolSearchResultToolSum(v NamespaceTool) ToolSearchResultToolSum {
+	var s ToolSearchResultToolSum
+	s.SetNamespaceTool(v)
+	return s
+}
+
+// Ref: #/components/schemas/ToolSearchTool
+type ToolSearchTool struct {
+	Type ToolSearchToolType `json:"type"`
+	// Omitted, null or empty means server. Client execution uses full-schema fallback.
+	Execution OptNilToolSearchExecution `json:"execution"`
+	// Optional caller-supplied description; hosted search uses its built-in definition.
+	Description OptString `json:"description"`
+	// Optional JSON schema; hosted search uses its built-in parameter schema.
+	Parameters OptToolSearchToolParameters `json:"parameters"`
+}
+
+// GetType returns the value of Type.
+func (s *ToolSearchTool) GetType() ToolSearchToolType {
+	return s.Type
+}
+
+// GetExecution returns the value of Execution.
+func (s *ToolSearchTool) GetExecution() OptNilToolSearchExecution {
+	return s.Execution
+}
+
+// GetDescription returns the value of Description.
+func (s *ToolSearchTool) GetDescription() OptString {
+	return s.Description
+}
+
+// GetParameters returns the value of Parameters.
+func (s *ToolSearchTool) GetParameters() OptToolSearchToolParameters {
+	return s.Parameters
+}
+
+// SetType sets the value of Type.
+func (s *ToolSearchTool) SetType(val ToolSearchToolType) {
+	s.Type = val
+}
+
+// SetExecution sets the value of Execution.
+func (s *ToolSearchTool) SetExecution(val OptNilToolSearchExecution) {
+	s.Execution = val
+}
+
+// SetDescription sets the value of Description.
+func (s *ToolSearchTool) SetDescription(val OptString) {
+	s.Description = val
+}
+
+// SetParameters sets the value of Parameters.
+func (s *ToolSearchTool) SetParameters(val OptToolSearchToolParameters) {
+	s.Parameters = val
+}
+
+// Optional JSON schema; hosted search uses its built-in parameter schema.
+type ToolSearchToolParameters map[string]jx.Raw
+
+func (s *ToolSearchToolParameters) init() ToolSearchToolParameters {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+type ToolSearchToolType string
+
+const (
+	ToolSearchToolTypeToolSearch ToolSearchToolType = "tool_search"
+)
+
+// AllValues returns all ToolSearchToolType values.
+func (ToolSearchToolType) AllValues() []ToolSearchToolType {
+	return []ToolSearchToolType{
+		ToolSearchToolTypeToolSearch,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ToolSearchToolType) MarshalText() ([]byte, error) {
+	switch s {
+	case ToolSearchToolTypeToolSearch:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ToolSearchToolType) UnmarshalText(data []byte) error {
+	switch ToolSearchToolType(data) {
+	case ToolSearchToolTypeToolSearch:
+		*s = ToolSearchToolTypeToolSearch
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // ToolSum represents sum type.
 type ToolSum struct {
 	// Only populated for unknown wire variants; no known member is selected.
@@ -19019,6 +19950,8 @@ type ToolSum struct {
 	unknownJSON         string
 	Type                ToolSumType // switch on this field
 	FunctionTool        FunctionTool
+	NamespaceTool       NamespaceTool
+	ToolSearchTool      ToolSearchTool
 	WebSearchTool       WebSearchTool
 	ImageProcessTool    ImageProcessTool
 	McpTool             McpTool
@@ -19042,6 +19975,8 @@ type ToolSumType string
 // Possible values for ToolSumType.
 const (
 	FunctionToolToolSum        ToolSumType = "function"
+	NamespaceToolToolSum       ToolSumType = "namespace"
+	ToolSearchToolToolSum      ToolSumType = "tool_search"
 	WebSearchToolToolSum       ToolSumType = "web_search"
 	ImageProcessToolToolSum    ToolSumType = "image_process"
 	McpToolToolSum             ToolSumType = "mcp"
@@ -19051,6 +19986,12 @@ const (
 
 // IsFunctionTool reports whether ToolSum is FunctionTool.
 func (s ToolSum) IsFunctionTool() bool { return s.Type == FunctionToolToolSum }
+
+// IsNamespaceTool reports whether ToolSum is NamespaceTool.
+func (s ToolSum) IsNamespaceTool() bool { return s.Type == NamespaceToolToolSum }
+
+// IsToolSearchTool reports whether ToolSum is ToolSearchTool.
+func (s ToolSum) IsToolSearchTool() bool { return s.Type == ToolSearchToolToolSum }
 
 // IsWebSearchTool reports whether ToolSum is WebSearchTool.
 func (s ToolSum) IsWebSearchTool() bool { return s.Type == WebSearchToolToolSum }
@@ -19087,6 +20028,52 @@ func (s ToolSum) GetFunctionTool() (v FunctionTool, ok bool) {
 func NewFunctionToolToolSum(v FunctionTool) ToolSum {
 	var s ToolSum
 	s.SetFunctionTool(v)
+	return s
+}
+
+// SetNamespaceTool sets ToolSum to NamespaceTool.
+func (s *ToolSum) SetNamespaceTool(v NamespaceTool) {
+	s.Type = NamespaceToolToolSum
+	s.unknownType = ""
+	s.unknownJSON = ""
+	s.NamespaceTool = v
+}
+
+// GetNamespaceTool returns NamespaceTool and true boolean if ToolSum is NamespaceTool.
+func (s ToolSum) GetNamespaceTool() (v NamespaceTool, ok bool) {
+	if !s.IsNamespaceTool() {
+		return v, false
+	}
+	return s.NamespaceTool, true
+}
+
+// NewNamespaceToolToolSum returns new ToolSum from NamespaceTool.
+func NewNamespaceToolToolSum(v NamespaceTool) ToolSum {
+	var s ToolSum
+	s.SetNamespaceTool(v)
+	return s
+}
+
+// SetToolSearchTool sets ToolSum to ToolSearchTool.
+func (s *ToolSum) SetToolSearchTool(v ToolSearchTool) {
+	s.Type = ToolSearchToolToolSum
+	s.unknownType = ""
+	s.unknownJSON = ""
+	s.ToolSearchTool = v
+}
+
+// GetToolSearchTool returns ToolSearchTool and true boolean if ToolSum is ToolSearchTool.
+func (s ToolSum) GetToolSearchTool() (v ToolSearchTool, ok bool) {
+	if !s.IsToolSearchTool() {
+		return v, false
+	}
+	return s.ToolSearchTool, true
+}
+
+// NewToolSearchToolToolSum returns new ToolSum from ToolSearchTool.
+func NewToolSearchToolToolSum(v ToolSearchTool) ToolSum {
+	var s ToolSum
+	s.SetToolSearchTool(v)
 	return s
 }
 
