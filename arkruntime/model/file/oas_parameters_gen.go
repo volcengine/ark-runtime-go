@@ -12,6 +12,8 @@ type FilesDeleteParams struct {
 
 // FilesListParams is parameters of Files_list operation.
 type FilesListParams struct {
+	// Filter files by scope ID. For session-owned files, use the session ID.
+	ScopeID OptString `json:",omitempty,omitzero" query:"scope_id"`
 	// Filter results to a single purpose.
 	Purpose OptPurpose `json:",omitempty,omitzero" query:"purpose"`
 	// Cursor (file id) for pagination — return items after this id.
