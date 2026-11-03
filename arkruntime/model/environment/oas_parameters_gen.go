@@ -48,8 +48,16 @@ type EnvironmentWorkStopParams struct {
 	WorkId        string
 }
 
+// EnvironmentsArchiveParams is parameters of Environments_archive operation.
+type EnvironmentsArchiveParams struct {
+	EnvironmentId string
+}
+
 // EnvironmentsListParams is parameters of Environments_list operation.
 type EnvironmentsListParams struct {
+	// 是否包含已归档资源。省略或 false 时排除已归档，true
+	// 时同时返回未归档与已归档资源。.
+	IncludeArchived OptBool `json:",omitempty,omitzero" query:"include_archived"`
 	// 下一页 cursor（opaque）。从上一次响应的 `next_page` 中取。
 	// 首次请求可省略。.
 	Page OptString `json:",omitempty,omitzero" query:"page"`

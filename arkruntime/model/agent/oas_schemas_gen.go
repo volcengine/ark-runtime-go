@@ -42,6 +42,10 @@ type Agent struct {
 	Tags []Tag `json:"tags"`
 	// 展示名。.
 	DisplayName OptString `json:"display_name"`
+	// 上下文管理策略。服务端可能在公开响应中补展示默认；该默认不代表用户已显式配置。.
+	ContextManagement ContextManagementPolicies `json:"context_management"`
+	// 首次归档时间（RFC 3339），只读；未归档时省略。归档作用于资源 ID。.
+	ArchivedAt OptString `json:"archived_at"`
 	// RFC 3339 时间。.
 	CreatedAt string `json:"created_at"`
 	// RFC 3339 时间。.
@@ -116,6 +120,16 @@ func (s *Agent) GetTags() []Tag {
 // GetDisplayName returns the value of DisplayName.
 func (s *Agent) GetDisplayName() OptString {
 	return s.DisplayName
+}
+
+// GetContextManagement returns the value of ContextManagement.
+func (s *Agent) GetContextManagement() ContextManagementPolicies {
+	return s.ContextManagement
+}
+
+// GetArchivedAt returns the value of ArchivedAt.
+func (s *Agent) GetArchivedAt() OptString {
+	return s.ArchivedAt
 }
 
 // GetCreatedAt returns the value of CreatedAt.
@@ -198,6 +212,16 @@ func (s *Agent) SetDisplayName(val OptString) {
 	s.DisplayName = val
 }
 
+// SetContextManagement sets the value of ContextManagement.
+func (s *Agent) SetContextManagement(val ContextManagementPolicies) {
+	s.ContextManagement = val
+}
+
+// SetArchivedAt sets the value of ArchivedAt.
+func (s *Agent) SetArchivedAt(val OptString) {
+	s.ArchivedAt = val
+}
+
 // SetCreatedAt sets the value of CreatedAt.
 func (s *Agent) SetCreatedAt(val string) {
 	s.CreatedAt = val
@@ -243,6 +267,8 @@ type AgentRef struct {
 	McpServers []MCPServer `json:"mcp_servers"`
 	// Session 响应中冻结的成员 Agent skills。.
 	Skills []AgentSkillRef `json:"skills"`
+	// Session 响应中冻结的成员 Agent 上下文管理策略。.
+	ContextManagement ContextManagementPoliciesItem `json:"context_management"`
 	// Session 响应中冻结的成员 Agent 展示名。.
 	DisplayName OptString `json:"display_name"`
 }
@@ -295,6 +321,11 @@ func (s *AgentRef) GetMcpServers() []MCPServer {
 // GetSkills returns the value of Skills.
 func (s *AgentRef) GetSkills() []AgentSkillRef {
 	return s.Skills
+}
+
+// GetContextManagement returns the value of ContextManagement.
+func (s *AgentRef) GetContextManagement() ContextManagementPoliciesItem {
+	return s.ContextManagement
 }
 
 // GetDisplayName returns the value of DisplayName.
@@ -350,6 +381,11 @@ func (s *AgentRef) SetMcpServers(val []MCPServer) {
 // SetSkills sets the value of Skills.
 func (s *AgentRef) SetSkills(val []AgentSkillRef) {
 	s.Skills = val
+}
+
+// SetContextManagement sets the value of ContextManagement.
+func (s *AgentRef) SetContextManagement(val ContextManagementPoliciesItem) {
+	s.ContextManagement = val
 }
 
 // SetDisplayName sets the value of DisplayName.
@@ -488,7 +524,94 @@ func (s *AgentType) UnmarshalText(data []byte) error {
 	}
 }
 
-// 创建 Agent 的请求体。.
+type CompactThreshold int64
+
+type ContextManagementInstructions string
+
+type ContextManagementPolicies []ContextManagementPolicy
+
+type ContextManagementPoliciesItem []ContextManagementPolicy
+
+// Agent 上下文管理策略。当前最多配置一条 compaction 策略。.
+// Ref: #/components/schemas/ContextManagementPolicy
+type ContextManagementPolicy struct {
+	// 策略类型，当前固定为 `compaction`。.
+	Type ContextManagementType `json:"type"`
+	// 触发压缩的上下文 token 阈值；省略时由运行时使用默认值。.
+	CompactThreshold OptNilCompactThreshold `json:"compact_threshold"`
+	// 自定义摘要指令；省略时由运行时使用内置提示词。.
+	Instructions OptNilContextManagementInstructions `json:"instructions"`
+}
+
+// GetType returns the value of Type.
+func (s *ContextManagementPolicy) GetType() ContextManagementType {
+	return s.Type
+}
+
+// GetCompactThreshold returns the value of CompactThreshold.
+func (s *ContextManagementPolicy) GetCompactThreshold() OptNilCompactThreshold {
+	return s.CompactThreshold
+}
+
+// GetInstructions returns the value of Instructions.
+func (s *ContextManagementPolicy) GetInstructions() OptNilContextManagementInstructions {
+	return s.Instructions
+}
+
+// SetType sets the value of Type.
+func (s *ContextManagementPolicy) SetType(val ContextManagementType) {
+	s.Type = val
+}
+
+// SetCompactThreshold sets the value of CompactThreshold.
+func (s *ContextManagementPolicy) SetCompactThreshold(val OptNilCompactThreshold) {
+	s.CompactThreshold = val
+}
+
+// SetInstructions sets the value of Instructions.
+func (s *ContextManagementPolicy) SetInstructions(val OptNilContextManagementInstructions) {
+	s.Instructions = val
+}
+
+// Agent 上下文管理策略类型。.
+// Ref: #/components/schemas/ContextManagementType
+type ContextManagementType string
+
+const (
+	ContextManagementTypeCompaction ContextManagementType = "compaction"
+)
+
+// AllValues returns all ContextManagementType values.
+func (ContextManagementType) AllValues() []ContextManagementType {
+	return []ContextManagementType{
+		ContextManagementTypeCompaction,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ContextManagementType) MarshalText() ([]byte, error) {
+	switch s {
+	case ContextManagementTypeCompaction:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ContextManagementType) UnmarshalText(data []byte) error {
+	switch ContextManagementType(data) {
+	case ContextManagementTypeCompaction:
+		*s = ContextManagementTypeCompaction
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
+// 创建 Agent 的请求体。
+// multiagent_20261001 必须携带非 null 的 subagents；该条件由服务端校验，
+// 并通过 dependentSchemas 写入公开契约。.
 // Ref: #/components/schemas/CreateAgentRequest
 type CreateAgentRequest struct {
 	// 人类可读名称。.
@@ -513,6 +636,10 @@ type CreateAgentRequest struct {
 	Metadata OptCreateAgentRequestMetadata `json:"metadata"`
 	// 资源标签。.
 	Tags []Tag `json:"tags"`
+	// 上下文管理策略，最多一条 compaction。省略、null 或 []
+	// 均表示不配置自定义策略；
+	// SDK 不会自动填入服务端公开响应中的展示默认阈值。.
+	ContextManagement OptNilContextManagementPolicies `json:"context_management"`
 }
 
 // GetName returns the value of Name.
@@ -570,6 +697,11 @@ func (s *CreateAgentRequest) GetTags() []Tag {
 	return s.Tags
 }
 
+// GetContextManagement returns the value of ContextManagement.
+func (s *CreateAgentRequest) GetContextManagement() OptNilContextManagementPolicies {
+	return s.ContextManagement
+}
+
 // SetName sets the value of Name.
 func (s *CreateAgentRequest) SetName(val string) {
 	s.Name = val
@@ -623,6 +755,11 @@ func (s *CreateAgentRequest) SetMetadata(val OptCreateAgentRequestMetadata) {
 // SetTags sets the value of Tags.
 func (s *CreateAgentRequest) SetTags(val []Tag) {
 	s.Tags = val
+}
+
+// SetContextManagement sets the value of ContextManagement.
+func (s *CreateAgentRequest) SetContextManagement(val OptNilContextManagementPolicies) {
+	s.ContextManagement = val
 }
 
 // 用户自定义键值对元数据。.
@@ -1041,7 +1178,7 @@ type MultiagentConfig struct {
 	// 拓扑类型。.
 	Type MultiagentType `json:"type"`
 	// Coordinator 的下属 Agent 数组，0–20 项；深度限制为 1。
-	// `multiagent_20261001` 不支持该字段。.
+	// `multiagent_20261001` 不使用该字段；服务端响应仍可能回显 `[]`。.
 	Agents []AgentRef `json:"agents"`
 	// `multiagent_20261001` 的子代理配置。
 	// Create 时必须提供。该属性不接受显式 `null`。.
@@ -1792,66 +1929,6 @@ func (o OptMultiagentConfig) Or(d MultiagentConfig) MultiagentConfig {
 	return d
 }
 
-// NewOptMultiagentPatch returns new OptMultiagentPatch with value set to v.
-func NewOptMultiagentPatch(v MultiagentPatch) OptMultiagentPatch {
-	return OptMultiagentPatch{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptMultiagentPatch is optional MultiagentPatch.
-type OptMultiagentPatch struct {
-	Value MultiagentPatch
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptMultiagentPatch was set.
-func (o OptMultiagentPatch) IsSet() bool { return o.Set }
-
-// IsNull returns true if MultiagentPatch is set to null.
-func (o OptMultiagentPatch) IsNull() bool { return o.Null }
-
-// Reset unsets value.
-func (o *OptMultiagentPatch) Reset() {
-	var v MultiagentPatch
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptMultiagentPatch) SetTo(v MultiagentPatch) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// SetToNull sets value to null.
-func (o *OptMultiagentPatch) SetToNull() {
-	var v MultiagentPatch
-	o.Set = true
-	o.Null = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptMultiagentPatch) Get() (v MultiagentPatch, ok bool) {
-	if !o.Set || o.Null {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptMultiagentPatch) Or(d MultiagentPatch) MultiagentPatch {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
 // NewOptMultiagentSubagentsConfig returns new OptMultiagentSubagentsConfig with value set to v.
 func NewOptMultiagentSubagentsConfig(v MultiagentSubagentsConfig) OptMultiagentSubagentsConfig {
 	return OptMultiagentSubagentsConfig{
@@ -1961,6 +2038,195 @@ func (o OptNilAgentRefArray) Or(d []AgentRef) []AgentRef {
 	return d
 }
 
+// NewOptNilCompactThreshold returns new OptNilCompactThreshold with value set to v.
+func NewOptNilCompactThreshold(v CompactThreshold) OptNilCompactThreshold {
+	return OptNilCompactThreshold{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilCompactThreshold is optional nullable CompactThreshold.
+type OptNilCompactThreshold struct {
+	Value CompactThreshold
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilCompactThreshold was set.
+func (o OptNilCompactThreshold) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilCompactThreshold) Reset() {
+	var v CompactThreshold
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilCompactThreshold) SetTo(v CompactThreshold) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilCompactThreshold) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilCompactThreshold) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v CompactThreshold
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilCompactThreshold) Get() (v CompactThreshold, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilCompactThreshold) Or(d CompactThreshold) CompactThreshold {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilContextManagementInstructions returns new OptNilContextManagementInstructions with value set to v.
+func NewOptNilContextManagementInstructions(v ContextManagementInstructions) OptNilContextManagementInstructions {
+	return OptNilContextManagementInstructions{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilContextManagementInstructions is optional nullable ContextManagementInstructions.
+type OptNilContextManagementInstructions struct {
+	Value ContextManagementInstructions
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilContextManagementInstructions was set.
+func (o OptNilContextManagementInstructions) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilContextManagementInstructions) Reset() {
+	var v ContextManagementInstructions
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilContextManagementInstructions) SetTo(v ContextManagementInstructions) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilContextManagementInstructions) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilContextManagementInstructions) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v ContextManagementInstructions
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilContextManagementInstructions) Get() (v ContextManagementInstructions, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilContextManagementInstructions) Or(d ContextManagementInstructions) ContextManagementInstructions {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilContextManagementPolicies returns new OptNilContextManagementPolicies with value set to v.
+func NewOptNilContextManagementPolicies(v ContextManagementPolicies) OptNilContextManagementPolicies {
+	return OptNilContextManagementPolicies{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilContextManagementPolicies is optional nullable ContextManagementPolicies.
+type OptNilContextManagementPolicies struct {
+	Value ContextManagementPolicies
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilContextManagementPolicies was set.
+func (o OptNilContextManagementPolicies) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilContextManagementPolicies) Reset() {
+	var v ContextManagementPolicies
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilContextManagementPolicies) SetTo(v ContextManagementPolicies) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilContextManagementPolicies) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilContextManagementPolicies) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v ContextManagementPolicies
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilContextManagementPolicies) Get() (v ContextManagementPolicies, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilContextManagementPolicies) Or(d ContextManagementPolicies) ContextManagementPolicies {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNilMultiagentInlineAgentsConfig returns new OptNilMultiagentInlineAgentsConfig with value set to v.
 func NewOptNilMultiagentInlineAgentsConfig(v MultiagentInlineAgentsConfig) OptNilMultiagentInlineAgentsConfig {
 	return OptNilMultiagentInlineAgentsConfig{
@@ -2018,6 +2284,69 @@ func (o OptNilMultiagentInlineAgentsConfig) Get() (v MultiagentInlineAgentsConfi
 
 // Or returns value if set, or given parameter if does not.
 func (o OptNilMultiagentInlineAgentsConfig) Or(d MultiagentInlineAgentsConfig) MultiagentInlineAgentsConfig {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilMultiagentPatch returns new OptNilMultiagentPatch with value set to v.
+func NewOptNilMultiagentPatch(v MultiagentPatch) OptNilMultiagentPatch {
+	return OptNilMultiagentPatch{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilMultiagentPatch is optional nullable MultiagentPatch.
+type OptNilMultiagentPatch struct {
+	Value MultiagentPatch
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilMultiagentPatch was set.
+func (o OptNilMultiagentPatch) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilMultiagentPatch) Reset() {
+	var v MultiagentPatch
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilMultiagentPatch) SetTo(v MultiagentPatch) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilMultiagentPatch) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilMultiagentPatch) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v MultiagentPatch
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilMultiagentPatch) Get() (v MultiagentPatch, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilMultiagentPatch) Or(d MultiagentPatch) MultiagentPatch {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -2667,7 +2996,8 @@ func (s *ToolItem) SetInputSchema(val OptCustomToolInputSchema) {
 
 // 更新 Agent 的请求体。语义：
 // - 省略 = 保留
-// - 空字符串/null = 清空（仅 description / system / 数组类）
+// - 空字符串/null = 清空（仅 description / system / 既有数组类；context_management 的
+// null 表示保留）
 // - `name` / `model` 不可清空
 // - `metadata` 走 patch
 // - `mcp_servers` / `tools` / `skills` 整体替换
@@ -2704,11 +3034,14 @@ type UpdateAgentRequest struct {
 	// 发送；不能表达时
 	// 必须使用 raw HTTP/request-body escape hatch。需要补齐的 typed patch API
 	// 由各 SDK 独立交付，不在本契约 MR 中新增。.
-	Multiagent OptMultiagentPatch `json:"multiagent"`
+	Multiagent OptNilMultiagentPatch `json:"multiagent"`
 	// 用户自定义键值对元数据（patch）。.
 	Metadata OptUpdateAgentRequestMetadata `json:"metadata"`
 	// 资源标签（整体替换）。.
 	Tags []Tag `json:"tags"`
+	// 上下文管理策略（整体替换），最多一条 compaction。省略或 null 表示保留；
+	// 显式 [] 表示清除自定义策略，随后由运行时使用默认行为。.
+	ContextManagement OptNilContextManagementPolicies `json:"context_management"`
 }
 
 // GetVersion returns the value of Version.
@@ -2757,7 +3090,7 @@ func (s *UpdateAgentRequest) GetSkills() []AgentSkillRef {
 }
 
 // GetMultiagent returns the value of Multiagent.
-func (s *UpdateAgentRequest) GetMultiagent() OptMultiagentPatch {
+func (s *UpdateAgentRequest) GetMultiagent() OptNilMultiagentPatch {
 	return s.Multiagent
 }
 
@@ -2769,6 +3102,11 @@ func (s *UpdateAgentRequest) GetMetadata() OptUpdateAgentRequestMetadata {
 // GetTags returns the value of Tags.
 func (s *UpdateAgentRequest) GetTags() []Tag {
 	return s.Tags
+}
+
+// GetContextManagement returns the value of ContextManagement.
+func (s *UpdateAgentRequest) GetContextManagement() OptNilContextManagementPolicies {
+	return s.ContextManagement
 }
 
 // SetVersion sets the value of Version.
@@ -2817,7 +3155,7 @@ func (s *UpdateAgentRequest) SetSkills(val []AgentSkillRef) {
 }
 
 // SetMultiagent sets the value of Multiagent.
-func (s *UpdateAgentRequest) SetMultiagent(val OptMultiagentPatch) {
+func (s *UpdateAgentRequest) SetMultiagent(val OptNilMultiagentPatch) {
 	s.Multiagent = val
 }
 
@@ -2829,6 +3167,11 @@ func (s *UpdateAgentRequest) SetMetadata(val OptUpdateAgentRequestMetadata) {
 // SetTags sets the value of Tags.
 func (s *UpdateAgentRequest) SetTags(val []Tag) {
 	s.Tags = val
+}
+
+// SetContextManagement sets the value of ContextManagement.
+func (s *UpdateAgentRequest) SetContextManagement(val OptNilContextManagementPolicies) {
+	s.ContextManagement = val
 }
 
 // 用户自定义键值对元数据（patch）。.

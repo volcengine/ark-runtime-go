@@ -264,6 +264,8 @@ type Environment struct {
 	Metadata OptEnvironmentMetadata `json:"metadata"`
 	// 一期未启用；仅协议占位。.
 	Scope OptEnvironmentScope `json:"scope"`
+	// 首次归档时间（RFC 3339），只读；未归档时省略。归档作用于资源 ID。.
+	ArchivedAt OptString `json:"archived_at"`
 	// RFC 3339 时间。.
 	CreatedAt string `json:"created_at"`
 	// RFC 3339 时间。.
@@ -305,6 +307,11 @@ func (s *Environment) GetMetadata() OptEnvironmentMetadata {
 // GetScope returns the value of Scope.
 func (s *Environment) GetScope() OptEnvironmentScope {
 	return s.Scope
+}
+
+// GetArchivedAt returns the value of ArchivedAt.
+func (s *Environment) GetArchivedAt() OptString {
+	return s.ArchivedAt
 }
 
 // GetCreatedAt returns the value of CreatedAt.
@@ -355,6 +362,11 @@ func (s *Environment) SetMetadata(val OptEnvironmentMetadata) {
 // SetScope sets the value of Scope.
 func (s *Environment) SetScope(val OptEnvironmentScope) {
 	s.Scope = val
+}
+
+// SetArchivedAt sets the value of ArchivedAt.
+func (s *Environment) SetArchivedAt(val OptString) {
+	s.ArchivedAt = val
 }
 
 // SetCreatedAt sets the value of CreatedAt.

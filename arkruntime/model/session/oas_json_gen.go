@@ -14,6 +14,302 @@ import (
 	"github.com/volcengine/ark-runtime-go/arkruntime/internal/validate"
 )
 
+// Encode encodes AgentCompactThreshold as json.
+func (s AgentCompactThreshold) Encode(e *jx.Encoder) {
+	unwrapped := int64(s)
+
+	e.Int64(unwrapped)
+}
+
+// Decode decodes AgentCompactThreshold from json.
+func (s *AgentCompactThreshold) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode AgentCompactThreshold to nil")
+	}
+	var unwrapped int64
+	if err := func() error {
+		v, err := d.Int64()
+		unwrapped = int64(v)
+		if err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = AgentCompactThreshold(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s AgentCompactThreshold) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *AgentCompactThreshold) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes AgentContextManagementInstructions as json.
+func (s AgentContextManagementInstructions) Encode(e *jx.Encoder) {
+	unwrapped := string(s)
+
+	e.Str(unwrapped)
+}
+
+// Decode decodes AgentContextManagementInstructions from json.
+func (s *AgentContextManagementInstructions) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode AgentContextManagementInstructions to nil")
+	}
+	var unwrapped string
+	if err := func() error {
+		v, err := d.Str()
+		unwrapped = string(v)
+		if err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = AgentContextManagementInstructions(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s AgentContextManagementInstructions) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *AgentContextManagementInstructions) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes AgentContextManagementPolicies as json.
+func (s AgentContextManagementPolicies) Encode(e *jx.Encoder) {
+	unwrapped := []AgentContextManagementPolicy(s)
+
+	e.ArrStart()
+	for _, elem := range unwrapped {
+		elem.Encode(e)
+	}
+	e.ArrEnd()
+}
+
+// Decode decodes AgentContextManagementPolicies from json.
+func (s *AgentContextManagementPolicies) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode AgentContextManagementPolicies to nil")
+	}
+	var unwrapped []AgentContextManagementPolicy
+	if err := func() error {
+		unwrapped = make([]AgentContextManagementPolicy, 0)
+		if err := d.Arr(func(d *jx.Decoder) error {
+			var elem AgentContextManagementPolicy
+			if err := elem.Decode(d); err != nil {
+				return err
+			}
+			unwrapped = append(unwrapped, elem)
+			return nil
+		}); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = AgentContextManagementPolicies(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s AgentContextManagementPolicies) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *AgentContextManagementPolicies) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
+func (s *AgentContextManagementPolicy) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *AgentContextManagementPolicy) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("type")
+		s.Type.Encode(e)
+	}
+	{
+		if s.CompactThreshold.Set {
+			e.FieldStart("compact_threshold")
+			s.CompactThreshold.Encode(e)
+		}
+	}
+	{
+		if s.Instructions.Set {
+			e.FieldStart("instructions")
+			s.Instructions.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfAgentContextManagementPolicy = [3]string{
+	0: "type",
+	1: "compact_threshold",
+	2: "instructions",
+}
+
+// Decode decodes AgentContextManagementPolicy from json.
+func (s *AgentContextManagementPolicy) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode AgentContextManagementPolicy to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "type":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				if err := s.Type.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"type\"")
+			}
+		case "compact_threshold":
+			if err := func() error {
+				s.CompactThreshold.Reset()
+				if err := s.CompactThreshold.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"compact_threshold\"")
+			}
+		case "instructions":
+			if err := func() error {
+				s.Instructions.Reset()
+				if err := s.Instructions.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"instructions\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode AgentContextManagementPolicy")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfAgentContextManagementPolicy) {
+					name = jsonFieldsNameOfAgentContextManagementPolicy[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *AgentContextManagementPolicy) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *AgentContextManagementPolicy) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes AgentContextManagementPolicyType as json.
+func (s AgentContextManagementPolicyType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes AgentContextManagementPolicyType from json.
+func (s *AgentContextManagementPolicyType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode AgentContextManagementPolicyType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch AgentContextManagementPolicyType(v) {
+	case AgentContextManagementPolicyTypeCompaction:
+		*s = AgentContextManagementPolicyTypeCompaction
+	default:
+		*s = AgentContextManagementPolicyType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s AgentContextManagementPolicyType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *AgentContextManagementPolicyType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes AgentIdentifier as json.
 func (s AgentIdentifier) Encode(e *jx.Encoder) {
 	switch s.Type {
@@ -130,6 +426,12 @@ func (s *AgentRef) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.ContextManagement.Set {
+			e.FieldStart("context_management")
+			s.ContextManagement.Encode(e)
+		}
+	}
+	{
 		if s.DisplayName.Set {
 			e.FieldStart("display_name")
 			s.DisplayName.Encode(e)
@@ -143,17 +445,18 @@ func (s *AgentRef) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfAgentRef = [10]string{
-	0: "type",
-	1: "id",
-	2: "version",
-	3: "system",
-	4: "tools",
-	5: "mcp_servers",
-	6: "skills",
-	7: "multiagent",
-	8: "display_name",
-	9: "model",
+var jsonFieldsNameOfAgentRef = [11]string{
+	0:  "type",
+	1:  "id",
+	2:  "version",
+	3:  "system",
+	4:  "tools",
+	5:  "mcp_servers",
+	6:  "skills",
+	7:  "multiagent",
+	8:  "context_management",
+	9:  "display_name",
+	10: "model",
 }
 
 // Decode decodes AgentRef from json.
@@ -267,6 +570,16 @@ func (s *AgentRef) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"multiagent\"")
+			}
+		case "context_management":
+			if err := func() error {
+				s.ContextManagement.Reset()
+				if err := s.ContextManagement.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"context_management\"")
 			}
 		case "display_name":
 			if err := func() error {
@@ -9124,6 +9437,46 @@ func (s *ManagedAgentsVideoBlockType) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes MemoryStoreInstructions as json.
+func (s MemoryStoreInstructions) Encode(e *jx.Encoder) {
+	unwrapped := string(s)
+
+	e.Str(unwrapped)
+}
+
+// Decode decodes MemoryStoreInstructions from json.
+func (s *MemoryStoreInstructions) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode MemoryStoreInstructions to nil")
+	}
+	var unwrapped string
+	if err := func() error {
+		v, err := d.Str()
+		unwrapped = string(v)
+		if err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = MemoryStoreInstructions(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s MemoryStoreInstructions) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *MemoryStoreInstructions) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode implements json.Marshaler.
 func (s *ModelOverrides) Encode(e *jx.Encoder) {
 	e.ObjStart()
@@ -10534,6 +10887,202 @@ func (s OptModelUpgradesHeaders) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptModelUpgradesHeaders) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes AgentCompactThreshold as json.
+func (o OptNilAgentCompactThreshold) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes AgentCompactThreshold from json.
+func (o *OptNilAgentCompactThreshold) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilAgentCompactThreshold to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v AgentCompactThreshold
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilAgentCompactThreshold) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilAgentCompactThreshold) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes AgentContextManagementInstructions as json.
+func (o OptNilAgentContextManagementInstructions) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes AgentContextManagementInstructions from json.
+func (o *OptNilAgentContextManagementInstructions) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilAgentContextManagementInstructions to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v AgentContextManagementInstructions
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilAgentContextManagementInstructions) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilAgentContextManagementInstructions) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes AgentContextManagementPolicies as json.
+func (o OptNilAgentContextManagementPolicies) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes AgentContextManagementPolicies from json.
+func (o *OptNilAgentContextManagementPolicies) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilAgentContextManagementPolicies to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v AgentContextManagementPolicies
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilAgentContextManagementPolicies) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilAgentContextManagementPolicies) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes MemoryStoreInstructions as json.
+func (o OptNilMemoryStoreInstructions) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes MemoryStoreInstructions from json.
+func (o *OptNilMemoryStoreInstructions) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilMemoryStoreInstructions to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v MemoryStoreInstructions
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilMemoryStoreInstructions) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilMemoryStoreInstructions) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -12544,6 +13093,12 @@ func (s *SessionResource) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.Instructions.Set {
+			e.FieldStart("instructions")
+			s.Instructions.Encode(e)
+		}
+	}
+	{
 		if s.MountPath.Set {
 			e.FieldStart("mount_path")
 			s.MountPath.Encode(e)
@@ -12581,18 +13136,19 @@ func (s *SessionResource) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfSessionResource = [11]string{
+var jsonFieldsNameOfSessionResource = [12]string{
 	0:  "id",
 	1:  "type",
 	2:  "file_id",
 	3:  "memory_store_id",
 	4:  "access",
-	5:  "mount_path",
-	6:  "created_at",
-	7:  "updated_at",
-	8:  "tos_bucket",
-	9:  "tos_key",
-	10: "tos_region",
+	5:  "instructions",
+	6:  "mount_path",
+	7:  "created_at",
+	8:  "updated_at",
+	9:  "tos_bucket",
+	10: "tos_key",
+	11: "tos_region",
 }
 
 // Decode decodes SessionResource from json.
@@ -12653,6 +13209,16 @@ func (s *SessionResource) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"access\"")
+			}
+		case "instructions":
+			if err := func() error {
+				s.Instructions.Reset()
+				if err := s.Instructions.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"instructions\"")
 			}
 		case "mount_path":
 			if err := func() error {

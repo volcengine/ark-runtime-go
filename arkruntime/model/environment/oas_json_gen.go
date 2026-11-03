@@ -668,6 +668,12 @@ func (s *Environment) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.ArchivedAt.Set {
+			e.FieldStart("archived_at")
+			s.ArchivedAt.Encode(e)
+		}
+	}
+	{
 		e.FieldStart("created_at")
 		e.Str(s.CreatedAt)
 	}
@@ -687,17 +693,18 @@ func (s *Environment) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfEnvironment = [10]string{
-	0: "id",
-	1: "type",
-	2: "name",
-	3: "description",
-	4: "config",
-	5: "metadata",
-	6: "scope",
-	7: "created_at",
-	8: "updated_at",
-	9: "overridden_fields",
+var jsonFieldsNameOfEnvironment = [11]string{
+	0:  "id",
+	1:  "type",
+	2:  "name",
+	3:  "description",
+	4:  "config",
+	5:  "metadata",
+	6:  "scope",
+	7:  "archived_at",
+	8:  "created_at",
+	9:  "updated_at",
+	10: "overridden_fields",
 }
 
 // Decode decodes Environment from json.
@@ -783,8 +790,18 @@ func (s *Environment) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"scope\"")
 			}
+		case "archived_at":
+			if err := func() error {
+				s.ArchivedAt.Reset()
+				if err := s.ArchivedAt.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"archived_at\"")
+			}
 		case "created_at":
-			requiredBitSet[0] |= 1 << 7
+			requiredBitSet[1] |= 1 << 0
 			if err := func() error {
 				v, err := d.Str()
 				s.CreatedAt = string(v)
@@ -796,7 +813,7 @@ func (s *Environment) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"created_at\"")
 			}
 		case "updated_at":
-			requiredBitSet[1] |= 1 << 0
+			requiredBitSet[1] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.UpdatedAt = string(v)
@@ -836,8 +853,8 @@ func (s *Environment) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [2]uint8{
-		0b10000111,
-		0b00000001,
+		0b00000111,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
