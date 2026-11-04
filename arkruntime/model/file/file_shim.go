@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/volcengine/ark-runtime-go/arkruntime/internal/listresponse"
 	"github.com/volcengine/ark-runtime-go/arkruntime/pkg/apiform"
 	"github.com/volcengine/ark-runtime-go/arkruntime/pkg/apiquery"
 )
@@ -34,6 +35,12 @@ type FileObjectResponse struct {
 type FileListResponseWrapper struct {
 	FileListResponse
 	httpHeader
+}
+
+// UnmarshalJSON normalizes legacy null pages without changing generated models.
+func (r *FileListResponseWrapper) UnmarshalJSON(data []byte) error {
+	// Keep this empty page aligned with every required field after schema changes.
+	return r.FileListResponse.UnmarshalJSON(listresponse.Normalize(data, `{"object":"file","data":[],"first_id":"","last_id":"","has_more":false}`))
 }
 
 // FileDeletedResponse wraps FileDeleted so it satisfies model.Response.

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"net/url"
 
+	"github.com/volcengine/ark-runtime-go/arkruntime/internal/listresponse"
 	"github.com/volcengine/ark-runtime-go/arkruntime/model"
 	"github.com/volcengine/ark-runtime-go/arkruntime/pkg/apiquery"
 )
@@ -120,6 +121,11 @@ type SessionResourceResponse struct {
 type ListSessionResourcesResponseWrapper struct {
 	ListSessionResourcesResponse
 	model.HttpHeader
+}
+
+// UnmarshalJSON normalizes legacy null pages without changing generated models.
+func (r *ListSessionResourcesResponseWrapper) UnmarshalJSON(data []byte) error {
+	return r.ListSessionResourcesResponse.UnmarshalJSON(listresponse.Normalize(data, `{"data":[]}`))
 }
 
 // --- SessionEvent -----------------------------------------------------------
