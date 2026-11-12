@@ -78,7 +78,7 @@ func main() {
 
 	// 3. Session — binds the agent to the environment.
 	sess, err := client.CreateSession(ctx, &session.CreateSessionRequest{
-		Agent:         session.NewStringAgentIdentifier(ag.ID),
+		Agent:         session.NewOptAgentIdentifier(session.NewStringAgentIdentifier(ag.ID)),
 		EnvironmentID: session.NewOptString(env.ID),
 		Title:         session.NewOptString("ark-runtime-go example loop"),
 	})
