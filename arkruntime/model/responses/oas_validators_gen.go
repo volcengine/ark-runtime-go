@@ -2180,8 +2180,15 @@ func (s *ItemReasoning) Validate() error {
 		})
 	}
 	if err := func() error {
-		if err := s.Status.Validate(); err != nil {
-			return err
+		if value, ok := s.Status.Get(); ok {
+			if err := func() error {
+				if err := value.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
 		}
 		return nil
 	}(); err != nil {
@@ -7283,6 +7290,8 @@ func (s WebSearchSource) Validate() error {
 	case "moji":
 		return nil
 	case "search_engine":
+		return nil
+	case "doubao":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)

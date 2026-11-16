@@ -2394,6 +2394,12 @@ func (s *ChatCompletionRequest) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.PromptCacheKey.Set {
+			e.FieldStart("prompt_cache_key")
+			s.PromptCacheKey.Encode(e)
+		}
+	}
+	{
 		if s.ServiceTier.Set {
 			e.FieldStart("service_tier")
 			s.ServiceTier.Encode(e)
@@ -2413,7 +2419,7 @@ func (s *ChatCompletionRequest) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfChatCompletionRequest = [24]string{
+var jsonFieldsNameOfChatCompletionRequest = [25]string{
 	0:  "messages",
 	1:  "model",
 	2:  "frequency_penalty",
@@ -2435,9 +2441,10 @@ var jsonFieldsNameOfChatCompletionRequest = [24]string{
 	18: "tools",
 	19: "parallel_tool_calls",
 	20: "user",
-	21: "service_tier",
-	22: "reasoning_effort",
-	23: "thinking",
+	21: "prompt_cache_key",
+	22: "service_tier",
+	23: "reasoning_effort",
+	24: "thinking",
 }
 
 // Decode decodes ChatCompletionRequest from json.
@@ -2445,7 +2452,7 @@ func (s *ChatCompletionRequest) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode ChatCompletionRequest to nil")
 	}
-	var requiredBitSet [3]uint8
+	var requiredBitSet [4]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
@@ -2676,6 +2683,16 @@ func (s *ChatCompletionRequest) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"user\"")
 			}
+		case "prompt_cache_key":
+			if err := func() error {
+				s.PromptCacheKey.Reset()
+				if err := s.PromptCacheKey.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"prompt_cache_key\"")
+			}
 		case "service_tier":
 			if err := func() error {
 				s.ServiceTier.Reset()
@@ -2715,8 +2732,9 @@ func (s *ChatCompletionRequest) Decode(d *jx.Decoder) error {
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
-	for i, mask := range [3]uint8{
+	for i, mask := range [4]uint8{
 		0b00000011,
+		0b00000000,
 		0b00000000,
 		0b00000000,
 	} {
@@ -7693,39 +7711,6 @@ func (s *OptChatCompletionStop) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
-// Encode encodes ChatCompletionStreamChoiceLogprobs as json.
-func (o OptChatCompletionStreamChoiceLogprobs) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes ChatCompletionStreamChoiceLogprobs from json.
-func (o *OptChatCompletionStreamChoiceLogprobs) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptChatCompletionStreamChoiceLogprobs to nil")
-	}
-	o.Set = true
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptChatCompletionStreamChoiceLogprobs) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptChatCompletionStreamChoiceLogprobs) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
 // Encode encodes ChatCompletionStreamOptions as json.
 func (o OptChatCompletionStreamOptions) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -7821,39 +7806,6 @@ func (s OptCompletionUsage) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptCompletionUsage) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes FinishReason as json.
-func (o OptFinishReason) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	e.Str(string(o.Value))
-}
-
-// Decode decodes FinishReason from json.
-func (o *OptFinishReason) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptFinishReason to nil")
-	}
-	o.Set = true
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptFinishReason) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptFinishReason) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -8174,6 +8126,104 @@ func (s OptNilChatCompletionMessageContent) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptNilChatCompletionMessageContent) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes ChatCompletionStreamChoiceLogprobs as json.
+func (o OptNilChatCompletionStreamChoiceLogprobs) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes ChatCompletionStreamChoiceLogprobs from json.
+func (o *OptNilChatCompletionStreamChoiceLogprobs) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilChatCompletionStreamChoiceLogprobs to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v ChatCompletionStreamChoiceLogprobs
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilChatCompletionStreamChoiceLogprobs) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilChatCompletionStreamChoiceLogprobs) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes FinishReason as json.
+func (o OptNilFinishReason) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	e.Str(string(o.Value))
+}
+
+// Decode decodes FinishReason from json.
+func (o *OptNilFinishReason) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilFinishReason to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v FinishReason
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilFinishReason) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilFinishReason) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

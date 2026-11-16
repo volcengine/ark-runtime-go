@@ -471,6 +471,12 @@ func (s ContentBlockStartContentBlockSum) encodeFields(e *jx.Encoder) {
 					s.Thinking.Encode(e)
 				}
 			}
+			{
+				if s.Signature.Set {
+					e.FieldStart("signature")
+					s.Signature.Encode(e)
+				}
+			}
 		}
 	case ContentBlockStartContentBlockToolUseContentBlockStartContentBlockSum:
 		e.FieldStart("type")
@@ -826,11 +832,18 @@ func (s *ContentBlockStartContentBlockThinking) encodeFields(e *jx.Encoder) {
 			s.Thinking.Encode(e)
 		}
 	}
+	{
+		if s.Signature.Set {
+			e.FieldStart("signature")
+			s.Signature.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfContentBlockStartContentBlockThinking = [2]string{
+var jsonFieldsNameOfContentBlockStartContentBlockThinking = [3]string{
 	0: "type",
 	1: "thinking",
+	2: "signature",
 }
 
 // Decode decodes ContentBlockStartContentBlockThinking from json.
@@ -861,6 +874,16 @@ func (s *ContentBlockStartContentBlockThinking) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"thinking\"")
+			}
+		case "signature":
+			if err := func() error {
+				s.Signature.Reset()
+				if err := s.Signature.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"signature\"")
 			}
 		default:
 			return d.Skip()
