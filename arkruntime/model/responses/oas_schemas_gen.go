@@ -4596,7 +4596,7 @@ func (s *ItemOutputMessageType) UnmarshalText(data []byte) error {
 type ItemReasoning struct {
 	ID               OptString              `json:"id"`
 	Type             ItemReasoningType      `json:"type"`
-	Status           ItemStatus             `json:"status"`
+	Status           OptItemStatus          `json:"status"`
 	Summary          []ReasoningSummaryPart `json:"summary"`
 	Content          []OutputContentItem    `json:"content"`
 	EncryptedContent OptString              `json:"encrypted_content"`
@@ -4613,7 +4613,7 @@ func (s *ItemReasoning) GetType() ItemReasoningType {
 }
 
 // GetStatus returns the value of Status.
-func (s *ItemReasoning) GetStatus() ItemStatus {
+func (s *ItemReasoning) GetStatus() OptItemStatus {
 	return s.Status
 }
 
@@ -4643,7 +4643,7 @@ func (s *ItemReasoning) SetType(val ItemReasoningType) {
 }
 
 // SetStatus sets the value of Status.
-func (s *ItemReasoning) SetStatus(val ItemStatus) {
+func (s *ItemReasoning) SetStatus(val OptItemStatus) {
 	s.Status = val
 }
 
@@ -7451,6 +7451,69 @@ func (o OptMessageRole) Or(d MessageRole) MessageRole {
 	return d
 }
 
+// NewOptNilResponseError returns new OptNilResponseError with value set to v.
+func NewOptNilResponseError(v ResponseError) OptNilResponseError {
+	return OptNilResponseError{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilResponseError is optional nullable ResponseError.
+type OptNilResponseError struct {
+	Value ResponseError
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilResponseError was set.
+func (o OptNilResponseError) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilResponseError) Reset() {
+	var v ResponseError
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilResponseError) SetTo(v ResponseError) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilResponseError) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilResponseError) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v ResponseError
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilResponseError) Get() (v ResponseError, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilResponseError) Or(d ResponseError) ResponseError {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNilString returns new OptNilString with value set to v.
 func NewOptNilString(v string) OptNilString {
 	return OptNilString{
@@ -7755,52 +7818,6 @@ func (o OptResponseCaching) Get() (v ResponseCaching, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptResponseCaching) Or(d ResponseCaching) ResponseCaching {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptResponseError returns new OptResponseError with value set to v.
-func NewOptResponseError(v ResponseError) OptResponseError {
-	return OptResponseError{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptResponseError is optional ResponseError.
-type OptResponseError struct {
-	Value ResponseError
-	Set   bool
-}
-
-// IsSet returns true if OptResponseError was set.
-func (o OptResponseError) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptResponseError) Reset() {
-	var v ResponseError
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptResponseError) SetTo(v ResponseError) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptResponseError) Get() (v ResponseError, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptResponseError) Or(d ResponseError) ResponseError {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -9003,6 +9020,52 @@ func (o OptWebSearchAction) Or(d WebSearchAction) WebSearchAction {
 	return d
 }
 
+// NewOptWebSearchFilters returns new OptWebSearchFilters with value set to v.
+func NewOptWebSearchFilters(v WebSearchFilters) OptWebSearchFilters {
+	return OptWebSearchFilters{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptWebSearchFilters is optional WebSearchFilters.
+type OptWebSearchFilters struct {
+	Value WebSearchFilters
+	Set   bool
+}
+
+// IsSet returns true if OptWebSearchFilters was set.
+func (o OptWebSearchFilters) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptWebSearchFilters) Reset() {
+	var v WebSearchFilters
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptWebSearchFilters) SetTo(v WebSearchFilters) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptWebSearchFilters) Get() (v WebSearchFilters, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptWebSearchFilters) Or(d WebSearchFilters) WebSearchFilters {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // Sort order for list endpoints.
 // Ref: #/components/schemas/Order
 type Order string
@@ -9906,7 +9969,7 @@ func (s *ReasoningSummaryPartType) UnmarshalText(data []byte) error {
 // Ref: #/components/schemas/Response
 type Response struct {
 	CreatedAt          int64                        `json:"created_at"`
-	Error              OptResponseError             `json:"error"`
+	Error              OptNilResponseError          `json:"error"`
 	ID                 string                       `json:"id"`
 	IncompleteDetails  OptIncompleteDetails         `json:"incomplete_details"`
 	MaxOutputTokens    OptInt64                     `json:"max_output_tokens"`
@@ -9933,7 +9996,8 @@ type Response struct {
 	ContextManagement  OptContextManagementResponse `json:"context_management"`
 	Session            OptSession                   `json:"session"`
 	SafetyIdentifier   OptString                    `json:"safety_identifier"`
-	PromptCacheKey     OptString                    `json:"prompt_cache_key"`
+	// A routing hint for prompt cache affinity.
+	PromptCacheKey OptString `json:"prompt_cache_key"`
 }
 
 // GetCreatedAt returns the value of CreatedAt.
@@ -9942,7 +10006,7 @@ func (s *Response) GetCreatedAt() int64 {
 }
 
 // GetError returns the value of Error.
-func (s *Response) GetError() OptResponseError {
+func (s *Response) GetError() OptNilResponseError {
 	return s.Error
 }
 
@@ -10087,7 +10151,7 @@ func (s *Response) SetCreatedAt(val int64) {
 }
 
 // SetError sets the value of Error.
-func (s *Response) SetError(val OptResponseError) {
+func (s *Response) SetError(val OptNilResponseError) {
 	s.Error = val
 }
 
@@ -18772,8 +18836,9 @@ type ResponsesRequest struct {
 	Reasoning          OptReasoning          `json:"reasoning"`
 	ContextManagement  OptContextManagement  `json:"context_management"`
 	Session            OptSession            `json:"session"`
-	PromptCacheKey     OptString             `json:"prompt_cache_key"`
-	SafetyIdentifier   OptString             `json:"safety_identifier"`
+	// A routing hint for prompt cache affinity.
+	PromptCacheKey   OptString `json:"prompt_cache_key"`
+	SafetyIdentifier OptString `json:"safety_identifier"`
 }
 
 // GetInput returns the value of Input.
@@ -20999,6 +21064,48 @@ func (s *WebSearchActionType) UnmarshalText(data []byte) error {
 	}
 }
 
+// Per-search restrictions applied by the doubao source.
+// Ref: #/components/schemas/WebSearchFilters
+type WebSearchFilters struct {
+	// Full domains the search is restricted to. At most 20.
+	AllowedDomains []string `json:"allowed_domains"`
+	// Full domains excluded from the search. At most 5.
+	BlockedDomains []string `json:"blocked_domains"`
+	// 0 (default) does not restrict authority; 1 returns only very
+	// authoritative content, which may reduce the number of results.
+	AuthInfoLevel OptInt32 `json:"auth_info_level"`
+}
+
+// GetAllowedDomains returns the value of AllowedDomains.
+func (s *WebSearchFilters) GetAllowedDomains() []string {
+	return s.AllowedDomains
+}
+
+// GetBlockedDomains returns the value of BlockedDomains.
+func (s *WebSearchFilters) GetBlockedDomains() []string {
+	return s.BlockedDomains
+}
+
+// GetAuthInfoLevel returns the value of AuthInfoLevel.
+func (s *WebSearchFilters) GetAuthInfoLevel() OptInt32 {
+	return s.AuthInfoLevel
+}
+
+// SetAllowedDomains sets the value of AllowedDomains.
+func (s *WebSearchFilters) SetAllowedDomains(val []string) {
+	s.AllowedDomains = val
+}
+
+// SetBlockedDomains sets the value of BlockedDomains.
+func (s *WebSearchFilters) SetBlockedDomains(val []string) {
+	s.BlockedDomains = val
+}
+
+// SetAuthInfoLevel sets the value of AuthInfoLevel.
+func (s *WebSearchFilters) SetAuthInfoLevel(val OptInt32) {
+	s.AuthInfoLevel = val
+}
+
 // Ref: #/components/schemas/WebSearchSource
 type WebSearchSource string
 
@@ -21007,6 +21114,7 @@ const (
 	WebSearchSourceDouyin       WebSearchSource = "douyin"
 	WebSearchSourceMoji         WebSearchSource = "moji"
 	WebSearchSourceSearchEngine WebSearchSource = "search_engine"
+	WebSearchSourceDoubao       WebSearchSource = "doubao"
 )
 
 // AllValues returns all WebSearchSource values.
@@ -21016,6 +21124,7 @@ func (WebSearchSource) AllValues() []WebSearchSource {
 		WebSearchSourceDouyin,
 		WebSearchSourceMoji,
 		WebSearchSourceSearchEngine,
+		WebSearchSourceDoubao,
 	}
 }
 
@@ -21029,6 +21138,8 @@ func (s WebSearchSource) MarshalText() ([]byte, error) {
 	case WebSearchSourceMoji:
 		return []byte(s), nil
 	case WebSearchSourceSearchEngine:
+		return []byte(s), nil
+	case WebSearchSourceDoubao:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -21050,6 +21161,9 @@ func (s *WebSearchSource) UnmarshalText(data []byte) error {
 	case WebSearchSourceSearchEngine:
 		*s = WebSearchSourceSearchEngine
 		return nil
+	case WebSearchSourceDoubao:
+		*s = WebSearchSourceDoubao
+		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
@@ -21062,6 +21176,12 @@ type WebSearchTool struct {
 	UserLocation OptUserLocation   `json:"user_location"`
 	Sources      []WebSearchSource `json:"sources"`
 	MaxKeyword   OptInt32          `json:"max_keyword"`
+	// Domain and authority filters. Only supported with the doubao source.
+	Filters OptWebSearchFilters `json:"filters"`
+	// Publish time range of the results: `OneDay`, `OneWeek`, `OneMonth`,
+	// `OneYear`, or an inclusive date range `YYYY-MM-DD..YYYY-MM-DD`. Empty
+	// means unrestricted. Only supported with the doubao source.
+	TimeRange OptString `json:"time_range"`
 }
 
 // GetType returns the value of Type.
@@ -21089,6 +21209,16 @@ func (s *WebSearchTool) GetMaxKeyword() OptInt32 {
 	return s.MaxKeyword
 }
 
+// GetFilters returns the value of Filters.
+func (s *WebSearchTool) GetFilters() OptWebSearchFilters {
+	return s.Filters
+}
+
+// GetTimeRange returns the value of TimeRange.
+func (s *WebSearchTool) GetTimeRange() OptString {
+	return s.TimeRange
+}
+
 // SetType sets the value of Type.
 func (s *WebSearchTool) SetType(val WebSearchToolType) {
 	s.Type = val
@@ -21112,6 +21242,16 @@ func (s *WebSearchTool) SetSources(val []WebSearchSource) {
 // SetMaxKeyword sets the value of MaxKeyword.
 func (s *WebSearchTool) SetMaxKeyword(val OptInt32) {
 	s.MaxKeyword = val
+}
+
+// SetFilters sets the value of Filters.
+func (s *WebSearchTool) SetFilters(val OptWebSearchFilters) {
+	s.Filters = val
+}
+
+// SetTimeRange sets the value of TimeRange.
+func (s *WebSearchTool) SetTimeRange(val OptString) {
+	s.TimeRange = val
 }
 
 type WebSearchToolType string

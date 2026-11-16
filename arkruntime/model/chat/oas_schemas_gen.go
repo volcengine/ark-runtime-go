@@ -1126,6 +1126,8 @@ type ChatCompletionRequest struct {
 	ParallelToolCalls OptBool `json:"parallel_tool_calls"`
 	// A unique identifier representing your end-user.
 	User OptString `json:"user"`
+	// A routing hint for prompt cache affinity.
+	PromptCacheKey OptString `json:"prompt_cache_key"`
 	// The service tier to use for the request.
 	ServiceTier OptRequestServiceTier `json:"service_tier"`
 	// Constrains effort on reasoning.
@@ -1237,6 +1239,11 @@ func (s *ChatCompletionRequest) GetParallelToolCalls() OptBool {
 // GetUser returns the value of User.
 func (s *ChatCompletionRequest) GetUser() OptString {
 	return s.User
+}
+
+// GetPromptCacheKey returns the value of PromptCacheKey.
+func (s *ChatCompletionRequest) GetPromptCacheKey() OptString {
+	return s.PromptCacheKey
 }
 
 // GetServiceTier returns the value of ServiceTier.
@@ -1357,6 +1364,11 @@ func (s *ChatCompletionRequest) SetParallelToolCalls(val OptBool) {
 // SetUser sets the value of User.
 func (s *ChatCompletionRequest) SetUser(val OptString) {
 	s.User = val
+}
+
+// SetPromptCacheKey sets the value of PromptCacheKey.
+func (s *ChatCompletionRequest) SetPromptCacheKey(val OptString) {
+	s.PromptCacheKey = val
 }
 
 // SetServiceTier sets the value of ServiceTier.
@@ -2702,9 +2714,9 @@ type ChatCompletionStreamResponseChoice struct {
 	Index int32                             `json:"index"`
 	Delta ChatCompletionStreamResponseDelta `json:"delta"`
 	// The reason the model stopped generating tokens.
-	FinishReason      OptFinishReason                       `json:"finish_reason"`
-	ModerationHitType OptModerationHitType                  `json:"moderation_hit_type"`
-	Logprobs          OptChatCompletionStreamChoiceLogprobs `json:"logprobs"`
+	FinishReason      OptNilFinishReason                       `json:"finish_reason"`
+	ModerationHitType OptModerationHitType                     `json:"moderation_hit_type"`
+	Logprobs          OptNilChatCompletionStreamChoiceLogprobs `json:"logprobs"`
 }
 
 // GetIndex returns the value of Index.
@@ -2718,7 +2730,7 @@ func (s *ChatCompletionStreamResponseChoice) GetDelta() ChatCompletionStreamResp
 }
 
 // GetFinishReason returns the value of FinishReason.
-func (s *ChatCompletionStreamResponseChoice) GetFinishReason() OptFinishReason {
+func (s *ChatCompletionStreamResponseChoice) GetFinishReason() OptNilFinishReason {
 	return s.FinishReason
 }
 
@@ -2728,7 +2740,7 @@ func (s *ChatCompletionStreamResponseChoice) GetModerationHitType() OptModeratio
 }
 
 // GetLogprobs returns the value of Logprobs.
-func (s *ChatCompletionStreamResponseChoice) GetLogprobs() OptChatCompletionStreamChoiceLogprobs {
+func (s *ChatCompletionStreamResponseChoice) GetLogprobs() OptNilChatCompletionStreamChoiceLogprobs {
 	return s.Logprobs
 }
 
@@ -2743,7 +2755,7 @@ func (s *ChatCompletionStreamResponseChoice) SetDelta(val ChatCompletionStreamRe
 }
 
 // SetFinishReason sets the value of FinishReason.
-func (s *ChatCompletionStreamResponseChoice) SetFinishReason(val OptFinishReason) {
+func (s *ChatCompletionStreamResponseChoice) SetFinishReason(val OptNilFinishReason) {
 	s.FinishReason = val
 }
 
@@ -2753,7 +2765,7 @@ func (s *ChatCompletionStreamResponseChoice) SetModerationHitType(val OptModerat
 }
 
 // SetLogprobs sets the value of Logprobs.
-func (s *ChatCompletionStreamResponseChoice) SetLogprobs(val OptChatCompletionStreamChoiceLogprobs) {
+func (s *ChatCompletionStreamResponseChoice) SetLogprobs(val OptNilChatCompletionStreamChoiceLogprobs) {
 	s.Logprobs = val
 }
 
@@ -2762,7 +2774,7 @@ type ChatCompletionStreamResponseDelta struct {
 	// The role of the author of this message.
 	Role OptString `json:"role"`
 	// The contents of the chunk message.
-	Content OptString `json:"content"`
+	Content OptNilString `json:"content"`
 	// The reasoning content delta.
 	ReasoningContent OptString `json:"reasoning_content"`
 	// Encrypted reasoning content delta.
@@ -2777,7 +2789,7 @@ func (s *ChatCompletionStreamResponseDelta) GetRole() OptString {
 }
 
 // GetContent returns the value of Content.
-func (s *ChatCompletionStreamResponseDelta) GetContent() OptString {
+func (s *ChatCompletionStreamResponseDelta) GetContent() OptNilString {
 	return s.Content
 }
 
@@ -2802,7 +2814,7 @@ func (s *ChatCompletionStreamResponseDelta) SetRole(val OptString) {
 }
 
 // SetContent sets the value of Content.
-func (s *ChatCompletionStreamResponseDelta) SetContent(val OptString) {
+func (s *ChatCompletionStreamResponseDelta) SetContent(val OptNilString) {
 	s.Content = val
 }
 
@@ -3839,52 +3851,6 @@ func (o OptChatCompletionStop) Or(d ChatCompletionStop) ChatCompletionStop {
 	return d
 }
 
-// NewOptChatCompletionStreamChoiceLogprobs returns new OptChatCompletionStreamChoiceLogprobs with value set to v.
-func NewOptChatCompletionStreamChoiceLogprobs(v ChatCompletionStreamChoiceLogprobs) OptChatCompletionStreamChoiceLogprobs {
-	return OptChatCompletionStreamChoiceLogprobs{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptChatCompletionStreamChoiceLogprobs is optional ChatCompletionStreamChoiceLogprobs.
-type OptChatCompletionStreamChoiceLogprobs struct {
-	Value ChatCompletionStreamChoiceLogprobs
-	Set   bool
-}
-
-// IsSet returns true if OptChatCompletionStreamChoiceLogprobs was set.
-func (o OptChatCompletionStreamChoiceLogprobs) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptChatCompletionStreamChoiceLogprobs) Reset() {
-	var v ChatCompletionStreamChoiceLogprobs
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptChatCompletionStreamChoiceLogprobs) SetTo(v ChatCompletionStreamChoiceLogprobs) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptChatCompletionStreamChoiceLogprobs) Get() (v ChatCompletionStreamChoiceLogprobs, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptChatCompletionStreamChoiceLogprobs) Or(d ChatCompletionStreamChoiceLogprobs) ChatCompletionStreamChoiceLogprobs {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
 // NewOptChatCompletionStreamOptions returns new OptChatCompletionStreamOptions with value set to v.
 func NewOptChatCompletionStreamOptions(v ChatCompletionStreamOptions) OptChatCompletionStreamOptions {
 	return OptChatCompletionStreamOptions{
@@ -4017,52 +3983,6 @@ func (o OptCompletionUsage) Get() (v CompletionUsage, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptCompletionUsage) Or(d CompletionUsage) CompletionUsage {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptFinishReason returns new OptFinishReason with value set to v.
-func NewOptFinishReason(v FinishReason) OptFinishReason {
-	return OptFinishReason{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptFinishReason is optional FinishReason.
-type OptFinishReason struct {
-	Value FinishReason
-	Set   bool
-}
-
-// IsSet returns true if OptFinishReason was set.
-func (o OptFinishReason) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptFinishReason) Reset() {
-	var v FinishReason
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptFinishReason) SetTo(v FinishReason) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptFinishReason) Get() (v FinishReason, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptFinishReason) Or(d FinishReason) FinishReason {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -4494,6 +4414,132 @@ func (o OptNilChatCompletionMessageContent) Get() (v ChatCompletionMessageConten
 
 // Or returns value if set, or given parameter if does not.
 func (o OptNilChatCompletionMessageContent) Or(d ChatCompletionMessageContent) ChatCompletionMessageContent {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilChatCompletionStreamChoiceLogprobs returns new OptNilChatCompletionStreamChoiceLogprobs with value set to v.
+func NewOptNilChatCompletionStreamChoiceLogprobs(v ChatCompletionStreamChoiceLogprobs) OptNilChatCompletionStreamChoiceLogprobs {
+	return OptNilChatCompletionStreamChoiceLogprobs{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilChatCompletionStreamChoiceLogprobs is optional nullable ChatCompletionStreamChoiceLogprobs.
+type OptNilChatCompletionStreamChoiceLogprobs struct {
+	Value ChatCompletionStreamChoiceLogprobs
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilChatCompletionStreamChoiceLogprobs was set.
+func (o OptNilChatCompletionStreamChoiceLogprobs) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilChatCompletionStreamChoiceLogprobs) Reset() {
+	var v ChatCompletionStreamChoiceLogprobs
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilChatCompletionStreamChoiceLogprobs) SetTo(v ChatCompletionStreamChoiceLogprobs) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilChatCompletionStreamChoiceLogprobs) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilChatCompletionStreamChoiceLogprobs) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v ChatCompletionStreamChoiceLogprobs
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilChatCompletionStreamChoiceLogprobs) Get() (v ChatCompletionStreamChoiceLogprobs, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilChatCompletionStreamChoiceLogprobs) Or(d ChatCompletionStreamChoiceLogprobs) ChatCompletionStreamChoiceLogprobs {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilFinishReason returns new OptNilFinishReason with value set to v.
+func NewOptNilFinishReason(v FinishReason) OptNilFinishReason {
+	return OptNilFinishReason{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilFinishReason is optional nullable FinishReason.
+type OptNilFinishReason struct {
+	Value FinishReason
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilFinishReason was set.
+func (o OptNilFinishReason) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilFinishReason) Reset() {
+	var v FinishReason
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilFinishReason) SetTo(v FinishReason) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilFinishReason) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilFinishReason) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v FinishReason
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilFinishReason) Get() (v FinishReason, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilFinishReason) Or(d FinishReason) FinishReason {
 	if v, ok := o.Get(); ok {
 		return v
 	}

@@ -394,6 +394,8 @@ func (s *ContentBlockStartContentBlockTextType) UnmarshalText(data []byte) error
 type ContentBlockStartContentBlockThinking struct {
 	Type     ContentBlockStartContentBlockThinkingType `json:"type"`
 	Thinking OptString                                 `json:"thinking"`
+	// Initial signature placeholder. May be empty; signature deltas provide the final value.
+	Signature OptString `json:"signature"`
 }
 
 // GetType returns the value of Type.
@@ -406,6 +408,11 @@ func (s *ContentBlockStartContentBlockThinking) GetThinking() OptString {
 	return s.Thinking
 }
 
+// GetSignature returns the value of Signature.
+func (s *ContentBlockStartContentBlockThinking) GetSignature() OptString {
+	return s.Signature
+}
+
 // SetType sets the value of Type.
 func (s *ContentBlockStartContentBlockThinking) SetType(val ContentBlockStartContentBlockThinkingType) {
 	s.Type = val
@@ -414,6 +421,11 @@ func (s *ContentBlockStartContentBlockThinking) SetType(val ContentBlockStartCon
 // SetThinking sets the value of Thinking.
 func (s *ContentBlockStartContentBlockThinking) SetThinking(val OptString) {
 	s.Thinking = val
+}
+
+// SetSignature sets the value of Signature.
+func (s *ContentBlockStartContentBlockThinking) SetSignature(val OptString) {
+	s.Signature = val
 }
 
 type ContentBlockStartContentBlockThinkingType string
@@ -2933,7 +2945,9 @@ func NewMessagesContentPartArrayMessagesMessageContent(v []MessagesContentPart) 
 
 // Ref: #/components/schemas/MessagesMetadata
 type MessagesMetadata struct {
-	// An external identifier for the user associated with the request.
+	// An external identifier for the user associated with the request. When
+	// set to a JSON object string containing a non-empty `session_id` string,
+	// `session_id` is used as a routing hint for prompt cache affinity.
 	UserID OptNilString `json:"user_id"`
 }
 

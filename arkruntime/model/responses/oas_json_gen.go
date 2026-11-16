@@ -6835,8 +6835,10 @@ func (s InputItemSum) encodeFields(e *jx.Encoder) {
 				}
 			}
 			{
-				e.FieldStart("status")
-				s.Status.Encode(e)
+				if s.Status.Set {
+					e.FieldStart("status")
+					s.Status.Encode(e)
+				}
 			}
 			{
 				if s.Summary != nil {
@@ -10099,8 +10101,10 @@ func (s *ItemReasoning) encodeFields(e *jx.Encoder) {
 		s.Type.Encode(e)
 	}
 	{
-		e.FieldStart("status")
-		s.Status.Encode(e)
+		if s.Status.Set {
+			e.FieldStart("status")
+			s.Status.Encode(e)
+		}
 	}
 	{
 		if s.Summary != nil {
@@ -10169,8 +10173,8 @@ func (s *ItemReasoning) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"type\"")
 			}
 		case "status":
-			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
+				s.Status.Reset()
 				if err := s.Status.Decode(d); err != nil {
 					return err
 				}
@@ -10232,7 +10236,7 @@ func (s *ItemReasoning) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000110,
+		0b00000010,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -14102,6 +14106,55 @@ func (s *OptMessageRole) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes ResponseError as json.
+func (o OptNilResponseError) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes ResponseError from json.
+func (o *OptNilResponseError) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilResponseError to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v ResponseError
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilResponseError) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilResponseError) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes string as json.
 func (o OptNilString) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -14297,39 +14350,6 @@ func (s OptResponseCaching) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptResponseCaching) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes ResponseError as json.
-func (o OptResponseError) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes ResponseError from json.
-func (o *OptResponseError) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptResponseError to nil")
-	}
-	o.Set = true
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptResponseError) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptResponseError) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -15200,6 +15220,39 @@ func (s *OptWebSearchAction) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes WebSearchFilters as json.
+func (o OptWebSearchFilters) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes WebSearchFilters from json.
+func (o *OptWebSearchFilters) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptWebSearchFilters to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptWebSearchFilters) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptWebSearchFilters) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode implements json.Marshaler.
 func (s *OutputContentItem) Encode(e *jx.Encoder) {
 	e.ObjStart()
@@ -15983,8 +16036,10 @@ func (s OutputItemSum) encodeFields(e *jx.Encoder) {
 				}
 			}
 			{
-				e.FieldStart("status")
-				s.Status.Encode(e)
+				if s.Status.Set {
+					e.FieldStart("status")
+					s.Status.Encode(e)
+				}
 			}
 			{
 				if s.Summary != nil {
@@ -35910,6 +35965,18 @@ func (s ToolSum) encodeFields(e *jx.Encoder) {
 					s.MaxKeyword.Encode(e)
 				}
 			}
+			{
+				if s.Filters.Set {
+					e.FieldStart("filters")
+					s.Filters.Encode(e)
+				}
+			}
+			{
+				if s.TimeRange.Set {
+					e.FieldStart("time_range")
+					s.TimeRange.Encode(e)
+				}
+			}
 		}
 	case ImageProcessToolToolSum:
 		e.FieldStart("type")
@@ -37951,6 +38018,129 @@ func (s *WebSearchActionType) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode implements json.Marshaler.
+func (s *WebSearchFilters) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *WebSearchFilters) encodeFields(e *jx.Encoder) {
+	{
+		if s.AllowedDomains != nil {
+			e.FieldStart("allowed_domains")
+			e.ArrStart()
+			for _, elem := range s.AllowedDomains {
+				e.Str(elem)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		if s.BlockedDomains != nil {
+			e.FieldStart("blocked_domains")
+			e.ArrStart()
+			for _, elem := range s.BlockedDomains {
+				e.Str(elem)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		if s.AuthInfoLevel.Set {
+			e.FieldStart("auth_info_level")
+			s.AuthInfoLevel.Encode(e)
+		}
+	}
+}
+
+var jsonFieldsNameOfWebSearchFilters = [3]string{
+	0: "allowed_domains",
+	1: "blocked_domains",
+	2: "auth_info_level",
+}
+
+// Decode decodes WebSearchFilters from json.
+func (s *WebSearchFilters) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode WebSearchFilters to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "allowed_domains":
+			if err := func() error {
+				s.AllowedDomains = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.AllowedDomains = append(s.AllowedDomains, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"allowed_domains\"")
+			}
+		case "blocked_domains":
+			if err := func() error {
+				s.BlockedDomains = make([]string, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem string
+					v, err := d.Str()
+					elem = string(v)
+					if err != nil {
+						return err
+					}
+					s.BlockedDomains = append(s.BlockedDomains, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"blocked_domains\"")
+			}
+		case "auth_info_level":
+			if err := func() error {
+				s.AuthInfoLevel.Reset()
+				if err := s.AuthInfoLevel.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"auth_info_level\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode WebSearchFilters")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *WebSearchFilters) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *WebSearchFilters) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes WebSearchSource as json.
 func (s WebSearchSource) Encode(e *jx.Encoder) {
 	e.Str(string(s))
@@ -37975,6 +38165,8 @@ func (s *WebSearchSource) Decode(d *jx.Decoder) error {
 		*s = WebSearchSourceMoji
 	case WebSearchSourceSearchEngine:
 		*s = WebSearchSourceSearchEngine
+	case WebSearchSourceDoubao:
+		*s = WebSearchSourceDoubao
 	default:
 		*s = WebSearchSource(v)
 	}
@@ -38036,14 +38228,28 @@ func (s *WebSearchTool) encodeFields(e *jx.Encoder) {
 			s.MaxKeyword.Encode(e)
 		}
 	}
+	{
+		if s.Filters.Set {
+			e.FieldStart("filters")
+			s.Filters.Encode(e)
+		}
+	}
+	{
+		if s.TimeRange.Set {
+			e.FieldStart("time_range")
+			s.TimeRange.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfWebSearchTool = [5]string{
+var jsonFieldsNameOfWebSearchTool = [7]string{
 	0: "type",
 	1: "limit",
 	2: "user_location",
 	3: "sources",
 	4: "max_keyword",
+	5: "filters",
+	6: "time_range",
 }
 
 // Decode decodes WebSearchTool from json.
@@ -38111,6 +38317,26 @@ func (s *WebSearchTool) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"max_keyword\"")
+			}
+		case "filters":
+			if err := func() error {
+				s.Filters.Reset()
+				if err := s.Filters.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"filters\"")
+			}
+		case "time_range":
+			if err := func() error {
+				s.TimeRange.Reset()
+				if err := s.TimeRange.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"time_range\"")
 			}
 		default:
 			return d.Skip()
