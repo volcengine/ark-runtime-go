@@ -65,6 +65,12 @@ func (c *Client) HTTPClient() *http.Client {
 	return c.config.HTTPClient
 }
 
+// BaseURL returns the API base URL configured on this client.
+func (c *Client) BaseURL() string { return c.config.BaseURL }
+
+// RequestOption configures an SDK resource request using the With* helpers.
+type RequestOption = requestOption
+
 func newSessionStreamClient(client *http.Client) *http.Client {
 	if client == nil {
 		client = http.DefaultClient
