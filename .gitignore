@@ -4,3 +4,10 @@
 .idea/
 .vscode/
 .DS_Store
+
+/channel/bin/
+/channel/coverage/
+/examples/channel_feishu/channel_feishu
+
+/go.work
+/go.work.sum

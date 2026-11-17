@@ -1,0 +1,80 @@
+name: Release Channel
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'channel/**'
+      - '.github/workflows/release-channel.yml'
+permissions:
+  contents: write
+jobs:
+  validate-and-tag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+      - name: Read Channel release version
+        id: release
+        run: |
+          set -euo pipefail
+          version="$(cat channel/VERSION)"
+          if [[ ! "$version" =~ ^0\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo 'channel/VERSION must contain a version such as 0.1.0' >&2
+            exit 1
+          fi
+          tag="channel/v$version"
+          existing="$(git ls-remote origin "refs/tags/$tag" | cut -f1)"
+          echo "version=v$version" >> "$GITHUB_OUTPUT"
+          if [[ -n "$existing" ]]; then
+            echo "$tag is already published; skipping release"
+            echo 'publish=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'publish=true' >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-go@v5
+        if: steps.release.outputs.publish == 'true'
+        with:
+          go-version: '1.25.x'
+          cache-dependency-path: channel/go.sum
+      - name: Validate published dependencies and test
+        if: steps.release.outputs.publish == 'true'
+        run: |
+          set -euo pipefail
+          cd channel
+          python3 - <<'PYTHON'
+          import json, subprocess
+          data=json.loads(subprocess.check_output(['go','mod','edit','-json']))
+          if data.get('Replace'):
+              raise SystemExit('Release commit must not contain replace directives')
+          PYTHON
+          GOWORK=off go mod tidy -diff
+          GOWORK=off go mod download
+          GOWORK=off make build
+          GOWORK=off make test
+      - name: Build an external consumer without replacements
+        if: steps.release.outputs.publish == 'true'
+        env:
+          CHANNEL_VERSION: ${{ steps.release.outputs.version }}
+        run: python3 channel/scripts/check_consumer.py --version "$CHANNEL_VERSION"
+      - name: Create immutable module tag
+        if: steps.release.outputs.publish == 'true'
+        env:
+          CHANNEL_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          tag="channel/$CHANNEL_VERSION"
+          existing="$(git ls-remote origin "refs/tags/$tag" | cut -f1)"
+          if [[ -n "$existing" ]]; then
+            if [[ "$existing" != "$GITHUB_SHA" ]]; then
+              echo "$tag was published at another commit during validation" >&2
+              exit 1
+            fi
+            exit 0
+          fi
+          git tag "$tag" "$GITHUB_SHA"
+          git push origin "refs/tags/$tag"
