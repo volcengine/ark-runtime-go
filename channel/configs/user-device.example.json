@@ -1,0 +1,28 @@
+{
+  "database_path": "state/user-channel.db",
+  "store": {"driver": "embedded"},
+  "user_auth": {
+    "owner": "replace_with_configured_account_owner",
+    "project": "replace_with_configured_project",
+    "encryption_key_ref": "env:CHANNEL_USER_AUTH_KEY"
+  },
+  "connections": [{
+    "id": "primary",
+    "feishu": {
+      "app_id": "cli_replace_with_feishu_app_id",
+      "app_secret_ref": "env:FEISHU_APP_SECRET"
+    },
+    "ma": {
+      "base_url": "https://ark.cn-beijing.volces.com",
+      "api_key_ref": "env:MA_API_KEY"
+    },
+    "agent_id": "replace_with_agent_id",
+    "agent_version": "v1",
+    "environment_id": "replace_with_cloud_environment_id",
+    "identity_v2": {"p2p": "user"},
+    "user_auth": {
+      "channel_id": "replace_with_stable_channel_id",
+      "epoch": 1
+    }
+  }]
+}

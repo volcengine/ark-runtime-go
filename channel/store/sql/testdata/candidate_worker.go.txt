@@ -1,0 +1,260 @@
+// Copyright (c) 2026 ByteDance Ltd. and/or its affiliates.
+// SPDX-License-Identifier: Apache-2.0
+
+package main
+
+import (
+	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"crypto/sha256"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net"
+	"os"
+	"regexp"
+	"runtime/debug"
+	"strings"
+	"time"
+
+	"github.com/go-sql-driver/mysql"
+
+	"github.com/volcengine/ark-runtime-go/channel/internal/runtime"
+	"github.com/volcengine/ark-runtime-go/channel/internal/storage/codec"
+	sqlstore "github.com/volcengine/ark-runtime-go/channel/store/sql"
+	"github.com/volcengine/ark-runtime-go/channel/internal/handles"
+)
+
+type request struct {
+	Command   string
+	Profile   string
+	Prefix    string
+	ID        string
+	Owner     string
+	TTLMillis int
+	Lease     core.Lease
+}
+
+type testAESCodec struct{ aead cipher.AEAD }
+
+func newTestAESCodec() (*testAESCodec, error) {
+	key := sha256.Sum256([]byte("channel-cross-version-fixed-localtest-key"))
+	block, err := aes.NewCipher(key[:])
+	if err != nil {
+		return nil, err
+	}
+	aead, err := cipher.NewGCM(block)
+	return &testAESCodec{aead: aead}, err
+}
+
+func (c *testAESCodec) Seal(ctx context.Context, scope codec.Scope, plain []byte) (codec.Envelope, error) {
+	if err := ctx.Err(); err != nil {
+		return codec.Envelope{}, err
+	}
+	aad, err := codec.CanonicalScope(scope)
+	if err != nil {
+		return codec.Envelope{}, err
+	}
+	nonce := make([]byte, c.aead.NonceSize())
+	if _, err = rand.Read(nonce); err != nil {
+		return codec.Envelope{}, err
+	}
+	return codec.Envelope{Version: 1, KeyID: "localtest-aes-gcm-v1", Metadata: nonce, Ciphertext: c.aead.Seal(nil, nonce, plain, aad)}, nil
+}
+
+func (c *testAESCodec) Open(ctx context.Context, scope codec.Scope, envelope codec.Envelope) ([]byte, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if envelope.Version != 1 || envelope.KeyID != "localtest-aes-gcm-v1" || len(envelope.Metadata) != c.aead.NonceSize() {
+		return nil, errors.New("invalid localtest envelope")
+	}
+	aad, err := codec.CanonicalScope(scope)
+	if err != nil {
+		return nil, err
+	}
+	return c.aead.Open(nil, envelope.Metadata, envelope.Ciphertext, aad)
+}
+
+type response struct {
+	Version  string
+	Error    string
+	Ingest   *core.IngestResult
+	Turn     *core.TurnLease
+	Lease    core.Lease
+	Snapshot *core.SessionSnapshot
+	Delivery *core.Delivery
+}
+
+func binding() core.Binding {
+	return core.Binding{ID: "compat-binding", AppID: "compat-app", AgentID: "compat-agent", AgentVersion: "1", Owner: "compat-owner", Project: "compat-project"}
+}
+
+func message(id string) core.Message {
+	return core.Message{BindingID: binding().ID, ProviderEventID: "event-" + id, MessageID: "message-" + id, TenantKey: "compat-tenant", ChatID: "chat-" + id, ChatType: "group", SenderID: "compat-user", Text: "input-" + id}
+}
+
+func version() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return ""
+	}
+	for _, dependency := range info.Deps {
+		if dependency.Path == "github.com/volcengine/ark-runtime-go/channel" {
+			return dependency.Version
+		}
+	}
+	return ""
+}
+
+func settle(ctx context.Context, s core.Store, lease core.Lease) (*core.SessionSnapshot, error) {
+	turn, err := s.GetTurn(ctx, lease.ID)
+	if err != nil {
+		return nil, err
+	}
+	if turn == nil {
+		return nil, core.ErrNotFound
+	}
+	key := "create-" + turn.ID
+	turnValue, err := s.UpdateTurn(ctx, lease, core.TurnUpdate{Phase: core.PhaseCreate, Session: core.TurnSession{Generation: 1, CreationKey: key}})
+	if err != nil {
+		return nil, err
+	}
+	snapshot, err := s.FreezeSession(ctx, lease, core.NewSessionSnapshot(turnValue.ConversationID, 1, core.CreateSessionSpec{Binding: binding(), CreationKey: key, LookupKey: "lookup-" + turn.ID, ChatType: "group", EnvironmentType: "cloud", Extras: core.SessionExtras{Env: map[string]string{"PRIVATE_CROSS_VERSION": "fixture-spec-secret"}}, EnvironmentOverride: &core.EnvironmentOverride{Type: "cloud", Env: map[string]string{"PRIVATE_OVERRIDE": "fixture-override-secret"}}}))
+	if err != nil {
+		return nil, err
+	}
+	sessionID := "session-" + turn.ID
+	_, err = s.BindSession(ctx, lease, core.SessionBinding{SnapshotID: snapshot.ID, State: core.SessionActive, Generation: 1, SessionID: sessionID, CreationKey: key, LookupKey: snapshot.Spec.LookupKey, BindingVersion: turn.BindingVersion})
+	if err != nil {
+		return nil, err
+	}
+	_, err = s.UpdateTurn(ctx, lease, core.TurnUpdate{Phase: core.PhaseSend, Session: core.TurnSession{SnapshotID: snapshot.ID, Generation: 1, CreationKey: key, SessionID: sessionID}})
+	if err != nil {
+		return nil, err
+	}
+	delivery := core.NewDelivery(core.DeliverySource{Kind: core.SourceTurn, ID: turn.ID}, 0, "answer", binding().ID, core.ReplyTarget{ChatID: "chat", MessageID: "message", Mode: "reply"}, core.TextBody("answer-"+turn.ID))
+	delivery.Snapshot, delivery.SessionSnapshotID = turn.Snapshot, snapshot.ID
+	err = s.SettleTurn(ctx, lease, core.TurnOutcome{Status: core.TurnDone}, []core.Delivery{delivery})
+	return &snapshot, err
+}
+
+func run(req request) (response, error) {
+	out := response{Version: version()}
+	if req.Command == "version" {
+		return out, nil
+	}
+	config, err := mysql.ParseDSN(os.Getenv("CHANNEL_TEST_MYSQL_DSN"))
+	if err != nil {
+		return out, errors.New("invalid isolated mysql DSN")
+	}
+	host, _, err := net.SplitHostPort(config.Addr)
+	if err != nil || config.Net != "tcp" || (host != "127.0.0.1" && host != "localhost" && host != "::1") || !strings.HasSuffix(config.DBName, "_test") {
+		return out, errors.New("isolated localhost mysql DSN required")
+	}
+	if !regexp.MustCompile(`^cv_[a-f0-9]+_$`).MatchString(req.Prefix) {
+		return out, errors.New("isolated cross-version prefix required")
+	}
+	db, err := sql.Open("mysql", config.FormatDSN())
+	if err != nil {
+		return out, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	options := sqlstore.Options{TablePrefix: req.Prefix}
+	switch req.Profile {
+	case "plain":
+	case "encrypted":
+		options.PayloadCodec, err = newTestAESCodec()
+		if err != nil {
+			_ = db.Close()
+			return out, err
+		}
+		options.PayloadNamespace = "cross-version-localtest-v1"
+		options.RequirePayloadEncryption = true
+	default:
+		_ = db.Close()
+		return out, errors.New("invalid localtest storage profile")
+	}
+	handle, err := sqlstore.Open(ctx, db, sqlstore.MySQL, options)
+	if err != nil {
+		_ = db.Close()
+		return out, err
+	}
+	defer func() { _ = handle.Close() }()
+	s := handles.StoreValue(handle)
+	ttl := time.Duration(req.TTLMillis) * time.Millisecond
+	if ttl <= 0 {
+		ttl = 2 * time.Second
+	}
+	switch req.Command {
+	case "open":
+	case "produce":
+		result, e := s.Ingest(ctx, core.NewBindingVersion(binding()), message(req.ID))
+		out.Ingest, err = &result, e
+	case "lease-turn":
+		out.Turn, err = s.LeaseTurn(ctx, core.ClaimOptions{Owner: req.Owner, TTL: ttl, MessageDeadline: time.Hour})
+	case "renew-turn":
+		out.Lease, err = s.RenewTurn(ctx, req.Lease, ttl)
+	case "settle-turn":
+		out.Snapshot, err = settle(ctx, s, req.Lease)
+	case "lease-delivery":
+		out.Delivery, err = s.LeaseDelivery(ctx, req.Owner, ttl)
+	case "renew-delivery":
+		out.Lease, err = s.RenewDelivery(ctx, req.Lease, ttl)
+	case "complete-delivery", "emit-effect":
+		_, err = s.RenewDelivery(ctx, req.Lease, ttl)
+		if err != nil {
+			break
+		}
+		rows, e := s.ListDeliveries(ctx, core.DeliveryQuery{Limit: core.MaxPageSize})
+		if e != nil {
+			err = e
+			break
+		}
+		for i := range rows {
+			if rows[i].ID == req.Lease.ID {
+				out.Delivery = &rows[i]
+				break
+			}
+		}
+		if out.Delivery == nil {
+			err = core.ErrNotFound
+			break
+		}
+		_, err = db.ExecContext(ctx, "INSERT IGNORE INTO "+req.Prefix+"test_effects (uuid,delivery_id,writer) VALUES (?,?,?)", out.Delivery.UUID, out.Delivery.ID, "legacy")
+		if err != nil {
+			break
+		}
+		if req.Command == "complete-delivery" {
+			err = s.CompleteDelivery(ctx, req.Lease, core.DeliveryResult{Status: core.DeliveryDone, RemoteMessageID: "effect-" + out.Delivery.UUID})
+		}
+	default:
+		err = errors.New("unknown cross-version command")
+	}
+	if errors.Is(err, core.ErrLeaseLost) {
+		out.Error = "lease_lost"
+		return out, nil
+	}
+	return out, err
+}
+
+func main() {
+	var req request
+	if err := json.NewDecoder(os.Stdin).Decode(&req); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	out, err := run(req)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if err = json.NewEncoder(os.Stdout).Encode(out); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
