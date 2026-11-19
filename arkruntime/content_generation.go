@@ -66,6 +66,17 @@ type ListContentGenerationTasksRequest struct {
 	TaskIDs     []string                      `query:"filter.task_ids,repeat"`
 	Model       *string                       `query:"filter.model"`
 	ServiceTier *string                       `query:"filter.service_tier"`
+
+	// EndpointModel: List V2: endpoint id whose tasks to list. When set, the cursor parameters below apply and the response carries `data` / `first_id` / `last_id` / `has_more` instead of `total` / `items`.
+	EndpointModel *string `query:"model"`
+	// Statuses: List V2: filter by one or more lifecycle statuses.
+	Statuses []contentgeneration.TaskStatus `query:"filter.statuses,repeat"`
+	// Limit: List V2: page size, 1-100; defaults to 20.
+	Limit *int32 `query:"limit"`
+	// After: List V2: cursor; the `last_id` of the previous page.
+	After *string `query:"after"`
+	// Order: List V2: sort order by creation time; defaults to `desc`.
+	Order *contentgeneration.ListOrder `query:"order"`
 }
 
 // ListContentGenerationTasks returns one page of tasks matching the supplied

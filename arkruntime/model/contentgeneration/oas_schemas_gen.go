@@ -35,7 +35,7 @@ type ContentGenerationTask struct {
 	// Lifecycle state.
 	Status TaskStatus `json:"status"`
 	// Populated when the task ended in `failed`.
-	Error OptTaskError `json:"error"`
+	Error OptNilTaskError `json:"error"`
 	// Generated artifact URLs. Populated when the task succeeded.
 	Content OptTaskContent `json:"content"`
 	// Token / tool usage. Populated when the task is in a terminal state.
@@ -62,6 +62,12 @@ type ContentGenerationTask struct {
 	Subdivisionlevel OptString `json:"subdivisionlevel"`
 	// File format echoed back.
 	Fileformat OptString `json:"fileformat"`
+	// Output file format of a 3D generation task.
+	FileFormat OptString `json:"file_format"`
+	// Texture resolution actually used by a 3D generation task.
+	TextureResolution OptString `json:"texture_resolution"`
+	// Execution priority echoed back.
+	Priority OptInt32 `json:"priority"`
 	// Service tier the task was scheduled on.
 	ServiceTier OptString `json:"service_tier"`
 	// Soft execution deadline echoed back.
@@ -96,7 +102,7 @@ func (s *ContentGenerationTask) GetStatus() TaskStatus {
 }
 
 // GetError returns the value of Error.
-func (s *ContentGenerationTask) GetError() OptTaskError {
+func (s *ContentGenerationTask) GetError() OptNilTaskError {
 	return s.Error
 }
 
@@ -165,6 +171,21 @@ func (s *ContentGenerationTask) GetFileformat() OptString {
 	return s.Fileformat
 }
 
+// GetFileFormat returns the value of FileFormat.
+func (s *ContentGenerationTask) GetFileFormat() OptString {
+	return s.FileFormat
+}
+
+// GetTextureResolution returns the value of TextureResolution.
+func (s *ContentGenerationTask) GetTextureResolution() OptString {
+	return s.TextureResolution
+}
+
+// GetPriority returns the value of Priority.
+func (s *ContentGenerationTask) GetPriority() OptInt32 {
+	return s.Priority
+}
+
 // GetServiceTier returns the value of ServiceTier.
 func (s *ContentGenerationTask) GetServiceTier() OptString {
 	return s.ServiceTier
@@ -221,7 +242,7 @@ func (s *ContentGenerationTask) SetStatus(val TaskStatus) {
 }
 
 // SetError sets the value of Error.
-func (s *ContentGenerationTask) SetError(val OptTaskError) {
+func (s *ContentGenerationTask) SetError(val OptNilTaskError) {
 	s.Error = val
 }
 
@@ -290,6 +311,21 @@ func (s *ContentGenerationTask) SetFileformat(val OptString) {
 	s.Fileformat = val
 }
 
+// SetFileFormat sets the value of FileFormat.
+func (s *ContentGenerationTask) SetFileFormat(val OptString) {
+	s.FileFormat = val
+}
+
+// SetTextureResolution sets the value of TextureResolution.
+func (s *ContentGenerationTask) SetTextureResolution(val OptString) {
+	s.TextureResolution = val
+}
+
+// SetPriority sets the value of Priority.
+func (s *ContentGenerationTask) SetPriority(val OptInt32) {
+	s.Priority = val
+}
+
 // SetServiceTier sets the value of ServiceTier.
 func (s *ContentGenerationTask) SetServiceTier(val OptString) {
 	s.ServiceTier = val
@@ -334,7 +370,8 @@ func (s *ContentGenerationTask) SetSafetyIdentifier(val OptString) {
 type ContentGenerationTasksDeleteNoContent struct{}
 
 // One element of a generation request `content` list. Exactly one of
-// `text` / `image_url` / `video_url` / `audio_url` / `draft_task` must be
+// `text` / `image_url` / `video_url` / `audio_url` / `draft_task` /
+// `file_url` must be
 // set, matching the value of `type`.
 // Ref: #/components/schemas/ContentItem
 type ContentItem struct {
@@ -350,7 +387,12 @@ type ContentItem struct {
 	AudioURL OptAudioURL `json:"audio_url"`
 	// Draft-task reference. Required when `type` is `draft_task`.
 	DraftTask OptDraftTask `json:"draft_task"`
-	// Optional role tag (e.g. `first_frame`, `reference_image`).
+	// File content. Required when `type` is `file_url`.
+	FileURL OptFileURL `json:"file_url"`
+	// Optional role tag (e.g. `first_frame`, `reference_image`). 3D generation
+	// uses `front_view` / `back_view` / `left_view` / `right_view` /
+	// `top_view` / `bottom_view` for images and `mesh_to_texture` for the mesh
+	// file.
 	Role OptString `json:"role"`
 }
 
@@ -382,6 +424,11 @@ func (s *ContentItem) GetAudioURL() OptAudioURL {
 // GetDraftTask returns the value of DraftTask.
 func (s *ContentItem) GetDraftTask() OptDraftTask {
 	return s.DraftTask
+}
+
+// GetFileURL returns the value of FileURL.
+func (s *ContentItem) GetFileURL() OptFileURL {
+	return s.FileURL
 }
 
 // GetRole returns the value of Role.
@@ -419,6 +466,11 @@ func (s *ContentItem) SetDraftTask(val OptDraftTask) {
 	s.DraftTask = val
 }
 
+// SetFileURL sets the value of FileURL.
+func (s *ContentItem) SetFileURL(val OptFileURL) {
+	s.FileURL = val
+}
+
 // SetRole sets the value of Role.
 func (s *ContentItem) SetRole(val OptString) {
 	s.Role = val
@@ -434,6 +486,7 @@ const (
 	ContentTypeVideoURL  ContentType = "video_url"
 	ContentTypeAudioURL  ContentType = "audio_url"
 	ContentTypeDraftTask ContentType = "draft_task"
+	ContentTypeFileURL   ContentType = "file_url"
 )
 
 // AllValues returns all ContentType values.
@@ -444,6 +497,7 @@ func (ContentType) AllValues() []ContentType {
 		ContentTypeVideoURL,
 		ContentTypeAudioURL,
 		ContentTypeDraftTask,
+		ContentTypeFileURL,
 	}
 }
 
@@ -459,6 +513,8 @@ func (s ContentType) MarshalText() ([]byte, error) {
 	case ContentTypeAudioURL:
 		return []byte(s), nil
 	case ContentTypeDraftTask:
+		return []byte(s), nil
+	case ContentTypeFileURL:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -482,6 +538,9 @@ func (s *ContentType) UnmarshalText(data []byte) error {
 		return nil
 	case ContentTypeDraftTask:
 		*s = ContentTypeDraftTask
+		return nil
+	case ContentTypeFileURL:
+		*s = ContentTypeFileURL
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
@@ -522,6 +581,22 @@ type CreateContentGenerationTaskRequest struct {
 	SubdivisionLevel OptString `json:"subdivision_level"`
 	// Output file format (e.g. `mp4`, `glb`).
 	FileFormat OptString `json:"file_format"`
+	// 3D generation with image-only input: `false` generates an untextured
+	// mesh, omitted or `true` generates a textured model.
+	Texture OptBool `json:"texture"`
+	// 3D geometry quality tier: `low`, `medium`, `high`, `xhigh` or `ultra`.
+	GeometryQuality OptString `json:"geometry_quality"`
+	// 3D surface detail: `smooth` or `micro`. Only valid when
+	// `geometry_quality` is `high`, `xhigh` or `ultra`.
+	GeometryDetail OptString `json:"geometry_detail"`
+	// Target face count of the 3D mesh, within the range of `geometry_quality`.
+	Face OptInt64 `json:"face"`
+	// 3D texture resolution: `4k` or `8k`.
+	TextureResolution OptString `json:"texture_resolution"`
+	// Keep the UV layout of the input mesh when texturing it.
+	PreserveUv OptBool `json:"preserve_uv"`
+	// Execution priority within the endpoint queue, 0-9; higher runs first.
+	Priority OptInt32 `json:"priority"`
 	// Mark this task as a draft (cheaper, lower-quality).
 	Draft OptBool `json:"draft"`
 	// Run the prompt-optimization pass before generation.
@@ -614,6 +689,41 @@ func (s *CreateContentGenerationTaskRequest) GetSubdivisionLevel() OptString {
 // GetFileFormat returns the value of FileFormat.
 func (s *CreateContentGenerationTaskRequest) GetFileFormat() OptString {
 	return s.FileFormat
+}
+
+// GetTexture returns the value of Texture.
+func (s *CreateContentGenerationTaskRequest) GetTexture() OptBool {
+	return s.Texture
+}
+
+// GetGeometryQuality returns the value of GeometryQuality.
+func (s *CreateContentGenerationTaskRequest) GetGeometryQuality() OptString {
+	return s.GeometryQuality
+}
+
+// GetGeometryDetail returns the value of GeometryDetail.
+func (s *CreateContentGenerationTaskRequest) GetGeometryDetail() OptString {
+	return s.GeometryDetail
+}
+
+// GetFace returns the value of Face.
+func (s *CreateContentGenerationTaskRequest) GetFace() OptInt64 {
+	return s.Face
+}
+
+// GetTextureResolution returns the value of TextureResolution.
+func (s *CreateContentGenerationTaskRequest) GetTextureResolution() OptString {
+	return s.TextureResolution
+}
+
+// GetPreserveUv returns the value of PreserveUv.
+func (s *CreateContentGenerationTaskRequest) GetPreserveUv() OptBool {
+	return s.PreserveUv
+}
+
+// GetPriority returns the value of Priority.
+func (s *CreateContentGenerationTaskRequest) GetPriority() OptInt32 {
+	return s.Priority
 }
 
 // GetDraft returns the value of Draft.
@@ -726,6 +836,41 @@ func (s *CreateContentGenerationTaskRequest) SetFileFormat(val OptString) {
 	s.FileFormat = val
 }
 
+// SetTexture sets the value of Texture.
+func (s *CreateContentGenerationTaskRequest) SetTexture(val OptBool) {
+	s.Texture = val
+}
+
+// SetGeometryQuality sets the value of GeometryQuality.
+func (s *CreateContentGenerationTaskRequest) SetGeometryQuality(val OptString) {
+	s.GeometryQuality = val
+}
+
+// SetGeometryDetail sets the value of GeometryDetail.
+func (s *CreateContentGenerationTaskRequest) SetGeometryDetail(val OptString) {
+	s.GeometryDetail = val
+}
+
+// SetFace sets the value of Face.
+func (s *CreateContentGenerationTaskRequest) SetFace(val OptInt64) {
+	s.Face = val
+}
+
+// SetTextureResolution sets the value of TextureResolution.
+func (s *CreateContentGenerationTaskRequest) SetTextureResolution(val OptString) {
+	s.TextureResolution = val
+}
+
+// SetPreserveUv sets the value of PreserveUv.
+func (s *CreateContentGenerationTaskRequest) SetPreserveUv(val OptBool) {
+	s.PreserveUv = val
+}
+
+// SetPriority sets the value of Priority.
+func (s *CreateContentGenerationTaskRequest) SetPriority(val OptInt32) {
+	s.Priority = val
+}
+
 // SetDraft sets the value of Draft.
 func (s *CreateContentGenerationTaskRequest) SetDraft(val OptBool) {
 	s.Draft = val
@@ -788,6 +933,22 @@ func (s *DraftTask) SetID(val string) {
 	s.ID = val
 }
 
+// Ref: #/components/schemas/FileURL
+type FileURL struct {
+	// URL of the file asset (e.g. a GLB mesh for 3D generation).
+	URL string `json:"url"`
+}
+
+// GetURL returns the value of URL.
+func (s *FileURL) GetURL() string {
+	return s.URL
+}
+
+// SetURL sets the value of URL.
+func (s *FileURL) SetURL(val string) {
+	s.URL = val
+}
+
 // Ref: #/components/schemas/ImageURL
 type ImageURL struct {
 	// URL of the image.
@@ -806,14 +967,22 @@ func (s *ImageURL) SetURL(val string) {
 
 // Ref: #/components/schemas/ListContentGenerationTasksResponse
 type ListContentGenerationTasksResponse struct {
-	// Total number of tasks matching the filter (across all pages).
-	Total int32 `json:"total"`
-	// Page of tasks.
+	// Total number of tasks matching the filter (across all pages). Not returned by List V2.
+	Total OptInt32 `json:"total"`
+	// Page of tasks. Not returned by List V2.
 	Items []ContentGenerationTask `json:"items"`
+	// List V2: page of tasks.
+	Data []ContentGenerationTask `json:"data"`
+	// List V2: id of the first task in `data`; null when `data` is empty.
+	FirstID OptNilString `json:"first_id"`
+	// List V2: id of the last task in `data`; null when `data` is empty.
+	LastID OptNilString `json:"last_id"`
+	// List V2: whether more tasks follow this page.
+	HasMore OptBool `json:"has_more"`
 }
 
 // GetTotal returns the value of Total.
-func (s *ListContentGenerationTasksResponse) GetTotal() int32 {
+func (s *ListContentGenerationTasksResponse) GetTotal() OptInt32 {
 	return s.Total
 }
 
@@ -822,14 +991,97 @@ func (s *ListContentGenerationTasksResponse) GetItems() []ContentGenerationTask 
 	return s.Items
 }
 
+// GetData returns the value of Data.
+func (s *ListContentGenerationTasksResponse) GetData() []ContentGenerationTask {
+	return s.Data
+}
+
+// GetFirstID returns the value of FirstID.
+func (s *ListContentGenerationTasksResponse) GetFirstID() OptNilString {
+	return s.FirstID
+}
+
+// GetLastID returns the value of LastID.
+func (s *ListContentGenerationTasksResponse) GetLastID() OptNilString {
+	return s.LastID
+}
+
+// GetHasMore returns the value of HasMore.
+func (s *ListContentGenerationTasksResponse) GetHasMore() OptBool {
+	return s.HasMore
+}
+
 // SetTotal sets the value of Total.
-func (s *ListContentGenerationTasksResponse) SetTotal(val int32) {
+func (s *ListContentGenerationTasksResponse) SetTotal(val OptInt32) {
 	s.Total = val
 }
 
 // SetItems sets the value of Items.
 func (s *ListContentGenerationTasksResponse) SetItems(val []ContentGenerationTask) {
 	s.Items = val
+}
+
+// SetData sets the value of Data.
+func (s *ListContentGenerationTasksResponse) SetData(val []ContentGenerationTask) {
+	s.Data = val
+}
+
+// SetFirstID sets the value of FirstID.
+func (s *ListContentGenerationTasksResponse) SetFirstID(val OptNilString) {
+	s.FirstID = val
+}
+
+// SetLastID sets the value of LastID.
+func (s *ListContentGenerationTasksResponse) SetLastID(val OptNilString) {
+	s.LastID = val
+}
+
+// SetHasMore sets the value of HasMore.
+func (s *ListContentGenerationTasksResponse) SetHasMore(val OptBool) {
+	s.HasMore = val
+}
+
+// Sort order of a task list page, by creation time.
+// Ref: #/components/schemas/ListOrder
+type ListOrder string
+
+const (
+	ListOrderAsc  ListOrder = "asc"
+	ListOrderDesc ListOrder = "desc"
+)
+
+// AllValues returns all ListOrder values.
+func (ListOrder) AllValues() []ListOrder {
+	return []ListOrder{
+		ListOrderAsc,
+		ListOrderDesc,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s ListOrder) MarshalText() ([]byte, error) {
+	switch s {
+	case ListOrderAsc:
+		return []byte(s), nil
+	case ListOrderDesc:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *ListOrder) UnmarshalText(data []byte) error {
+	switch ListOrder(data) {
+	case ListOrderAsc:
+		*s = ListOrderAsc
+		return nil
+	case ListOrderDesc:
+		*s = ListOrderDesc
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }
 
 // NewOptAudioURL returns new OptAudioURL with value set to v.
@@ -964,6 +1216,52 @@ func (o OptDraftTask) Get() (v DraftTask, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptDraftTask) Or(d DraftTask) DraftTask {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptFileURL returns new OptFileURL with value set to v.
+func NewOptFileURL(v FileURL) OptFileURL {
+	return OptFileURL{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptFileURL is optional FileURL.
+type OptFileURL struct {
+	Value FileURL
+	Set   bool
+}
+
+// IsSet returns true if OptFileURL was set.
+func (o OptFileURL) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptFileURL) Reset() {
+	var v FileURL
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptFileURL) SetTo(v FileURL) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptFileURL) Get() (v FileURL, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptFileURL) Or(d FileURL) FileURL {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -1108,6 +1406,178 @@ func (o OptInt64) Or(d int64) int64 {
 	return d
 }
 
+// NewOptListOrder returns new OptListOrder with value set to v.
+func NewOptListOrder(v ListOrder) OptListOrder {
+	return OptListOrder{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptListOrder is optional ListOrder.
+type OptListOrder struct {
+	Value ListOrder
+	Set   bool
+}
+
+// IsSet returns true if OptListOrder was set.
+func (o OptListOrder) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptListOrder) Reset() {
+	var v ListOrder
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptListOrder) SetTo(v ListOrder) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptListOrder) Get() (v ListOrder, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptListOrder) Or(d ListOrder) ListOrder {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilString returns new OptNilString with value set to v.
+func NewOptNilString(v string) OptNilString {
+	return OptNilString{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilString is optional nullable string.
+type OptNilString struct {
+	Value string
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilString was set.
+func (o OptNilString) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilString) Reset() {
+	var v string
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilString) SetTo(v string) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilString) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilString) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v string
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilString) Get() (v string, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilString) Or(d string) string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilTaskError returns new OptNilTaskError with value set to v.
+func NewOptNilTaskError(v TaskError) OptNilTaskError {
+	return OptNilTaskError{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilTaskError is optional nullable TaskError.
+type OptNilTaskError struct {
+	Value TaskError
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilTaskError was set.
+func (o OptNilTaskError) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilTaskError) Reset() {
+	var v TaskError
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilTaskError) SetTo(v TaskError) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilTaskError) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilTaskError) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v TaskError
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilTaskError) Get() (v TaskError, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilTaskError) Or(d TaskError) TaskError {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptReasoningEffort returns new OptReasoningEffort with value set to v.
 func NewOptReasoningEffort(v ReasoningEffort) OptReasoningEffort {
 	return OptReasoningEffort{
@@ -1240,52 +1710,6 @@ func (o OptTaskContent) Get() (v TaskContent, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptTaskContent) Or(d TaskContent) TaskContent {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptTaskError returns new OptTaskError with value set to v.
-func NewOptTaskError(v TaskError) OptTaskError {
-	return OptTaskError{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptTaskError is optional TaskError.
-type OptTaskError struct {
-	Value TaskError
-	Set   bool
-}
-
-// IsSet returns true if OptTaskError was set.
-func (o OptTaskError) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptTaskError) Reset() {
-	var v TaskError
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptTaskError) SetTo(v TaskError) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptTaskError) Get() (v TaskError, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptTaskError) Or(d TaskError) TaskError {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -1611,6 +2035,7 @@ const (
 	TaskStatusCancelled TaskStatus = "cancelled"
 	TaskStatusSucceeded TaskStatus = "succeeded"
 	TaskStatusFailed    TaskStatus = "failed"
+	TaskStatusExpired   TaskStatus = "expired"
 )
 
 // AllValues returns all TaskStatus values.
@@ -1621,6 +2046,7 @@ func (TaskStatus) AllValues() []TaskStatus {
 		TaskStatusCancelled,
 		TaskStatusSucceeded,
 		TaskStatusFailed,
+		TaskStatusExpired,
 	}
 }
 
@@ -1636,6 +2062,8 @@ func (s TaskStatus) MarshalText() ([]byte, error) {
 	case TaskStatusSucceeded:
 		return []byte(s), nil
 	case TaskStatusFailed:
+		return []byte(s), nil
+	case TaskStatusExpired:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -1659,6 +2087,9 @@ func (s *TaskStatus) UnmarshalText(data []byte) error {
 		return nil
 	case TaskStatusFailed:
 		*s = TaskStatusFailed
+		return nil
+	case TaskStatusExpired:
+		*s = TaskStatusExpired
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
