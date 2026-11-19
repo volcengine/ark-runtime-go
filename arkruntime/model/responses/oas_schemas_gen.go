@@ -6669,52 +6669,6 @@ func (o OptImageProcessOptions) Or(d ImageProcessOptions) ImageProcessOptions {
 	return d
 }
 
-// NewOptIncompleteDetails returns new OptIncompleteDetails with value set to v.
-func NewOptIncompleteDetails(v IncompleteDetails) OptIncompleteDetails {
-	return OptIncompleteDetails{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptIncompleteDetails is optional IncompleteDetails.
-type OptIncompleteDetails struct {
-	Value IncompleteDetails
-	Set   bool
-}
-
-// IsSet returns true if OptIncompleteDetails was set.
-func (o OptIncompleteDetails) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptIncompleteDetails) Reset() {
-	var v IncompleteDetails
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptIncompleteDetails) SetTo(v IncompleteDetails) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptIncompleteDetails) Get() (v IncompleteDetails, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptIncompleteDetails) Or(d IncompleteDetails) IncompleteDetails {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
 // NewOptInt32 returns new OptInt32 with value set to v.
 func NewOptInt32(v int32) OptInt32 {
 	return OptInt32{
@@ -7451,6 +7405,195 @@ func (o OptMessageRole) Or(d MessageRole) MessageRole {
 	return d
 }
 
+// NewOptNilBool returns new OptNilBool with value set to v.
+func NewOptNilBool(v bool) OptNilBool {
+	return OptNilBool{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilBool is optional nullable bool.
+type OptNilBool struct {
+	Value bool
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilBool was set.
+func (o OptNilBool) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilBool) Reset() {
+	var v bool
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilBool) SetTo(v bool) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilBool) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilBool) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v bool
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilBool) Get() (v bool, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilBool) Or(d bool) bool {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilFloat64 returns new OptNilFloat64 with value set to v.
+func NewOptNilFloat64(v float64) OptNilFloat64 {
+	return OptNilFloat64{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilFloat64 is optional nullable float64.
+type OptNilFloat64 struct {
+	Value float64
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilFloat64 was set.
+func (o OptNilFloat64) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilFloat64) Reset() {
+	var v float64
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilFloat64) SetTo(v float64) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilFloat64) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilFloat64) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v float64
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilFloat64) Get() (v float64, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilFloat64) Or(d float64) float64 {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilIncompleteDetails returns new OptNilIncompleteDetails with value set to v.
+func NewOptNilIncompleteDetails(v IncompleteDetails) OptNilIncompleteDetails {
+	return OptNilIncompleteDetails{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilIncompleteDetails is optional nullable IncompleteDetails.
+type OptNilIncompleteDetails struct {
+	Value IncompleteDetails
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilIncompleteDetails was set.
+func (o OptNilIncompleteDetails) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilIncompleteDetails) Reset() {
+	var v IncompleteDetails
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilIncompleteDetails) SetTo(v IncompleteDetails) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilIncompleteDetails) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilIncompleteDetails) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v IncompleteDetails
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilIncompleteDetails) Get() (v IncompleteDetails, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilIncompleteDetails) Or(d IncompleteDetails) IncompleteDetails {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNilResponseError returns new OptNilResponseError with value set to v.
 func NewOptNilResponseError(v ResponseError) OptNilResponseError {
 	return OptNilResponseError{
@@ -7514,6 +7657,69 @@ func (o OptNilResponseError) Or(d ResponseError) ResponseError {
 	return d
 }
 
+// NewOptNilResponseTextConfig returns new OptNilResponseTextConfig with value set to v.
+func NewOptNilResponseTextConfig(v ResponseTextConfig) OptNilResponseTextConfig {
+	return OptNilResponseTextConfig{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilResponseTextConfig is optional nullable ResponseTextConfig.
+type OptNilResponseTextConfig struct {
+	Value ResponseTextConfig
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilResponseTextConfig was set.
+func (o OptNilResponseTextConfig) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilResponseTextConfig) Reset() {
+	var v ResponseTextConfig
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilResponseTextConfig) SetTo(v ResponseTextConfig) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilResponseTextConfig) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilResponseTextConfig) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v ResponseTextConfig
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilResponseTextConfig) Get() (v ResponseTextConfig, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilResponseTextConfig) Or(d ResponseTextConfig) ResponseTextConfig {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNilString returns new OptNilString with value set to v.
 func NewOptNilString(v string) OptNilString {
 	return OptNilString{
@@ -7571,6 +7777,132 @@ func (o OptNilString) Get() (v string, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptNilString) Or(d string) string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilThinking returns new OptNilThinking with value set to v.
+func NewOptNilThinking(v Thinking) OptNilThinking {
+	return OptNilThinking{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilThinking is optional nullable Thinking.
+type OptNilThinking struct {
+	Value Thinking
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilThinking was set.
+func (o OptNilThinking) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilThinking) Reset() {
+	var v Thinking
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilThinking) SetTo(v Thinking) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilThinking) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilThinking) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v Thinking
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilThinking) Get() (v Thinking, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilThinking) Or(d Thinking) Thinking {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilToolChoice returns new OptNilToolChoice with value set to v.
+func NewOptNilToolChoice(v ToolChoice) OptNilToolChoice {
+	return OptNilToolChoice{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilToolChoice is optional nullable ToolChoice.
+type OptNilToolChoice struct {
+	Value ToolChoice
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilToolChoice was set.
+func (o OptNilToolChoice) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilToolChoice) Reset() {
+	var v ToolChoice
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilToolChoice) SetTo(v ToolChoice) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilToolChoice) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilToolChoice) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v ToolChoice
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilToolChoice) Get() (v ToolChoice, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilToolChoice) Or(d ToolChoice) ToolChoice {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -9971,26 +10303,26 @@ type Response struct {
 	CreatedAt          int64                        `json:"created_at"`
 	Error              OptNilResponseError          `json:"error"`
 	ID                 string                       `json:"id"`
-	IncompleteDetails  OptIncompleteDetails         `json:"incomplete_details"`
+	IncompleteDetails  OptNilIncompleteDetails      `json:"incomplete_details"`
 	MaxOutputTokens    OptInt64                     `json:"max_output_tokens"`
 	Model              string                       `json:"model"`
 	Object             ResponseObject               `json:"object"`
 	Output             []OutputItem                 `json:"output"`
-	PreviousResponseID OptString                    `json:"previous_response_id"`
-	Thinking           OptThinking                  `json:"thinking"`
+	PreviousResponseID OptNilString                 `json:"previous_response_id"`
+	Thinking           OptNilThinking               `json:"thinking"`
 	ServiceTier        OptServiceTier               `json:"service_tier"`
 	Status             OptResponseStatus            `json:"status"`
-	Temperature        OptFloat64                   `json:"temperature"`
+	Temperature        OptNilFloat64                `json:"temperature"`
 	Tools              []Tool                       `json:"tools"`
-	TopP               OptFloat64                   `json:"top_p"`
+	TopP               OptNilFloat64                `json:"top_p"`
 	Usage              OptResponseUsage             `json:"usage"`
 	Caching            OptResponseCaching           `json:"caching"`
-	Text               OptResponseTextConfig        `json:"text"`
-	Instructions       OptString                    `json:"instructions"`
+	Text               OptNilResponseTextConfig     `json:"text"`
+	Instructions       OptNilString                 `json:"instructions"`
 	Store              OptBool                      `json:"store"`
 	ExpireAt           OptInt64                     `json:"expire_at"`
-	ToolChoice         OptToolChoice                `json:"tool_choice"`
-	ParallelToolCalls  OptBool                      `json:"parallel_tool_calls"`
+	ToolChoice         OptNilToolChoice             `json:"tool_choice"`
+	ParallelToolCalls  OptNilBool                   `json:"parallel_tool_calls"`
 	MaxToolCalls       OptInt64                     `json:"max_tool_calls"`
 	Reasoning          OptReasoning                 `json:"reasoning"`
 	ContextManagement  OptContextManagementResponse `json:"context_management"`
@@ -10016,7 +10348,7 @@ func (s *Response) GetID() string {
 }
 
 // GetIncompleteDetails returns the value of IncompleteDetails.
-func (s *Response) GetIncompleteDetails() OptIncompleteDetails {
+func (s *Response) GetIncompleteDetails() OptNilIncompleteDetails {
 	return s.IncompleteDetails
 }
 
@@ -10041,12 +10373,12 @@ func (s *Response) GetOutput() []OutputItem {
 }
 
 // GetPreviousResponseID returns the value of PreviousResponseID.
-func (s *Response) GetPreviousResponseID() OptString {
+func (s *Response) GetPreviousResponseID() OptNilString {
 	return s.PreviousResponseID
 }
 
 // GetThinking returns the value of Thinking.
-func (s *Response) GetThinking() OptThinking {
+func (s *Response) GetThinking() OptNilThinking {
 	return s.Thinking
 }
 
@@ -10061,7 +10393,7 @@ func (s *Response) GetStatus() OptResponseStatus {
 }
 
 // GetTemperature returns the value of Temperature.
-func (s *Response) GetTemperature() OptFloat64 {
+func (s *Response) GetTemperature() OptNilFloat64 {
 	return s.Temperature
 }
 
@@ -10071,7 +10403,7 @@ func (s *Response) GetTools() []Tool {
 }
 
 // GetTopP returns the value of TopP.
-func (s *Response) GetTopP() OptFloat64 {
+func (s *Response) GetTopP() OptNilFloat64 {
 	return s.TopP
 }
 
@@ -10086,12 +10418,12 @@ func (s *Response) GetCaching() OptResponseCaching {
 }
 
 // GetText returns the value of Text.
-func (s *Response) GetText() OptResponseTextConfig {
+func (s *Response) GetText() OptNilResponseTextConfig {
 	return s.Text
 }
 
 // GetInstructions returns the value of Instructions.
-func (s *Response) GetInstructions() OptString {
+func (s *Response) GetInstructions() OptNilString {
 	return s.Instructions
 }
 
@@ -10106,12 +10438,12 @@ func (s *Response) GetExpireAt() OptInt64 {
 }
 
 // GetToolChoice returns the value of ToolChoice.
-func (s *Response) GetToolChoice() OptToolChoice {
+func (s *Response) GetToolChoice() OptNilToolChoice {
 	return s.ToolChoice
 }
 
 // GetParallelToolCalls returns the value of ParallelToolCalls.
-func (s *Response) GetParallelToolCalls() OptBool {
+func (s *Response) GetParallelToolCalls() OptNilBool {
 	return s.ParallelToolCalls
 }
 
@@ -10161,7 +10493,7 @@ func (s *Response) SetID(val string) {
 }
 
 // SetIncompleteDetails sets the value of IncompleteDetails.
-func (s *Response) SetIncompleteDetails(val OptIncompleteDetails) {
+func (s *Response) SetIncompleteDetails(val OptNilIncompleteDetails) {
 	s.IncompleteDetails = val
 }
 
@@ -10186,12 +10518,12 @@ func (s *Response) SetOutput(val []OutputItem) {
 }
 
 // SetPreviousResponseID sets the value of PreviousResponseID.
-func (s *Response) SetPreviousResponseID(val OptString) {
+func (s *Response) SetPreviousResponseID(val OptNilString) {
 	s.PreviousResponseID = val
 }
 
 // SetThinking sets the value of Thinking.
-func (s *Response) SetThinking(val OptThinking) {
+func (s *Response) SetThinking(val OptNilThinking) {
 	s.Thinking = val
 }
 
@@ -10206,7 +10538,7 @@ func (s *Response) SetStatus(val OptResponseStatus) {
 }
 
 // SetTemperature sets the value of Temperature.
-func (s *Response) SetTemperature(val OptFloat64) {
+func (s *Response) SetTemperature(val OptNilFloat64) {
 	s.Temperature = val
 }
 
@@ -10216,7 +10548,7 @@ func (s *Response) SetTools(val []Tool) {
 }
 
 // SetTopP sets the value of TopP.
-func (s *Response) SetTopP(val OptFloat64) {
+func (s *Response) SetTopP(val OptNilFloat64) {
 	s.TopP = val
 }
 
@@ -10231,12 +10563,12 @@ func (s *Response) SetCaching(val OptResponseCaching) {
 }
 
 // SetText sets the value of Text.
-func (s *Response) SetText(val OptResponseTextConfig) {
+func (s *Response) SetText(val OptNilResponseTextConfig) {
 	s.Text = val
 }
 
 // SetInstructions sets the value of Instructions.
-func (s *Response) SetInstructions(val OptString) {
+func (s *Response) SetInstructions(val OptNilString) {
 	s.Instructions = val
 }
 
@@ -10251,12 +10583,12 @@ func (s *Response) SetExpireAt(val OptInt64) {
 }
 
 // SetToolChoice sets the value of ToolChoice.
-func (s *Response) SetToolChoice(val OptToolChoice) {
+func (s *Response) SetToolChoice(val OptNilToolChoice) {
 	s.ToolChoice = val
 }
 
 // SetParallelToolCalls sets the value of ParallelToolCalls.
-func (s *Response) SetParallelToolCalls(val OptBool) {
+func (s *Response) SetParallelToolCalls(val OptNilBool) {
 	s.ParallelToolCalls = val
 }
 

@@ -31,4 +31,16 @@ type ContentGenerationTasksListParams struct {
 	FilterModel OptString `json:",omitempty,omitzero" query:"filter.model"`
 	// Filter by service tier.
 	FilterServiceTier OptString `json:",omitempty,omitzero" query:"filter.service_tier"`
+	// List V2: endpoint id whose tasks to list. When set, the cursor
+	// parameters below apply and the response carries `data` / `first_id` /
+	// `last_id` / `has_more` instead of `total` / `items`.
+	Model OptString `json:",omitempty,omitzero" query:"model"`
+	// List V2: filter by one or more lifecycle statuses.
+	FilterStatuses []TaskStatus `json:",omitempty" query:"filter.statuses,repeat"`
+	// List V2: page size, 1-100; defaults to 20.
+	Limit OptInt32 `json:",omitempty,omitzero" query:"limit"`
+	// List V2: cursor; the `last_id` of the previous page.
+	After OptString `json:",omitempty,omitzero" query:"after"`
+	// List V2: sort order by creation time; defaults to `desc`.
+	Order OptListOrder `json:",omitempty,omitzero" query:"order"`
 }

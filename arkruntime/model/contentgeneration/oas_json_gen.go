@@ -216,6 +216,24 @@ func (s *ContentGenerationTask) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.FileFormat.Set {
+			e.FieldStart("file_format")
+			s.FileFormat.Encode(e)
+		}
+	}
+	{
+		if s.TextureResolution.Set {
+			e.FieldStart("texture_resolution")
+			s.TextureResolution.Encode(e)
+		}
+	}
+	{
+		if s.Priority.Set {
+			e.FieldStart("priority")
+			s.Priority.Encode(e)
+		}
+	}
+	{
 		if s.ServiceTier.Set {
 			e.FieldStart("service_tier")
 			s.ServiceTier.Encode(e)
@@ -269,7 +287,7 @@ func (s *ContentGenerationTask) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfContentGenerationTask = [25]string{
+var jsonFieldsNameOfContentGenerationTask = [28]string{
 	0:  "id",
 	1:  "model",
 	2:  "status",
@@ -287,14 +305,17 @@ var jsonFieldsNameOfContentGenerationTask = [25]string{
 	14: "revised_prompt",
 	15: "subdivisionlevel",
 	16: "fileformat",
-	17: "service_tier",
-	18: "execution_expires_after",
-	19: "generate_audio",
-	20: "draft",
-	21: "draft_task_id",
-	22: "tools",
-	23: "reasoning_effort",
-	24: "safety_identifier",
+	17: "file_format",
+	18: "texture_resolution",
+	19: "priority",
+	20: "service_tier",
+	21: "execution_expires_after",
+	22: "generate_audio",
+	23: "draft",
+	24: "draft_task_id",
+	25: "tools",
+	26: "reasoning_effort",
+	27: "safety_identifier",
 }
 
 // Decode decodes ContentGenerationTask from json.
@@ -479,6 +500,36 @@ func (s *ContentGenerationTask) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"fileformat\"")
+			}
+		case "file_format":
+			if err := func() error {
+				s.FileFormat.Reset()
+				if err := s.FileFormat.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"file_format\"")
+			}
+		case "texture_resolution":
+			if err := func() error {
+				s.TextureResolution.Reset()
+				if err := s.TextureResolution.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"texture_resolution\"")
+			}
+		case "priority":
+			if err := func() error {
+				s.Priority.Reset()
+				if err := s.Priority.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"priority\"")
 			}
 		case "service_tier":
 			if err := func() error {
@@ -670,6 +721,12 @@ func (s *ContentItem) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.FileURL.Set {
+			e.FieldStart("file_url")
+			s.FileURL.Encode(e)
+		}
+	}
+	{
 		if s.Role.Set {
 			e.FieldStart("role")
 			s.Role.Encode(e)
@@ -677,14 +734,15 @@ func (s *ContentItem) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfContentItem = [7]string{
+var jsonFieldsNameOfContentItem = [8]string{
 	0: "type",
 	1: "text",
 	2: "image_url",
 	3: "video_url",
 	4: "audio_url",
 	5: "draft_task",
-	6: "role",
+	6: "file_url",
+	7: "role",
 }
 
 // Decode decodes ContentItem from json.
@@ -755,6 +813,16 @@ func (s *ContentItem) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"draft_task\"")
+			}
+		case "file_url":
+			if err := func() error {
+				s.FileURL.Reset()
+				if err := s.FileURL.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"file_url\"")
 			}
 		case "role":
 			if err := func() error {
@@ -848,6 +916,8 @@ func (s *ContentType) Decode(d *jx.Decoder) error {
 		*s = ContentTypeAudioURL
 	case ContentTypeDraftTask:
 		*s = ContentTypeDraftTask
+	case ContentTypeFileURL:
+		*s = ContentTypeFileURL
 	default:
 		*s = ContentType(v)
 	}
@@ -974,6 +1044,48 @@ func (s *CreateContentGenerationTaskRequest) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.Texture.Set {
+			e.FieldStart("texture")
+			s.Texture.Encode(e)
+		}
+	}
+	{
+		if s.GeometryQuality.Set {
+			e.FieldStart("geometry_quality")
+			s.GeometryQuality.Encode(e)
+		}
+	}
+	{
+		if s.GeometryDetail.Set {
+			e.FieldStart("geometry_detail")
+			s.GeometryDetail.Encode(e)
+		}
+	}
+	{
+		if s.Face.Set {
+			e.FieldStart("face")
+			s.Face.Encode(e)
+		}
+	}
+	{
+		if s.TextureResolution.Set {
+			e.FieldStart("texture_resolution")
+			s.TextureResolution.Encode(e)
+		}
+	}
+	{
+		if s.PreserveUv.Set {
+			e.FieldStart("preserve_uv")
+			s.PreserveUv.Encode(e)
+		}
+	}
+	{
+		if s.Priority.Set {
+			e.FieldStart("priority")
+			s.Priority.Encode(e)
+		}
+	}
+	{
 		if s.Draft.Set {
 			e.FieldStart("draft")
 			s.Draft.Encode(e)
@@ -1015,7 +1127,7 @@ func (s *CreateContentGenerationTaskRequest) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfCreateContentGenerationTaskRequest = [22]string{
+var jsonFieldsNameOfCreateContentGenerationTaskRequest = [29]string{
 	0:  "model",
 	1:  "content",
 	2:  "callback_url",
@@ -1032,12 +1144,19 @@ var jsonFieldsNameOfCreateContentGenerationTaskRequest = [22]string{
 	13: "frames",
 	14: "subdivision_level",
 	15: "file_format",
-	16: "draft",
-	17: "optimize_prompt",
-	18: "tools",
-	19: "reasoning_effort",
-	20: "human_face_mode",
-	21: "safety_identifier",
+	16: "texture",
+	17: "geometry_quality",
+	18: "geometry_detail",
+	19: "face",
+	20: "texture_resolution",
+	21: "preserve_uv",
+	22: "priority",
+	23: "draft",
+	24: "optimize_prompt",
+	25: "tools",
+	26: "reasoning_effort",
+	27: "human_face_mode",
+	28: "safety_identifier",
 }
 
 // Decode decodes CreateContentGenerationTaskRequest from json.
@@ -1045,7 +1164,7 @@ func (s *CreateContentGenerationTaskRequest) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode CreateContentGenerationTaskRequest to nil")
 	}
-	var requiredBitSet [3]uint8
+	var requiredBitSet [4]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
@@ -1219,6 +1338,76 @@ func (s *CreateContentGenerationTaskRequest) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"file_format\"")
 			}
+		case "texture":
+			if err := func() error {
+				s.Texture.Reset()
+				if err := s.Texture.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"texture\"")
+			}
+		case "geometry_quality":
+			if err := func() error {
+				s.GeometryQuality.Reset()
+				if err := s.GeometryQuality.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"geometry_quality\"")
+			}
+		case "geometry_detail":
+			if err := func() error {
+				s.GeometryDetail.Reset()
+				if err := s.GeometryDetail.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"geometry_detail\"")
+			}
+		case "face":
+			if err := func() error {
+				s.Face.Reset()
+				if err := s.Face.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"face\"")
+			}
+		case "texture_resolution":
+			if err := func() error {
+				s.TextureResolution.Reset()
+				if err := s.TextureResolution.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"texture_resolution\"")
+			}
+		case "preserve_uv":
+			if err := func() error {
+				s.PreserveUv.Reset()
+				if err := s.PreserveUv.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"preserve_uv\"")
+			}
+		case "priority":
+			if err := func() error {
+				s.Priority.Reset()
+				if err := s.Priority.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"priority\"")
+			}
 		case "draft":
 			if err := func() error {
 				s.Draft.Reset()
@@ -1295,8 +1484,9 @@ func (s *CreateContentGenerationTaskRequest) Decode(d *jx.Decoder) error {
 	}
 	// Validate required fields.
 	var failures []validate.FieldError
-	for i, mask := range [3]uint8{
+	for i, mask := range [4]uint8{
 		0b00000011,
+		0b00000000,
 		0b00000000,
 		0b00000000,
 	} {
@@ -1537,6 +1727,102 @@ func (s *DraftTask) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
+func (s *FileURL) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *FileURL) encodeFields(e *jx.Encoder) {
+	{
+		e.FieldStart("url")
+		e.Str(s.URL)
+	}
+}
+
+var jsonFieldsNameOfFileURL = [1]string{
+	0: "url",
+}
+
+// Decode decodes FileURL from json.
+func (s *FileURL) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode FileURL to nil")
+	}
+	var requiredBitSet [1]uint8
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "url":
+			requiredBitSet[0] |= 1 << 0
+			if err := func() error {
+				v, err := d.Str()
+				s.URL = string(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"url\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode FileURL")
+	}
+	// Validate required fields.
+	var failures []validate.FieldError
+	for i, mask := range [1]uint8{
+		0b00000001,
+	} {
+		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
+			// Mask only required fields and check equality to mask using XOR.
+			//
+			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
+			// Bits of fields which would be set are actually bits of missed fields.
+			missed := bits.OnesCount8(result)
+			for bitN := 0; bitN < missed; bitN++ {
+				bitIdx := bits.TrailingZeros8(result)
+				fieldIdx := i*8 + bitIdx
+				var name string
+				if fieldIdx < len(jsonFieldsNameOfFileURL) {
+					name = jsonFieldsNameOfFileURL[fieldIdx]
+				} else {
+					name = strconv.Itoa(fieldIdx)
+				}
+				failures = append(failures, validate.FieldError{
+					Name:  name,
+					Error: validate.ErrFieldRequired,
+				})
+				// Reset bit.
+				result &^= 1 << bitIdx
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *FileURL) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *FileURL) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
 func (s *ImageURL) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
@@ -1642,22 +1928,58 @@ func (s *ListContentGenerationTasksResponse) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *ListContentGenerationTasksResponse) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("total")
-		e.Int32(s.Total)
+		if s.Total.Set {
+			e.FieldStart("total")
+			s.Total.Encode(e)
+		}
 	}
 	{
-		e.FieldStart("items")
-		e.ArrStart()
-		for _, elem := range s.Items {
-			elem.Encode(e)
+		if s.Items != nil {
+			e.FieldStart("items")
+			e.ArrStart()
+			for _, elem := range s.Items {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
 		}
-		e.ArrEnd()
+	}
+	{
+		if s.Data != nil {
+			e.FieldStart("data")
+			e.ArrStart()
+			for _, elem := range s.Data {
+				elem.Encode(e)
+			}
+			e.ArrEnd()
+		}
+	}
+	{
+		if s.FirstID.Set {
+			e.FieldStart("first_id")
+			s.FirstID.Encode(e)
+		}
+	}
+	{
+		if s.LastID.Set {
+			e.FieldStart("last_id")
+			s.LastID.Encode(e)
+		}
+	}
+	{
+		if s.HasMore.Set {
+			e.FieldStart("has_more")
+			s.HasMore.Encode(e)
+		}
 	}
 }
 
-var jsonFieldsNameOfListContentGenerationTasksResponse = [2]string{
+var jsonFieldsNameOfListContentGenerationTasksResponse = [6]string{
 	0: "total",
 	1: "items",
+	2: "data",
+	3: "first_id",
+	4: "last_id",
+	5: "has_more",
 }
 
 // Decode decodes ListContentGenerationTasksResponse from json.
@@ -1665,16 +1987,13 @@ func (s *ListContentGenerationTasksResponse) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode ListContentGenerationTasksResponse to nil")
 	}
-	var requiredBitSet [1]uint8
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
 		case "total":
-			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				v, err := d.Int32()
-				s.Total = int32(v)
-				if err != nil {
+				s.Total.Reset()
+				if err := s.Total.Decode(d); err != nil {
 					return err
 				}
 				return nil
@@ -1682,7 +2001,6 @@ func (s *ListContentGenerationTasksResponse) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"total\"")
 			}
 		case "items":
-			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				s.Items = make([]ContentGenerationTask, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
@@ -1699,44 +2017,59 @@ func (s *ListContentGenerationTasksResponse) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"items\"")
 			}
+		case "data":
+			if err := func() error {
+				s.Data = make([]ContentGenerationTask, 0)
+				if err := d.Arr(func(d *jx.Decoder) error {
+					var elem ContentGenerationTask
+					if err := elem.Decode(d); err != nil {
+						return err
+					}
+					s.Data = append(s.Data, elem)
+					return nil
+				}); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"data\"")
+			}
+		case "first_id":
+			if err := func() error {
+				s.FirstID.Reset()
+				if err := s.FirstID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"first_id\"")
+			}
+		case "last_id":
+			if err := func() error {
+				s.LastID.Reset()
+				if err := s.LastID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"last_id\"")
+			}
+		case "has_more":
+			if err := func() error {
+				s.HasMore.Reset()
+				if err := s.HasMore.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"has_more\"")
+			}
 		default:
 			return d.Skip()
 		}
 		return nil
 	}); err != nil {
 		return errors.Wrap(err, "decode ListContentGenerationTasksResponse")
-	}
-	// Validate required fields.
-	var failures []validate.FieldError
-	for i, mask := range [1]uint8{
-		0b00000011,
-	} {
-		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
-			// Mask only required fields and check equality to mask using XOR.
-			//
-			// If XOR result is not zero, result is not equal to expected, so some fields are missed.
-			// Bits of fields which would be set are actually bits of missed fields.
-			missed := bits.OnesCount8(result)
-			for bitN := 0; bitN < missed; bitN++ {
-				bitIdx := bits.TrailingZeros8(result)
-				fieldIdx := i*8 + bitIdx
-				var name string
-				if fieldIdx < len(jsonFieldsNameOfListContentGenerationTasksResponse) {
-					name = jsonFieldsNameOfListContentGenerationTasksResponse[fieldIdx]
-				} else {
-					name = strconv.Itoa(fieldIdx)
-				}
-				failures = append(failures, validate.FieldError{
-					Name:  name,
-					Error: validate.ErrFieldRequired,
-				})
-				// Reset bit.
-				result &^= 1 << bitIdx
-			}
-		}
-	}
-	if len(failures) > 0 {
-		return &validate.Error{Fields: failures}
 	}
 
 	return nil
@@ -1856,6 +2189,39 @@ func (s *OptDraftTask) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
+// Encode encodes FileURL as json.
+func (o OptFileURL) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes FileURL from json.
+func (o *OptFileURL) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptFileURL to nil")
+	}
+	o.Set = true
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptFileURL) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptFileURL) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode encodes ImageURL as json.
 func (o OptImageURL) Encode(e *jx.Encoder) {
 	if !o.Set {
@@ -1885,6 +2251,41 @@ func (s OptImageURL) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptImageURL) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes int32 as json.
+func (o OptInt32) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	e.Int32(int32(o.Value))
+}
+
+// Decode decodes int32 from json.
+func (o *OptInt32) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptInt32 to nil")
+	}
+	o.Set = true
+	v, err := d.Int32()
+	if err != nil {
+		return err
+	}
+	o.Value = int32(v)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptInt32) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptInt32) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -1920,6 +2321,106 @@ func (s OptInt64) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptInt64) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes string as json.
+func (o OptNilString) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	e.Str(string(o.Value))
+}
+
+// Decode decodes string from json.
+func (o *OptNilString) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilString to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v string
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	v, err := d.Str()
+	if err != nil {
+		return err
+	}
+	o.Value = string(v)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilString) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilString) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes TaskError as json.
+func (o OptNilTaskError) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	o.Value.Encode(e)
+}
+
+// Decode decodes TaskError from json.
+func (o *OptNilTaskError) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilTaskError to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v TaskError
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	if err := o.Value.Decode(d); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilTaskError) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilTaskError) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -2021,39 +2522,6 @@ func (s OptTaskContent) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptTaskContent) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes TaskError as json.
-func (o OptTaskError) Encode(e *jx.Encoder) {
-	if !o.Set {
-		return
-	}
-	o.Value.Encode(e)
-}
-
-// Decode decodes TaskError from json.
-func (o *OptTaskError) Decode(d *jx.Decoder) error {
-	if o == nil {
-		return errors.New("invalid: unable to decode OptTaskError to nil")
-	}
-	o.Set = true
-	if err := o.Value.Decode(d); err != nil {
-		return err
-	}
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s OptTaskError) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *OptTaskError) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -2437,6 +2905,8 @@ func (s *TaskStatus) Decode(d *jx.Decoder) error {
 		*s = TaskStatusSucceeded
 	case TaskStatusFailed:
 		*s = TaskStatusFailed
+	case TaskStatusExpired:
+		*s = TaskStatusExpired
 	default:
 		*s = TaskStatus(v)
 	}

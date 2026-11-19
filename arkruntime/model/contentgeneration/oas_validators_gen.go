@@ -113,6 +113,8 @@ func (s ContentType) Validate() error {
 		return nil
 	case "draft_task":
 		return nil
+	case "file_url":
+		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
@@ -208,9 +210,6 @@ func (s *ListContentGenerationTasksResponse) Validate() error {
 
 	var failures []validate.FieldError
 	if err := func() error {
-		if s.Items == nil {
-			return errors.New("nil is invalid value")
-		}
 		var failures []validate.FieldError
 		for i, elem := range s.Items {
 			if err := func() error {
@@ -235,10 +234,46 @@ func (s *ListContentGenerationTasksResponse) Validate() error {
 			Error: err,
 		})
 	}
+	if err := func() error {
+		var failures []validate.FieldError
+		for i, elem := range s.Data {
+			if err := func() error {
+				if err := elem.Validate(); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				failures = append(failures, validate.FieldError{
+					Name:  fmt.Sprintf("[%d]", i),
+					Error: err,
+				})
+			}
+		}
+		if len(failures) > 0 {
+			return &validate.Error{Fields: failures}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "data",
+			Error: err,
+		})
+	}
 	if len(failures) > 0 {
 		return &validate.Error{Fields: failures}
 	}
 	return nil
+}
+
+func (s ListOrder) Validate() error {
+	switch s {
+	case "asc":
+		return nil
+	case "desc":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
 }
 
 func (s ReasoningEffort) Validate() error {
@@ -267,6 +302,8 @@ func (s TaskStatus) Validate() error {
 	case "succeeded":
 		return nil
 	case "failed":
+		return nil
+	case "expired":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)
