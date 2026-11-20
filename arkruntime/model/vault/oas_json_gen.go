@@ -1757,9 +1757,9 @@ func (s *ListCredentialsResponse) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *ListCredentialsResponse) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("credentials")
+		e.FieldStart("data")
 		e.ArrStart()
-		for _, elem := range s.Credentials {
+		for _, elem := range s.Data {
 			elem.Encode(e)
 		}
 		e.ArrEnd()
@@ -1779,7 +1779,7 @@ func (s *ListCredentialsResponse) encodeFields(e *jx.Encoder) {
 }
 
 var jsonFieldsNameOfListCredentialsResponse = [3]string{
-	0: "credentials",
+	0: "data",
 	1: "next_page",
 	2: "total",
 }
@@ -1793,23 +1793,23 @@ func (s *ListCredentialsResponse) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "credentials":
+		case "data":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
-				s.Credentials = make([]Credential, 0)
+				s.Data = make([]Credential, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
 					var elem Credential
 					if err := elem.Decode(d); err != nil {
 						return err
 					}
-					s.Credentials = append(s.Credentials, elem)
+					s.Data = append(s.Data, elem)
 					return nil
 				}); err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"credentials\"")
+				return errors.Wrap(err, "decode field \"data\"")
 			}
 		case "next_page":
 			if err := func() error {

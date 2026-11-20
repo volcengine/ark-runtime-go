@@ -7594,6 +7594,69 @@ func (o OptNilIncompleteDetails) Or(d IncompleteDetails) IncompleteDetails {
 	return d
 }
 
+// NewOptNilInt64 returns new OptNilInt64 with value set to v.
+func NewOptNilInt64(v int64) OptNilInt64 {
+	return OptNilInt64{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilInt64 is optional nullable int64.
+type OptNilInt64 struct {
+	Value int64
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilInt64 was set.
+func (o OptNilInt64) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilInt64) Reset() {
+	var v int64
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilInt64) SetTo(v int64) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilInt64) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilInt64) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v int64
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilInt64) Get() (v int64, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilInt64) Or(d int64) int64 {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptNilResponseError returns new OptNilResponseError with value set to v.
 func NewOptNilResponseError(v ResponseError) OptNilResponseError {
 	return OptNilResponseError{
@@ -10304,7 +10367,7 @@ type Response struct {
 	Error              OptNilResponseError          `json:"error"`
 	ID                 string                       `json:"id"`
 	IncompleteDetails  OptNilIncompleteDetails      `json:"incomplete_details"`
-	MaxOutputTokens    OptInt64                     `json:"max_output_tokens"`
+	MaxOutputTokens    OptNilInt64                  `json:"max_output_tokens"`
 	Model              string                       `json:"model"`
 	Object             ResponseObject               `json:"object"`
 	Output             []OutputItem                 `json:"output"`
@@ -10323,13 +10386,13 @@ type Response struct {
 	ExpireAt           OptInt64                     `json:"expire_at"`
 	ToolChoice         OptNilToolChoice             `json:"tool_choice"`
 	ParallelToolCalls  OptNilBool                   `json:"parallel_tool_calls"`
-	MaxToolCalls       OptInt64                     `json:"max_tool_calls"`
+	MaxToolCalls       OptNilInt64                  `json:"max_tool_calls"`
 	Reasoning          OptReasoning                 `json:"reasoning"`
 	ContextManagement  OptContextManagementResponse `json:"context_management"`
 	Session            OptSession                   `json:"session"`
-	SafetyIdentifier   OptString                    `json:"safety_identifier"`
+	SafetyIdentifier   OptNilString                 `json:"safety_identifier"`
 	// A routing hint for prompt cache affinity.
-	PromptCacheKey OptString `json:"prompt_cache_key"`
+	PromptCacheKey OptNilString `json:"prompt_cache_key"`
 }
 
 // GetCreatedAt returns the value of CreatedAt.
@@ -10353,7 +10416,7 @@ func (s *Response) GetIncompleteDetails() OptNilIncompleteDetails {
 }
 
 // GetMaxOutputTokens returns the value of MaxOutputTokens.
-func (s *Response) GetMaxOutputTokens() OptInt64 {
+func (s *Response) GetMaxOutputTokens() OptNilInt64 {
 	return s.MaxOutputTokens
 }
 
@@ -10448,7 +10511,7 @@ func (s *Response) GetParallelToolCalls() OptNilBool {
 }
 
 // GetMaxToolCalls returns the value of MaxToolCalls.
-func (s *Response) GetMaxToolCalls() OptInt64 {
+func (s *Response) GetMaxToolCalls() OptNilInt64 {
 	return s.MaxToolCalls
 }
 
@@ -10468,12 +10531,12 @@ func (s *Response) GetSession() OptSession {
 }
 
 // GetSafetyIdentifier returns the value of SafetyIdentifier.
-func (s *Response) GetSafetyIdentifier() OptString {
+func (s *Response) GetSafetyIdentifier() OptNilString {
 	return s.SafetyIdentifier
 }
 
 // GetPromptCacheKey returns the value of PromptCacheKey.
-func (s *Response) GetPromptCacheKey() OptString {
+func (s *Response) GetPromptCacheKey() OptNilString {
 	return s.PromptCacheKey
 }
 
@@ -10498,7 +10561,7 @@ func (s *Response) SetIncompleteDetails(val OptNilIncompleteDetails) {
 }
 
 // SetMaxOutputTokens sets the value of MaxOutputTokens.
-func (s *Response) SetMaxOutputTokens(val OptInt64) {
+func (s *Response) SetMaxOutputTokens(val OptNilInt64) {
 	s.MaxOutputTokens = val
 }
 
@@ -10593,7 +10656,7 @@ func (s *Response) SetParallelToolCalls(val OptNilBool) {
 }
 
 // SetMaxToolCalls sets the value of MaxToolCalls.
-func (s *Response) SetMaxToolCalls(val OptInt64) {
+func (s *Response) SetMaxToolCalls(val OptNilInt64) {
 	s.MaxToolCalls = val
 }
 
@@ -10613,12 +10676,12 @@ func (s *Response) SetSession(val OptSession) {
 }
 
 // SetSafetyIdentifier sets the value of SafetyIdentifier.
-func (s *Response) SetSafetyIdentifier(val OptString) {
+func (s *Response) SetSafetyIdentifier(val OptNilString) {
 	s.SafetyIdentifier = val
 }
 
 // SetPromptCacheKey sets the value of PromptCacheKey.
-func (s *Response) SetPromptCacheKey(val OptString) {
+func (s *Response) SetPromptCacheKey(val OptNilString) {
 	s.PromptCacheKey = val
 }
 

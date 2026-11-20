@@ -776,21 +776,20 @@ func (s *LimitedCredentialNetworking) SetAllowedHosts(val []string) {
 }
 
 // List Credentials 响应体。
-// 注意：wire 上字段名是 `credentials`（与 vault / session 的 `data` 不一致），
-// 以 stg 实际形态为准。.
+// 与 List Vaults 一致，本页数据在 `data` 键下；空集合返回 `[]`。.
 // Ref: #/components/schemas/ListCredentialsResponse
 type ListCredentialsResponse struct {
 	// 本页 Credential 列表。.
-	Credentials []Credential `json:"credentials"`
+	Data []Credential `json:"data"`
 	// 下一页 cursor；已列尽时为空或缺省。.
 	NextPage OptString `json:"next_page"`
 	// 命中总条数（可选）。.
 	Total OptInt64 `json:"total"`
 }
 
-// GetCredentials returns the value of Credentials.
-func (s *ListCredentialsResponse) GetCredentials() []Credential {
-	return s.Credentials
+// GetData returns the value of Data.
+func (s *ListCredentialsResponse) GetData() []Credential {
+	return s.Data
 }
 
 // GetNextPage returns the value of NextPage.
@@ -803,9 +802,9 @@ func (s *ListCredentialsResponse) GetTotal() OptInt64 {
 	return s.Total
 }
 
-// SetCredentials sets the value of Credentials.
-func (s *ListCredentialsResponse) SetCredentials(val []Credential) {
-	s.Credentials = val
+// SetData sets the value of Data.
+func (s *ListCredentialsResponse) SetData(val []Credential) {
+	s.Data = val
 }
 
 // SetNextPage sets the value of NextPage.
