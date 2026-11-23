@@ -136,6 +136,8 @@ func (s CredentialAuthType) Validate() error {
 		return nil
 	case "environment_variable":
 		return nil
+	case "mcp_static":
+		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)
 	}
