@@ -207,14 +207,19 @@ func (s *Credential) SetUpdatedAt(val string) {
 // 凭证的鉴权细节。按 `type` 决定哪些字段非空：
 // - `mcp_oauth` → `mcp_server_url` + `access_token`(write-only) + 可选 `expires_at` / `refresh`
 // - `static_bearer` → `mcp_server_url` + `token`(write-only)
+// - `mcp_static` → `mcp_server_url` + `token`(write-only)（省略注入配置时使用 bearer）
 // - `environment_variable` → `secret_name` + `secret_value`(write-only) + `networking`
+// `mcp_static` 与 `static_bearer` 并存，响应保留原始类型，不做归一化。
+// 按类型的必填性由服务端校验；SDK 的可选字段不代表任意组合都合法。
+// 为保持旧 SDK 公开对象结构，本模型暂不暴露 header/query
+// 注入配置；完整配置支持另行提供。
 // 所有 secret 字段（`access_token` / `token` / `secret_value` / `refresh.refresh_token` /
 // `token_endpoint_auth.client_secret`）都是 write-only：响应永不返回。.
 // Ref: #/components/schemas/CredentialAuth
 type CredentialAuth struct {
 	// 凭证 auth 类型。.
 	Type CredentialAuthType `json:"type"`
-	// MCP server URL；`mcp_oauth` / `static_bearer` 用。.
+	// MCP server URL；`mcp_oauth` / `static_bearer` / `mcp_static` 用。.
 	McpServerURL OptString `json:"mcp_server_url"`
 	// OAuth access token；`mcp_oauth` 专用（write-only）。.
 	AccessToken OptString `json:"access_token"`
@@ -222,7 +227,8 @@ type CredentialAuth struct {
 	ExpiresAt OptString `json:"expires_at"`
 	// OAuth refresh 配置；`mcp_oauth` 专用。.
 	Refresh OptMCPOAuthRefresh `json:"refresh"`
-	// Bearer token；`static_bearer` 专用（write-only）。.
+	// 静态密钥；`static_bearer` / `mcp_static` 创建时必填（write-only）。`mcp_static` 的
+	// bearer 注入时不得包含 `Bearer ` 前缀。.
 	Token OptString `json:"token"`
 	// 环境变量名；`environment_variable` 专用。.
 	SecretName OptString `json:"secret_name"`
@@ -325,6 +331,7 @@ func (s *CredentialAuth) SetNetworking(val OptCredentialNetworking) {
 // 凭证 auth 类型。按值决定 `CredentialAuth` 里哪些字段被使用：
 // - `mcp_oauth`：`mcp_server_url` + `access_token`(w) + 可选 `expires_at` / `refresh`
 // - `static_bearer`：`mcp_server_url` + `token`(w)
+// - `mcp_static`：`mcp_server_url` + `token`(w)（省略注入配置时使用 bearer）
 // - `environment_variable`：`secret_name` + `secret_value`(w) + `networking`.
 // Ref: #/components/schemas/CredentialAuthType
 type CredentialAuthType string
@@ -333,6 +340,7 @@ const (
 	CredentialAuthTypeMcpOAuth            CredentialAuthType = "mcp_oauth"
 	CredentialAuthTypeStaticBearer        CredentialAuthType = "static_bearer"
 	CredentialAuthTypeEnvironmentVariable CredentialAuthType = "environment_variable"
+	CredentialAuthTypeMcpStatic           CredentialAuthType = "mcp_static"
 )
 
 // AllValues returns all CredentialAuthType values.
@@ -341,6 +349,7 @@ func (CredentialAuthType) AllValues() []CredentialAuthType {
 		CredentialAuthTypeMcpOAuth,
 		CredentialAuthTypeStaticBearer,
 		CredentialAuthTypeEnvironmentVariable,
+		CredentialAuthTypeMcpStatic,
 	}
 }
 
@@ -352,6 +361,8 @@ func (s CredentialAuthType) MarshalText() ([]byte, error) {
 	case CredentialAuthTypeStaticBearer:
 		return []byte(s), nil
 	case CredentialAuthTypeEnvironmentVariable:
+		return []byte(s), nil
+	case CredentialAuthTypeMcpStatic:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -369,6 +380,9 @@ func (s *CredentialAuthType) UnmarshalText(data []byte) error {
 		return nil
 	case CredentialAuthTypeEnvironmentVariable:
 		*s = CredentialAuthTypeEnvironmentVariable
+		return nil
+	case CredentialAuthTypeMcpStatic:
+		*s = CredentialAuthTypeMcpStatic
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)

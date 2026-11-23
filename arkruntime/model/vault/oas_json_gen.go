@@ -831,6 +831,8 @@ func (s *CredentialAuthType) Decode(d *jx.Decoder) error {
 		*s = CredentialAuthTypeStaticBearer
 	case CredentialAuthTypeEnvironmentVariable:
 		*s = CredentialAuthTypeEnvironmentVariable
+	case CredentialAuthTypeMcpStatic:
+		*s = CredentialAuthTypeMcpStatic
 	default:
 		*s = CredentialAuthType(v)
 	}
@@ -871,6 +873,15 @@ func (s CredentialMetadata) encodeFields(e *jx.Encoder) {
 func (s *CredentialMetadata) Decode(d *jx.Decoder) error {
 	if s == nil {
 		return errors.New("invalid: unable to decode CredentialMetadata to nil")
+	}
+	// Older servers returned null for empty credential metadata.
+	// Preserve the public map/optional types and normalize to the current {} contract.
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+		*s = make(CredentialMetadata)
+		return nil
 	}
 	m := s.init()
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {

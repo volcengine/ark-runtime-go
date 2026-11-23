@@ -222,6 +222,12 @@ func (s *ContentGenerationTask) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.OutputFormat.Set {
+			e.FieldStart("output_format")
+			s.OutputFormat.Encode(e)
+		}
+	}
+	{
 		if s.TextureResolution.Set {
 			e.FieldStart("texture_resolution")
 			s.TextureResolution.Encode(e)
@@ -287,7 +293,7 @@ func (s *ContentGenerationTask) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfContentGenerationTask = [28]string{
+var jsonFieldsNameOfContentGenerationTask = [29]string{
 	0:  "id",
 	1:  "model",
 	2:  "status",
@@ -306,16 +312,17 @@ var jsonFieldsNameOfContentGenerationTask = [28]string{
 	15: "subdivisionlevel",
 	16: "fileformat",
 	17: "file_format",
-	18: "texture_resolution",
-	19: "priority",
-	20: "service_tier",
-	21: "execution_expires_after",
-	22: "generate_audio",
-	23: "draft",
-	24: "draft_task_id",
-	25: "tools",
-	26: "reasoning_effort",
-	27: "safety_identifier",
+	18: "output_format",
+	19: "texture_resolution",
+	20: "priority",
+	21: "service_tier",
+	22: "execution_expires_after",
+	23: "generate_audio",
+	24: "draft",
+	25: "draft_task_id",
+	26: "tools",
+	27: "reasoning_effort",
+	28: "safety_identifier",
 }
 
 // Decode decodes ContentGenerationTask from json.
@@ -510,6 +517,16 @@ func (s *ContentGenerationTask) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"file_format\"")
+			}
+		case "output_format":
+			if err := func() error {
+				s.OutputFormat.Reset()
+				if err := s.OutputFormat.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"output_format\"")
 			}
 		case "texture_resolution":
 			if err := func() error {
@@ -1044,6 +1061,12 @@ func (s *CreateContentGenerationTaskRequest) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.OutputFormat.Set {
+			e.FieldStart("output_format")
+			s.OutputFormat.Encode(e)
+		}
+	}
+	{
 		if s.Texture.Set {
 			e.FieldStart("texture")
 			s.Texture.Encode(e)
@@ -1098,6 +1121,12 @@ func (s *CreateContentGenerationTaskRequest) encodeFields(e *jx.Encoder) {
 		}
 	}
 	{
+		if s.OmniReferenceTaskType.Set {
+			e.FieldStart("omni_reference_task_type")
+			s.OmniReferenceTaskType.Encode(e)
+		}
+	}
+	{
 		if s.Tools != nil {
 			e.FieldStart("tools")
 			e.ArrStart()
@@ -1127,7 +1156,7 @@ func (s *CreateContentGenerationTaskRequest) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfCreateContentGenerationTaskRequest = [29]string{
+var jsonFieldsNameOfCreateContentGenerationTaskRequest = [31]string{
 	0:  "model",
 	1:  "content",
 	2:  "callback_url",
@@ -1144,19 +1173,21 @@ var jsonFieldsNameOfCreateContentGenerationTaskRequest = [29]string{
 	13: "frames",
 	14: "subdivision_level",
 	15: "file_format",
-	16: "texture",
-	17: "geometry_quality",
-	18: "geometry_detail",
-	19: "face",
-	20: "texture_resolution",
-	21: "preserve_uv",
-	22: "priority",
-	23: "draft",
-	24: "optimize_prompt",
-	25: "tools",
-	26: "reasoning_effort",
-	27: "human_face_mode",
-	28: "safety_identifier",
+	16: "output_format",
+	17: "texture",
+	18: "geometry_quality",
+	19: "geometry_detail",
+	20: "face",
+	21: "texture_resolution",
+	22: "preserve_uv",
+	23: "priority",
+	24: "draft",
+	25: "optimize_prompt",
+	26: "omni_reference_task_type",
+	27: "tools",
+	28: "reasoning_effort",
+	29: "human_face_mode",
+	30: "safety_identifier",
 }
 
 // Decode decodes CreateContentGenerationTaskRequest from json.
@@ -1338,6 +1369,16 @@ func (s *CreateContentGenerationTaskRequest) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"file_format\"")
 			}
+		case "output_format":
+			if err := func() error {
+				s.OutputFormat.Reset()
+				if err := s.OutputFormat.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"output_format\"")
+			}
 		case "texture":
 			if err := func() error {
 				s.Texture.Reset()
@@ -1427,6 +1468,16 @@ func (s *CreateContentGenerationTaskRequest) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"optimize_prompt\"")
+			}
+		case "omni_reference_task_type":
+			if err := func() error {
+				s.OmniReferenceTaskType.Reset()
+				if err := s.OmniReferenceTaskType.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"omni_reference_task_type\"")
 			}
 		case "tools":
 			if err := func() error {

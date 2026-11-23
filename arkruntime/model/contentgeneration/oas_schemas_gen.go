@@ -64,6 +64,8 @@ type ContentGenerationTask struct {
 	Fileformat OptString `json:"fileformat"`
 	// Output file format of a 3D generation task.
 	FileFormat OptString `json:"file_format"`
+	// Video container format actually used by the task (e.g. `mp4`, `mov`).
+	OutputFormat OptNilString `json:"output_format"`
 	// Texture resolution actually used by a 3D generation task.
 	TextureResolution OptString `json:"texture_resolution"`
 	// Execution priority echoed back.
@@ -174,6 +176,11 @@ func (s *ContentGenerationTask) GetFileformat() OptString {
 // GetFileFormat returns the value of FileFormat.
 func (s *ContentGenerationTask) GetFileFormat() OptString {
 	return s.FileFormat
+}
+
+// GetOutputFormat returns the value of OutputFormat.
+func (s *ContentGenerationTask) GetOutputFormat() OptNilString {
+	return s.OutputFormat
 }
 
 // GetTextureResolution returns the value of TextureResolution.
@@ -314,6 +321,11 @@ func (s *ContentGenerationTask) SetFileformat(val OptString) {
 // SetFileFormat sets the value of FileFormat.
 func (s *ContentGenerationTask) SetFileFormat(val OptString) {
 	s.FileFormat = val
+}
+
+// SetOutputFormat sets the value of OutputFormat.
+func (s *ContentGenerationTask) SetOutputFormat(val OptNilString) {
+	s.OutputFormat = val
 }
 
 // SetTextureResolution sets the value of TextureResolution.
@@ -581,6 +593,9 @@ type CreateContentGenerationTaskRequest struct {
 	SubdivisionLevel OptString `json:"subdivision_level"`
 	// Output file format (e.g. `mp4`, `glb`).
 	FileFormat OptString `json:"file_format"`
+	// Video container format (e.g. `mp4`, `mov`). Supported values depend on
+	// the model; defaults to `mp4` when omitted.
+	OutputFormat OptNilString `json:"output_format"`
 	// 3D generation with image-only input: `false` generates an untextured
 	// mesh, omitted or `true` generates a textured model.
 	Texture OptBool `json:"texture"`
@@ -601,6 +616,10 @@ type CreateContentGenerationTaskRequest struct {
 	Draft OptBool `json:"draft"`
 	// Run the prompt-optimization pass before generation.
 	OptimizePrompt OptBool `json:"optimize_prompt"`
+	// Multimodal-reference task type hint: `auto` (default), `reference`,
+	// `edit` or `extend`. Supported models and task-specific constraints are
+	// enforced server-side; requires prompt optimization to be enabled.
+	OmniReferenceTaskType OptNilString `json:"omni_reference_task_type"`
 	// Tools the model may invoke during generation.
 	Tools []Tool `json:"tools"`
 	// Hint for how much reasoning the model should do.
@@ -691,6 +710,11 @@ func (s *CreateContentGenerationTaskRequest) GetFileFormat() OptString {
 	return s.FileFormat
 }
 
+// GetOutputFormat returns the value of OutputFormat.
+func (s *CreateContentGenerationTaskRequest) GetOutputFormat() OptNilString {
+	return s.OutputFormat
+}
+
 // GetTexture returns the value of Texture.
 func (s *CreateContentGenerationTaskRequest) GetTexture() OptBool {
 	return s.Texture
@@ -734,6 +758,11 @@ func (s *CreateContentGenerationTaskRequest) GetDraft() OptBool {
 // GetOptimizePrompt returns the value of OptimizePrompt.
 func (s *CreateContentGenerationTaskRequest) GetOptimizePrompt() OptBool {
 	return s.OptimizePrompt
+}
+
+// GetOmniReferenceTaskType returns the value of OmniReferenceTaskType.
+func (s *CreateContentGenerationTaskRequest) GetOmniReferenceTaskType() OptNilString {
+	return s.OmniReferenceTaskType
 }
 
 // GetTools returns the value of Tools.
@@ -836,6 +865,11 @@ func (s *CreateContentGenerationTaskRequest) SetFileFormat(val OptString) {
 	s.FileFormat = val
 }
 
+// SetOutputFormat sets the value of OutputFormat.
+func (s *CreateContentGenerationTaskRequest) SetOutputFormat(val OptNilString) {
+	s.OutputFormat = val
+}
+
 // SetTexture sets the value of Texture.
 func (s *CreateContentGenerationTaskRequest) SetTexture(val OptBool) {
 	s.Texture = val
@@ -879,6 +913,11 @@ func (s *CreateContentGenerationTaskRequest) SetDraft(val OptBool) {
 // SetOptimizePrompt sets the value of OptimizePrompt.
 func (s *CreateContentGenerationTaskRequest) SetOptimizePrompt(val OptBool) {
 	s.OptimizePrompt = val
+}
+
+// SetOmniReferenceTaskType sets the value of OmniReferenceTaskType.
+func (s *CreateContentGenerationTaskRequest) SetOmniReferenceTaskType(val OptNilString) {
+	s.OmniReferenceTaskType = val
 }
 
 // SetTools sets the value of Tools.
